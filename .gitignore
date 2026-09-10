@@ -1,0 +1,24 @@
+# Entornos
+.env
+*.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Reportes generados
+server/reports/
+
+# Node
+node_modules/
+.next/
+
+# Docker
+*.log
+
+# Sistema
+.DS_Store
+Thumbs.db

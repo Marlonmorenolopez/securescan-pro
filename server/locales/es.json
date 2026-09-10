@@ -1,0 +1,49 @@
+{
+  "report": {
+    "title": "Reporte de Análisis de Seguridad",
+    "subtitle": "Reporte de Análisis de Seguridad",
+    "confidential": "Este reporte contiene información sensible. Distribución restringida.",
+    "generatedOn": "Reporte generado el",
+    "breakdown": "Desglose de Hallazgos",
+    "vulnerabilities": "Vulnerabilidades Detectadas",
+    "recommendations": "Recomendaciones",
+    "metasploitFindings": "Hallazgos Metasploit",
+    "solution": "Solución",
+    "noVulnerabilities": "No se encontraron vulnerabilidades significativas.",
+    "securityScore": "Puntuación de Seguridad",
+    "severities": {
+      "critical": "Críticos",
+      "high": "Altos",
+      "medium": "Medios",
+      "low": "Bajos"
+    }
+  },
+  "errors": {
+    "targetRequired": "Se requiere una URL objetivo",
+    "scanNotFound": "Escaneo no encontrado",
+    "invalidFormat": "Formato de ID de escaneo inválido",
+    "unauthorized": "No autorizado — token de API inválido o ausente",
+    "targetNotAllowed": "Objetivo no permitido",
+    "targetUnreachable": "Target no alcanzable: {reason}",
+    "circuitBreaker": "Circuit breaker abierto para este target. Espera antes de reintentar.",
+    "invalidJson": "Cuerpo JSON inválido o Content-Type faltante",
+    "formatNotAllowed": "Formato no permitido. Usa: {formats}",
+    "reportFailed": "Fallo al generar el reporte",
+    "dockerUnavailable": "Docker no disponible",
+    "labNotFound": "Laboratorio no encontrado",
+    "scanDeleted": "Escaneo eliminado exitosamente",
+    "scanNotCompleted": "El escaneo aún no ha finalizado",
+    "historyFailed": "Error al obtener el historial de escaneos"
+  },
+  "scoring": {
+    "critical": "🔴 URGENTE: Corrige {count} vulnerabilidad(es) crítica(s) inmediatamente. Representan riesgo severo para la seguridad del sistema.",
+    "high": "🟠 ALTO: Remediar {count} problema(s) de alta severidad en los próximos 7 días. Podrían comprometer el sistema.",
+    "medium": "🟡 MEDIO: Revisar y corregir {count} problemas de severidad media. Considera priorización por riesgo.",
+    "weakCredentials": "🔑 CRÍTICO: Credenciales débiles encontradas — {creds}. Cambia las contraseñas por defecto e implementa una política de contraseñas robusta.",
+    "exploitIntel": "⚠️ THREAT INTEL: {count} exploit(s) de alta puntuación disponibles en bases de datos públicas. Parchea inmediatamente.",
+    "hardening": "ℹ️ HARDENING: Corrige problemas de divulgación de información y baja severidad como parte del mantenimiento regular de seguridad.",
+    "exploitIntelHigh": "💀 EXPLOIT INTEL: {count} exploits públicos encontrados que coinciden con tecnologías detectadas. Verifica versiones y aplica parches inmediatamente.",
+    "exploitIntelLow": "⚠️ EXPLOIT INTEL: {count} exploits públicos encontrados para tecnologías detectadas. Revisa y parchea los componentes afectados.",
+    "goodPosture": "✅ Buena postura de seguridad. Continúa con escaneos y monitoreo regulares."
+  }
+}

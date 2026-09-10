@@ -1,0 +1,109 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Frontend: Iniciar Desarrollo",
+      "type": "shell",
+      "command": "pnpm dev",
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend: Iniciar Servidor",
+      "type": "shell",
+      "command": "source venv/bin/activate && python app.py",
+      "options": {
+        "cwd": "${workspaceFolder}/server"
+      },
+      "windows": {
+        "command": ".\\venv\\Scripts\\activate && python app.py"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Iniciar Laboratorio",
+      "type": "shell",
+      "command": "docker-compose up -d",
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Detener Laboratorio",
+      "type": "shell",
+      "command": "docker-compose down",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Ver Logs",
+      "type": "shell",
+      "command": "docker-compose logs -f",
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend: Instalar Dependencias",
+      "type": "shell",
+      "command": "python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt",
+      "options": {
+        "cwd": "${workspaceFolder}/server"
+      },
+      "windows": {
+        "command": "python -m venv venv && .\\venv\\Scripts\\activate && pip install -r requirements.txt"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Frontend: Instalar Dependencias",
+      "type": "shell",
+      "command": "pnpm install",
+      "problemMatcher": []
+    },
+    {
+      "label": "Full Stack: Iniciar Todo",
+      "dependsOn": [
+        "Docker: Iniciar Laboratorio",
+        "Backend: Iniciar Servidor",
+        "Frontend: Iniciar Desarrollo"
+      ],
+      "dependsOrder": "sequence",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Frontend: Build Produccion",
+      "type": "shell",
+      "command": "pnpm build",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Frontend: Lint",
+      "type": "shell",
+      "command": "pnpm lint",
+      "group": "test",
+      "problemMatcher": ["$eslint-stylish"]
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+# SecureScan Pro v3.0 - Python Dependencies
+
+# Web framework
+flask>=3.0.0,<4.0.0
+flask-cors>=4.0.0,<5.0.0
+
+# Rate limiting (protege endpoints de abuso)
+flask-limiter>=3.5.0,<4.0.0
+
+# HTTP client para ZAP API y auto-login
+requests>=2.31.0,<3.0.0
+
+# Redis client
+redis>=5.0.0,<6.0.0
+
+# Cola de Jobs persistente (reemplaza progresivamente a threading.Thread).
+# Broker/backend: el mismo Redis de arriba, en una DB separada (ver
+# celery_app.py). Si el broker no está disponible, job_executor.py cae a
+# threading.Thread (modo dev) — ver JOB_BACKEND en .env.
+celery>=5.4.0,<6.0.0
+
+# PDF: requiere wkhtmltopdf en el sistema (instalado en Dockerfile).
+# reporter.py maneja el error con try/except si no está disponible.
+pdfkit>=1.0.0,<2.0.0
+
+# Metasploit RPC client (opcional)
+# Si no está instalado, MetasploitScanner activa simulación automáticamente.
+pymetasploit3>=1.0.3
+
+# Wappalyzer (reemplaza WhatWeb)
+# Si no está instalado, WappalyzerScanner usa CLI o simulación.
+python-Wappalyzer>=0.3.1
+
+# Entorno
+python-dotenv>=1.0.0,<2.0.0
+
+# Validación de modelos
+pydantic>=2.0.0,<3.0.0
+
+# Templates HTML para reportes
+jinja2>=3.1.0,<4.0.0
+
+# Docker SDK — BUG FIX: eliminada la línea duplicada "docker" sin versión
+docker>=7.1.0
+
+# Parser HTML (usado por Wappalyzer y auto-login)
+beautifulsoup4>=4.12.0
+
+# Servidor WSGI — sync worker con threads (sin dependencias extra)
+gunicorn>=21.2.0
+
+# Resolución DNS con timeout confiable por consulta, incluso en paralelo
+# desde varios threads -- usado por DnstwistScanner (Huella Digital) para
+# verificar cuáles variantes de typosquatting están registradas.
+dnspython>=2.6.0,<3.0.0
+
+# Parseo de certificados X.509 -- usado por TestSSLScanner (Huella Digital)
+# para leer detalle del certificado (CN, vencimiento, SAN) incluso cuando
+# no es de confianza pública (autofirmado, vencido), caso en el que el dict
+# de ssl.getpeercert() viene vacío.
+cryptography>=42.0.0,<44.0.0
+
+# Búsqueda profunda de username (OSINT, Grupo 2) -- 414 sitios reales,
+# vía subprocess (ver server/modules/osint/sherlock_runner.py). Complementa
+# a la búsqueda rápida (~19 sitios) que no necesita esta dependencia.
+sherlock-project>=0.16.0
+
+# dnstwist real (Grupo 1, Huella Digital) -- reemplaza al generador de
+# variantes propio. Cubre ~15 técnicas incluyendo homoglyphs (que el
+# propio no tenía), y puede comparar el contenido de la página del
+# dominio sospechoso contra el original para detectar clones de phishing.
+dnstwist>=20250130
+
+
+

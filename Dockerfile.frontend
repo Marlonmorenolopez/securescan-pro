@@ -1,0 +1,90 @@
+# syntax=docker/dockerfile:1.7
+# ============================================================
+# SecureScan Pro — Dockerfile.frontend
+#
+# CORRECCIONES v4:
+#  1. BACKEND_URL=http://api:5000 baked en build — los rewrites de
+#     next.config.mjs y las llamadas SSR/Server-Components apuntan
+#     a la red interna Docker, no a localhost que no existe en el
+#     contenedor frontend.
+#  2. NEXT_PUBLIC_API_URL=http://localhost:5000 permanece correcto
+#     para las llamadas cliente (browser), que salen por el puerto
+#     expuesto 5000 del host.
+# ============================================================
+
+FROM node:20-alpine AS base
+RUN apk add --no-cache libc6-compat curl
+
+# ── Stage 1: Dependencias ───────────────────────────────────
+FROM base AS deps
+WORKDIR /app
+RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
+COPY package.json pnpm-lock.yaml ./
+# NOTA: el pnpm-lock.yaml del proyecto quedó desincronizado de package.json
+# (eslint ^8 vs ^9.39.5). --no-frozen-lockfile permite que pnpm actualice
+# el lockfile dentro del contenedor en vez de fallar la build por eso.
+RUN pnpm install --no-frozen-lockfile
+
+# ── Stage 2: Build ──────────────────────────────────────────
+FROM base AS builder
+WORKDIR /app
+RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
+
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copiar fuentes sin node_modules ni .next
+COPY app        ./app
+COPY components ./components
+COPY lib        ./lib
+COPY public     ./public
+RUN chmod -R 644 ./public && find ./public -type d -exec chmod 755 {} +
+COPY messages   ./messages
+COPY i18n       ./i18n
+COPY next.config.mjs    ./
+COPY tailwind.config.ts ./
+COPY tsconfig.json      ./
+COPY postcss.config.js  ./
+COPY components.json    ./
+COPY global.d.ts        ./
+COPY next-env.d.ts      ./
+COPY package.json       ./
+COPY proxy.ts           ./
+
+# BUG FIX: BACKEND_URL interno para rewrites y Server Components
+# El browser sigue usando NEXT_PUBLIC_API_URL → localhost:5000 (puerto expuesto)
+ENV BACKEND_URL=http://api:5000
+ENV NEXT_PUBLIC_API_URL=http://localhost:5000
+ENV NEXT_TELEMETRY_DISABLED=1
+ARG NEXT_PUBLIC_API_TOKEN
+ARG NEXT_PUBLIC_API_URL
+ARG BACKEND_URL=http://api:5000
+ENV BACKEND_URL=${BACKEND_URL}
+ENV NEXT_PUBLIC_API_TOKEN=${NEXT_PUBLIC_API_TOKEN}
+RUN pnpm build
+
+# ── Stage 3: Runner ─────────────────────────────────────────
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+# Mantener en runtime también para rewrites dinámicos
+ENV BACKEND_URL=http://api:5000
+ENV NEXT_PUBLIC_API_URL=http://localhost:5000
+
+RUN addgroup --system --gid 1001 nodejs \
+ && adduser  --system --uid 1001 nextjs
+
+COPY --from=builder /app/public                                  ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone  ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static      ./.next/static
+
+USER nextjs
+EXPOSE 3000
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:3000 || exit 1
+
+CMD ["node", "server.js"]

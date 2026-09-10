@@ -1,0 +1,246 @@
+openapi: 3.0.3
+info:
+  title: SecureScan Pro API
+  version: "5.1.0"
+  description: >
+    API real de SecureScan Pro. Documenta únicamente los endpoints que
+    existen hoy en server/app.py -- no incluye funcionalidades planeadas
+    que aún no tengan una ruta implementada.
+servers:
+  - url: /api
+
+components:
+  securitySchemes:
+    bearerToken:
+      type: http
+      scheme: bearer
+      description: Token requerido por @require_token en la mayoría de rutas.
+  schemas:
+    Job:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        status: { type: string, enum: [queued, running, completed, failed, error, cancelled] }
+        startTime: { type: string, format: date-time }
+        endTime: { type: string, format: date-time, nullable: true }
+        scan_type: { type: string, enum: [web, code, osint-deep, osint-harvest, osint-breach, osint-username] }
+    Schedule:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        target: { type: string }
+        options: { type: object }
+        frequency: { type: string, enum: [daily, weekly, monthly] }
+        hour: { type: integer }
+        minute: { type: integer }
+        day_of_week: { type: integer, nullable: true }
+        day_of_month: { type: integer, nullable: true }
+        active: { type: boolean }
+        next_run_at: { type: string, format: date-time }
+        last_run_at: { type: string, nullable: true }
+        last_job_id: { type: string, nullable: true }
+    ComparisonResult:
+      type: object
+      properties:
+        scan_a_id: { type: string }
+        scan_b_id: { type: string }
+        summary:
+          type: object
+          properties:
+            new: { type: integer }
+            resolved: { type: integer }
+            persistent: { type: integer }
+            modified: { type: integer }
+        new: { type: array, items: { type: object } }
+        resolved: { type: array, items: { type: object } }
+        persistent: { type: array, items: { type: object } }
+        modified: { type: array, items: { type: object } }
+
+security:
+  - bearerToken: []
+
+paths:
+  /health:
+    get:
+      summary: Health check (sin autenticación)
+      security: []
+      responses: { '200': { description: OK } }
+
+  /scan:
+    post:
+      summary: Inicia un Web Scan (Wappalyzer, Nmap, Patator, Metasploit, ffuf, Gobuster, ZAP, Nuclei, SQLMap, Searchsploit)
+      responses:
+        '200': { description: Job creado, devuelve jobId y status }
+        '403': { description: Target no permitido }
+
+  /scan/{scan_id}/status:
+    get:
+      summary: Consulta el estado/progreso/resultado de un Job (cualquier tipo)
+      parameters: [{ name: scan_id, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: 'Job', content: { application/json: { schema: { $ref: '#/components/schemas/Job' } } } } }
+
+  /scan/{scan_id}:
+    delete:
+      summary: Elimina un Job y su resultado persistido
+      parameters: [{ name: scan_id, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: Eliminado } }
+
+  /scan/{scan_id}/report:
+    get:
+      summary: Descarga el reporte de un Job COMPLETADO (cualquier tipo — web, code, osint)
+      parameters:
+        - { name: scan_id, in: path, required: true, schema: { type: string } }
+        - { name: format, in: query, schema: { type: string, enum: [html, json, pdf, csv], default: html } }
+      responses:
+        '200': { description: Archivo del reporte }
+        '400': { description: Scan aún no completado / formato inválido }
+        '404': { description: Scan no encontrado }
+
+  /scan/{scan_id}/compare/{other_scan_id}:
+    get:
+      summary: Compara dos Jobs completados (fingerprints estables — nuevo/resuelto/persistente/modificado)
+      parameters:
+        - { name: scan_id, in: path, required: true, schema: { type: string } }
+        - { name: other_scan_id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: 'Resultado de la comparación', content: { application/json: { schema: { $ref: '#/components/schemas/ComparisonResult' } } } }
+
+  /code-scan:
+    post:
+      summary: Inicia un Code Scan (Gitleaks, TruffleHog, Backdoors, Semgrep, Trivy, Dependency-Check)
+      responses: { '200': { description: Job creado } }
+
+  /code-scan/{scan_id}/status:
+    get:
+      summary: Estado/resultado de un Code Scan
+      parameters: [{ name: scan_id, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: Job } }
+
+  /code-scan/history:
+    get:
+      summary: Historial de Code Scans
+      responses: { '200': { description: Lista de Jobs de tipo code } }
+
+  /osint/email-breach:
+    post:
+      summary: XposedOrNot — verifica un email contra brechas conocidas (con caché Redis y persistencia como Job)
+      responses: { '200': { description: Resultado (incluye jobId y cache hit/miss) } }
+
+  /osint/username-search:
+    post:
+      summary: Búsqueda rápida de username (~19 plataformas, con caché Redis y persistencia como Job)
+      responses: { '200': { description: Resultado } }
+
+  /osint/username-deep:
+    post:
+      summary: Búsqueda profunda de username (Sherlock real, 414 sitios) — asíncrono vía Job
+      responses: { '200': { description: Job creado } }
+
+  /osint/username-deep/{scan_id}/status:
+    get:
+      summary: Estado/resultado de una búsqueda profunda de username
+      parameters: [{ name: scan_id, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: Job } }
+
+  /osint/domain-harvest:
+    post:
+      summary: theHarvester sobre un dominio — asíncrono vía Job
+      responses: { '200': { description: Job creado } }
+
+  /osint/domain-harvest/{scan_id}/status:
+    get:
+      summary: Estado/resultado de theHarvester
+      parameters: [{ name: scan_id, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: Job } }
+
+  /osint/history:
+    get:
+      summary: Historial unificado de OSINT (breach, username, username-deep, domain-harvest)
+      responses: { '200': { description: Lista de Jobs OSINT } }
+
+  /history:
+    get:
+      summary: Historial de Web Scans
+      responses: { '200': { description: Lista de Jobs de tipo web } }
+
+  /schedules:
+    post:
+      summary: Crea una programación (escaneo periódico) — Celery Beat la ejecutará como un Job normal
+      responses: { '201': { description: 'Programación creada', content: { application/json: { schema: { $ref: '#/components/schemas/Schedule' } } } } }
+    get:
+      summary: Lista todas las programaciones
+      responses: { '200': { description: Lista de Schedule } }
+
+  /schedules/{schedule_id}:
+    get:
+      summary: Consulta una programación
+      parameters: [{ name: schedule_id, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: Schedule } }
+    delete:
+      summary: Elimina una programación
+      parameters: [{ name: schedule_id, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: Eliminado } }
+
+  /schedules/{schedule_id}/pause:
+    post:
+      summary: Pausa una programación (no se ejecutará hasta reanudarse)
+      parameters: [{ name: schedule_id, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: Schedule actualizado } }
+
+  /schedules/{schedule_id}/resume:
+    post:
+      summary: Reanuda una programación pausada
+      parameters: [{ name: schedule_id, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: Schedule actualizado } }
+
+  /config:
+    get:
+      summary: Configuración pública del backend (para el frontend)
+      responses: { '200': { description: Config } }
+
+  /lab/status:
+    get:
+      summary: Estado de los targets de laboratorio (Juice Shop, DVWA, WebGoat)
+      responses: { '200': { description: Estado } }
+
+  /lab/{lab_id}/start:
+    post:
+      summary: Inicia un target de laboratorio
+      parameters: [{ name: lab_id, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: Iniciado } }
+
+  /lab/{lab_id}/stop:
+    post:
+      summary: Detiene un target de laboratorio
+      parameters: [{ name: lab_id, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: Detenido } }
+
+  /settings/notifications:
+    get:
+      summary: Consulta la configuración de notificaciones (sin credenciales SMTP)
+      responses: { '200': { description: Configuración actual } }
+    post:
+      summary: Actualiza destinatario de email / URL de webhook / eventos activos / umbral mínimo de severidad
+      responses:
+        '200': { description: Configuración guardada }
+        '400': { description: URL de webhook o min_severity inválida (rechazada por validación) }
+
+  /dashboard/stats:
+    get:
+      summary: Estadísticas agregadas reales (totales, breakdown de severidad, actividad reciente) — todas las familias de scan
+      responses: { '200': { description: Estadísticas agregadas } }
+
+  /metrics:
+    get:
+      summary: Métricas en formato Prometheus (texto plano, sin autenticación — estándar de scraping)
+      security: []
+      responses: { '200': { description: Métricas en texto plano } }
+
+  /timeline:
+    get:
+      summary: Evolución del score de un target específico a través de todos sus escaneos completados
+      parameters:
+        - { name: target, in: query, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Lista ordenada cronológicamente de score/grade por escaneo }
+        '400': { description: Falta el parámetro target }

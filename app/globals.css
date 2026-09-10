@@ -1,0 +1,430 @@
+/* app/globals.css — SecureScan Pro v5.0 · Cyber Neon Theme */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────
+   TEMA CLARO  (fallback accesible — modo oscuro es el primario)
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --background:          215 28%  96%;
+  --foreground:          215 25%  12%;
+  --card:                0   0%  100%;
+  --card-foreground:     215 25%  12%;
+  --popover:             0   0%  100%;
+  --popover-foreground:  215 25%  12%;
+  --primary:             194 100%  40%;   /* cian oscurecido para claro */
+  --primary-foreground:  0   0%  100%;
+  --secondary:           215 20%  92%;
+  --secondary-foreground:215 25%  20%;
+  --muted:               215 20%  92%;
+  --muted-foreground:    215 16%  46%;
+  --accent:              215 20%  88%;
+  --accent-foreground:   215 25%  20%;
+  --destructive:         0   75%  55%;
+  --destructive-foreground: 0 0% 100%;
+  --success:             150 60%  35%;
+  --success-foreground:  0   0%  100%;
+  --warning:             43  90%  45%;
+  --warning-foreground:  0   0%  10%;
+  --border:              215 20%  82%;
+  --input:               215 20%  82%;
+  --ring:                194 100%  40%;
+  --radius:              0.375rem;
+  --sidebar:             215 20%  94%;
+  --sidebar-foreground:  215 25%  12%;
+  --sidebar-primary:     194 100%  40%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent:      215 20%  88%;
+  --sidebar-accent-foreground:  215 25%  20%;
+  --sidebar-border:      215 20%  82%;
+  --sidebar-ring:        194 100%  40%;
+  --chart-1:             0   75%  55%;
+  --chart-2:             25  90%  50%;
+  --chart-3:             43  90%  45%;
+  --chart-4:             150 60%  35%;
+  --chart-5:             194 100%  40%;
+
+  /* Tokens Cyber — modo claro (menos saturados) */
+  --cyber-accent:        #0097b3;
+  --cyber-accent-rgb:    0, 151, 179;
+  --cyber-purple:        #6d28d9;
+  --cyber-purple-rgb:    109, 40, 217;
+  --cyber-green:         #059669;
+  --cyber-red:           #dc2626;
+  --cyber-amber:         #d97706;
+  --cyber-glow:          rgba(0, 151, 179, 0.12);
+  --cyber-glow-strong:   rgba(0, 151, 179, 0.28);
+  --cyber-grid-color:    rgba(0, 151, 179, 0.05);
+  --cyber-surface:       rgba(255, 255, 255, 0.85);
+  --cyber-surface-2:     rgba(240, 245, 255, 0.9);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   TEMA OSCURO  (modo primario de SecureScan)
+   ───────────────────────────────────────────────────────────── */
+.dark {
+  --background:          215 28%   6%;   /* #080c14 — negro azulado */
+  --foreground:          210 40%  91%;   /* #e2e8f0 */
+  --card:                215 28%   9%;   /* #0d1421 */
+  --card-foreground:     210 40%  91%;
+  --popover:             215 28%   9%;
+  --popover-foreground:  210 40%  91%;
+  --primary:             194 100%  50%;  /* #00d4ff — cian eléctrico */
+  --primary-foreground:  215 28%   6%;
+  --secondary:           215 25%  12%;
+  --secondary-foreground:210 40%  75%;
+  --muted:               215 25%  12%;
+  --muted-foreground:    215 16%  46%;
+  --accent:              215 25%  16%;
+  --accent-foreground:   210 40%  91%;
+  --destructive:         0   75%  55%;
+  --destructive-foreground: 0 0% 100%;
+  --success:             150 100%  50%;  /* #00ff88 — verde terminal */
+  --success-foreground:  215 28%   6%;
+  --warning:             43  100%  50%;  /* #ffb800 */
+  --warning-foreground:  215 28%   6%;
+  --border:              213  45%  18%;  /* #152840 */
+  --input:               213  45%  18%;
+  --ring:                194 100%  50%;
+  --sidebar:             215 28%   7%;
+  --sidebar-foreground:  210 40%  91%;
+  --sidebar-primary:     194 100%  50%;
+  --sidebar-primary-foreground: 215 28% 6%;
+  --sidebar-accent:      215 25%  14%;
+  --sidebar-accent-foreground:  210 40%  75%;
+  --sidebar-border:      213  45%  18%;
+  --sidebar-ring:        194 100%  50%;
+  --chart-1:             0   75%  60%;
+  --chart-2:             25  90%  55%;
+  --chart-3:             43  100%  50%;
+  --chart-4:             150 100%  50%;
+  --chart-5:             194 100%  50%;
+
+  /* Tokens Cyber — modo oscuro (plena saturación) */
+  --cyber-accent:        #00d4ff;
+  --cyber-accent-rgb:    0, 212, 255;
+  --cyber-purple:        #7c3aed;
+  --cyber-purple-rgb:    124, 58, 237;
+  --cyber-green:         #00ff88;
+  --cyber-red:           #ff3b3b;
+  --cyber-amber:         #ffb800;
+  --cyber-glow:          rgba(0, 212, 255, 0.12);
+  --cyber-glow-strong:   rgba(0, 212, 255, 0.30);
+  --cyber-grid-color:    rgba(0, 212, 255, 0.035);
+  --cyber-surface:       rgba(13,  20,  33, 0.85);
+  --cyber-surface-2:     rgba(17,  24,  39, 0.90);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BASE
+   ───────────────────────────────────────────────────────────── */
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    /* Forzar modo oscuro por defecto — es el modo primario de SecureScan */
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1, "tnum" 1;
+  }
+
+  /* Selección de texto con color cyber */
+  ::selection {
+    background: rgba(var(--cyber-accent-rgb), 0.20);
+    color: var(--cyber-accent);
+  }
+
+  /* Scrollbar personalizada — solo webkit */
+  ::-webkit-scrollbar               { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track         { background: hsl(var(--background)); }
+  ::-webkit-scrollbar-thumb         { background: rgba(var(--cyber-accent-rgb), 0.25); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover   { background: rgba(var(--cyber-accent-rgb), 0.45); }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   UTILIDADES CYBER  (disponibles como clases Tailwind arbitrarias)
+   ───────────────────────────────────────────────────────────── */
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .text-pretty  { text-wrap: pretty; }
+
+  /* Glow en box-shadow */
+  .cyber-glow {
+    box-shadow:
+      0 0 12px var(--cyber-glow),
+      0 0 28px var(--cyber-glow);
+  }
+  .cyber-glow-strong {
+    box-shadow:
+      0 0 20px var(--cyber-glow-strong),
+      0 0 50px var(--cyber-glow);
+  }
+
+  /* Glow en texto */
+  .cyber-glow-text {
+    text-shadow: 0 0 18px rgba(var(--cyber-accent-rgb), 0.55);
+  }
+
+  /* Bordes con tono cyber */
+  .cyber-border {
+    border: 1px solid rgba(var(--cyber-accent-rgb), 0.20);
+  }
+  .cyber-border-hover:hover {
+    border-color: rgba(var(--cyber-accent-rgb), 0.45);
+    box-shadow: 0 0 14px var(--cyber-glow);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  /* Grid de fondo animado */
+  .cyber-grid-bg {
+    background-image:
+      linear-gradient(var(--cyber-grid-color) 1px, transparent 1px),
+      linear-gradient(90deg, var(--cyber-grid-color) 1px, transparent 1px);
+    background-size: 48px 48px;
+    animation: gridPulse 10s ease-in-out infinite;
+  }
+
+  /* Glassmorphism */
+  .glass {
+    background: var(--cyber-surface);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(var(--cyber-accent-rgb), 0.12);
+  }
+  .glass-2 {
+    background: var(--cyber-surface-2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* Esquinas decorativas (corner brackets) */
+  .corner-brackets {
+    position: relative;
+  }
+  .corner-brackets::before,
+  .corner-brackets::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-color: rgba(var(--cyber-accent-rgb), 0.50);
+    border-style: solid;
+  }
+  .corner-brackets::before {
+    top: 0; left: 0;
+    border-width: 2px 0 0 2px;
+    border-radius: 2px 0 0 0;
+  }
+  .corner-brackets::after {
+    bottom: 0; right: 0;
+    border-width: 0 2px 2px 0;
+    border-radius: 0 0 2px 0;
+  }
+
+  /* Línea de escaneo (scanline overlay) */
+  .scanline::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(0, 0, 0, 0.04) 3px,
+      rgba(0, 0, 0, 0.04) 4px
+    );
+    pointer-events: none;
+  }
+
+  /* Gradientes de texto */
+  .gradient-cyber {
+    background: linear-gradient(135deg, var(--cyber-accent) 0%, var(--cyber-purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .gradient-cyber-green {
+    background: linear-gradient(135deg, var(--cyber-accent) 0%, var(--cyber-green) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Punto de estado pulsante */
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    position: relative;
+    display: inline-block;
+  }
+  .status-dot::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: inherit;
+    opacity: 0.3;
+    animation: statusPing 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
+  /* ── Semana 6: Efectos avanzados ── */
+
+  /* Contenedor de partículas — usar junto con .cyber-particle hijos */
+  .cyber-particles {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  /* Partícula individual — tamaño y posición vía inline style del componente */
+  .cyber-particle {
+    position: absolute;
+    border-radius: 50%;
+    background: var(--cyber-accent);
+    animation-name: particleFloat;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    will-change: transform, opacity;
+  }
+
+  /* Línea de dato vertical — usar en contenedor con overflow:hidden */
+  .cyber-data-stream {
+    position: absolute;
+    top: 0;
+    width: 1px;
+    height: 40%;
+    background: linear-gradient(to bottom, transparent, var(--cyber-accent), transparent);
+    animation: dataStream linear infinite;
+    will-change: transform, opacity;
+  }
+
+  /* Grid con sweep sutil de profundidad (radar) */
+  .cyber-grid-sweep {
+    background-image:
+      linear-gradient(var(--cyber-grid-color) 1px, transparent 1px),
+      linear-gradient(90deg, var(--cyber-grid-color) 1px, transparent 1px);
+    background-size: 48px 48px;
+    animation: gridSweep 14s linear infinite alternate;
+  }
+
+  /* ── Home v3: ThreatMap (mapa conceptual de amenazas) ── */
+  .threatmap-pulse {
+    animation: threatmapPulse 2.6s ease-out infinite;
+    transform-origin: center;
+  }
+  .threatmap-link {
+    animation: threatmapFlow 3.5s linear infinite;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   KEYFRAMES
+   ───────────────────────────────────────────────────────────── */
+@keyframes gridPulse {
+  0%,  100% { opacity: 0.55; }
+  50%        { opacity: 1;    }
+}
+
+@keyframes cyberPulse {
+  0%,  100% { opacity: 1;   }
+  50%        { opacity: 0.3; }
+}
+
+@keyframes float {
+  0%,  100% { transform: translateY(0px);  }
+  50%        { transform: translateY(-7px); }
+}
+
+@keyframes glowPulse {
+  0%,  100% { box-shadow: 0 0  8px var(--cyber-glow);        }
+  50%        { box-shadow: 0 0 22px var(--cyber-glow-strong); }
+}
+
+@keyframes terminalBlink {
+  0%,  49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes statusPing {
+  0%   { transform: scale(1);   opacity: 0.3; }
+  75%  { transform: scale(2.2); opacity: 0;   }
+  100% { transform: scale(2.2); opacity: 0;   }
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Semana 6: Efectos avanzados (CSS puro, sin Three.js) ── */
+
+/* Partícula individual: sube y se desvanece */
+@keyframes particleFloat {
+  0%   { transform: translateY(0)    translateX(0);   opacity: 0;   }
+  10%  { opacity: var(--particle-opacity, 0.6);                      }
+  90%  { opacity: var(--particle-opacity, 0.6);                      }
+  100% { transform: translateY(-100vh) translateX(var(--particle-drift, 20px)); opacity: 0; }
+}
+
+/* Línea de datos vertical (efecto "Matrix" sutil, sin texto) */
+@keyframes dataStream {
+  0%   { transform: translateY(-100%); opacity: 0;   }
+  10%  { opacity: 0.5;                                }
+  90%  { opacity: 0.5;                                }
+  100% { transform: translateY(100%);  opacity: 0;   }
+}
+
+/* Parpadeo de profundidad del grid — simula radar/sonar */
+@keyframes gridSweep {
+  0%   { background-position: 0% 0%;     }
+  100% { background-position: 100% 100%; }
+}
+
+/* Home v3 — ThreatMap: pulso de nodo (anillo expandiéndose) */
+@keyframes threatmapPulse {
+  0%   { r: 3;  opacity: 0.35; }
+  70%  { r: 16; opacity: 0;    }
+  100% { r: 16; opacity: 0;    }
+}
+
+/* Home v3 — ThreatMap: flujo de datos sobre las líneas entre nodos */
+@keyframes threatmapFlow {
+  to { stroke-dashoffset: -200; }
+}
+
+/* Acordeón (Radix) — se mantiene */
+@keyframes accordion-down {
+  from { height: 0; }
+  to   { height: var(--radix-accordion-content-height); }
+}
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to   { height: 0; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   ACCESIBILIDAD — respetar prefers-reduced-motion
+   ───────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration:       0.01ms !important;
+    animation-iteration-count: 1     !important;
+    transition-duration:      0.01ms !important;
+  }
+}

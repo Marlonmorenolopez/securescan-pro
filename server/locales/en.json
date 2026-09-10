@@ -1,0 +1,49 @@
+{
+  "report": {
+    "title": "Security Analysis Report",
+    "subtitle": "Security Analysis Report",
+    "confidential": "This report contains sensitive information. Restricted distribution.",
+    "generatedOn": "Report generated on",
+    "breakdown": "Findings Breakdown",
+    "vulnerabilities": "Detected Vulnerabilities",
+    "recommendations": "Recommendations",
+    "metasploitFindings": "Metasploit Findings",
+    "solution": "Solution",
+    "noVulnerabilities": "No significant vulnerabilities found.",
+    "securityScore": "Security Score",
+    "severities": {
+      "critical": "Critical",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    }
+  },
+  "errors": {
+    "targetRequired": "Target URL is required",
+    "scanNotFound": "Scan not found",
+    "invalidFormat": "Invalid scan ID format",
+    "unauthorized": "Unauthorized — invalid or missing API token",
+    "targetNotAllowed": "Target not allowed",
+    "targetUnreachable": "Target not reachable: {reason}",
+    "circuitBreaker": "Circuit breaker open for this target. Wait before retrying.",
+    "invalidJson": "Invalid JSON body or missing Content-Type: application/json",
+    "formatNotAllowed": "Format not allowed. Use: {formats}",
+    "reportFailed": "Report generation failed",
+    "dockerUnavailable": "Docker not available",
+    "labNotFound": "Lab not found",
+    "scanDeleted": "Scan deleted successfully",
+    "scanNotCompleted": "Scan not completed yet",
+    "historyFailed": "Failed to retrieve scan history"
+  },
+  "scoring": {
+    "critical": "🔴 URGENT: Address {count} critical vulnerability(s) immediately. These pose severe risk to system security.",
+    "high": "🟠 HIGH: Remediate {count} high severity issue(s) within 7 days. These could lead to significant compromise.",
+    "medium": "🟡 MEDIUM: Review and fix {count} medium severity issues. Consider risk-based prioritization.",
+    "weakCredentials": "🔑 CRITICAL: Weak credentials found — {creds}. Change default passwords immediately and enforce strong password policy.",
+    "exploitIntel": "⚠️ THREAT INTEL: {count} high-rated exploit(s) available in public databases. Patch immediately.",
+    "hardening": "ℹ️ HARDENING: Address information disclosure and low severity issues as part of regular security maintenance.",
+    "exploitIntelHigh": "💀 EXPLOIT INTEL: {count} public exploits found matching detected technologies. Verify versions and apply patches immediately.",
+    "exploitIntelLow": "⚠️ EXPLOIT INTEL: {count} public exploits found for detected technologies. Review and patch affected components.",
+    "goodPosture": "✅ Good security posture. Continue regular scanning and monitoring."
+  }
+}

@@ -1,0 +1,61 @@
+# ============================================================
+# SecureScan Pro — .dockerignore
+# ============================================================
+
+# Dependencias y builds — LO MÁS IMPORTANTE
+node_modules
+.next
+.pnpm-store
+.pnpm-debug.log
+dist
+build
+out
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv
+venv
+env
+*.egg-info
+
+# Control de versiones
+.git
+.gitignore
+.gitattributes
+
+# Variables de entorno (NUNCA en la imagen)
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Archivos de desarrollo y herramientas
+*.log
+*.tmp
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+
+# Scripts de parche (no van en la imagen)
+fix_app.py
+fix_custom_url.py
+patch_scan_form.py
+
+# Documentación y tests
+docs/
+Documentacion/
+tests/
+test_*
+*_test.py
+*.md
+
+# CI
+.github
+.gitlab-ci.yml

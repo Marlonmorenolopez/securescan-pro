@@ -1,0 +1,573 @@
+# ============================================================
+# SecureScan Pro v3.0 — docker-compose.yml
+# CORRECCIONES APLICADAS:
+#  1. Añadido servicio frontend (Next.js) — todo arranca con un solo comando
+#  2. api ya NO depende de msfrpcd con service_healthy (era frágil, lo bloqueaba)
+#  3. sqlmapapi usa image: de la API ya construida en vez de rebuild completo
+#  4. ALLOWED_ORIGINS incluye la red interna de Docker (frontend container)
+#  5. MYSQL healthcheck usa variable en vez de contraseña hardcodeada
+#  6. Volumen nuclei-templates apunta al path correcto del Dockerfile
+#  7. Timeout gunicorn subido a 3600s para escaneos largos (variable de entorno)
+#  8. api depende de msfrpcd con service_started (no service_healthy) para no bloquear
+# ============================================================
+
+services:
+
+  # ── Frontend Next.js ─────────────────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        NEXT_PUBLIC_API_TOKEN: ${API_TOKEN:-}
+        NEXT_PUBLIC_API_URL: http://localhost:5000
+        BACKEND_URL: http://api:5000
+    container_name: securescan-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:5000
+      - NEXT_PUBLIC_API_TOKEN=${API_TOKEN:-}
+      - BACKEND_URL=http://api:5000
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - securescan-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+
+  # ── Backend API Flask ────────────────────────────────────────────────
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+      args:
+        NVD_API_KEY: ${NVD_API_KEY:-}
+    container_name: securescan-api
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=${FLASK_ENV:-development}
+      - FLASK_DEBUG=${FLASK_DEBUG:-0}
+      - PORT=5000
+      - SECRET_KEY=${SECRET_KEY:-dev-key-change-in-production}
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-changeme-redis-password}@redis:6379/0
+      - TZ=America/Bogota
+      - ZAP_API_URL=http://zap:8080
+      - SQLMAP_API_URL=http://sqlmapapi:8775
+      - ZAP_API_KEY=${ZAP_API_KEY:-securescan-dev-key-2024}
+      # Ejecución de Jobs: 'auto' intenta Celery (celery-worker) y cae a
+      # threading.Thread si el broker no responde; 'celery' u 'thread'
+      # para forzar un modo. Ver server/job_executor.py.
+      - JOB_BACKEND=${JOB_BACKEND:-auto}
+      - CELERY_REDIS_DB=1
+      # Notificaciones (opcional — vacío = deshabilitado)
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - SMTP_FROM=${SMTP_FROM:-}
+      - SMTP_USE_TLS=${SMTP_USE_TLS:-true}
+      - NOTIFY_EMAIL_TO=${NOTIFY_EMAIL_TO:-}
+      - WEBHOOK_URL=${WEBHOOK_URL:-}
+      - WEBHOOK_TIMEOUT_SECONDS=${WEBHOOK_TIMEOUT_SECONDS:-5}
+      - WEBHOOK_MAX_RETRIES=${WEBHOOK_MAX_RETRIES:-2}
+      - OSINT_CACHE_TTL_SECONDS=${OSINT_CACHE_TTL_SECONDS:-3600}
+      # Timeouts (segundos)
+      - SCAN_TIMEOUT_ZAP=1200
+      - SCAN_TIMEOUT_NMAP=300
+      - SCAN_TIMEOUT_GOBUSTER=300
+      - SCAN_TIMEOUT_NUCLEI=1200
+      - SCAN_TIMEOUT_SQLMAP=600
+      - SCAN_TIMEOUT_PATATOR=180
+      - SCAN_TIMEOUT_FFUF=300
+      - SCAN_TIMEOUT_WAPPALYZER=60
+      - SCAN_TIMEOUT_SEARCHSPLOIT=120
+      - SCAN_TIMEOUT_METASPLOIT=900
+      - SCAN_TIMEOUT_VIRUSTOTAL=30
+      - SCAN_TIMEOUT_ABUSEIPDB=30
+      - SCAN_TIMEOUT_SAFEBROWSING=15
+      # Análisis de Código (Grupo 3) y OSINT (Grupo 2)
+      - SCAN_TIMEOUT_GITLEAKS=120
+      - SCAN_TIMEOUT_TRUFFLEHOG=120
+      - TRUFFLEHOG_VERIFY=true
+      - SCAN_TIMEOUT_SEMGREP=180
+      - SCAN_TIMEOUT_TRIVY=120
+      - SCAN_TIMEOUT_TRIVY_IMAGE=300
+      - SCAN_TIMEOUT_CLONE=180
+      - SCAN_TIMEOUT_DEPCHECK=300
+      - SCAN_TIMEOUT_BREACH=15
+      - SCAN_TIMEOUT_USERNAME=8
+      - SHERLOCK_TIMEOUT_PER_SITE=15
+      - SHERLOCK_OVERALL_TIMEOUT=600
+      - THEHARVESTER_TIMEOUT=90
+      - THEHARVESTER_LIMIT=200
+      - CODE_SCAN_MAX_ZIP_MB=50
+      # NVD_API_KEY (opcional pero muy recomendada) -- gratis en
+      # https://nvd.nist.gov/developers/request-an-api-key -- sin ella,
+      # OWASP Dependency-Check sincroniza su base mucho más lento por el
+      # rate limit de la API pública de NVD.
+      - NVD_API_KEY=${NVD_API_KEY:-}
+      # Huella Digital / Threat Intel
+      - VIRUSTOTAL_API_KEY=${VIRUSTOTAL_API_KEY:-}
+      - ABUSEIPDB_API_KEY=${ABUSEIPDB_API_KEY:-}
+      - GOOGLE_SAFE_BROWSING_API_KEY=${GOOGLE_SAFE_BROWSING_API_KEY:-}
+      # Gunicorn timeout — debe ser mayor al timeout de escaneo más largo
+      - GUNICORN_TIMEOUT=3600
+      - ALLOWED_LAB_TARGETS=juice-shop:3000,dvwa:80,webgoat:8080
+      - RESTRICT_TO_LAB_TARGETS=false
+      - LOG_LEVEL=INFO
+      # BUG FIX: incluir el servicio frontend en ALLOWED_ORIGINS
+      - ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000
+      - API_TOKEN=${API_TOKEN:-}
+      - MSF_HOST=msfrpcd
+      - MSF_PORT=55553
+      - MSF_PASSWORD=${MSF_PASSWORD:-msf}
+      # SQLMap
+      - SQLMAP_LEVEL=3
+      - SQLMAP_RISK=2
+      - SQLMAP_THREADS=5
+      # Gobuster
+      - GOBUSTER_THREADS=20
+      - GOBUSTER_DELAY_MS=0
+      # ZAP Spider
+      - ZAP_SPIDER_MAX_CHILDREN=50
+    depends_on:
+      redis:
+        condition: service_healthy
+      zap:
+        condition: service_started
+      # BUG FIX: cambiado de service_healthy a service_started
+      # Metasploit puede tardar >5 minutos en arrancar — no bloquear la API
+      msfrpcd:
+        condition: service_started
+    volumes:
+      - ./server:/app
+      - scan-reports:/app/reports
+      # BUG FIX: path correcto del Dockerfile (nuclei-templates, no .config/nuclei)
+      - nuclei-templates:/home/scanner/nuclei-templates
+      - /dev/shm:/dev/shm
+      - /var/run/docker.sock:/var/run/docker.sock
+    group_add:
+      - "132"
+      - "0"
+    networks:
+      - securescan-net
+      - lab-net
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    security_opt:
+      - no-new-privileges:true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 5
+
+  # ── Celery Worker ────────────────────────────────────────────────────
+  # Ejecuta los Jobs (scan, code-scan, sherlock, harvester) reutilizando
+  # exactamente el mismo código de server/app.py (run_scan, run_code_scan,
+  # etc.) — ver server/tasks.py y server/job_executor.py. Misma imagen que
+  # 'api', mismo acceso a Redis, ZAP, SQLMap API y Metasploit RPC.
+  celery-worker:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+      args:
+        NVD_API_KEY: ${NVD_API_KEY:-}
+    container_name: securescan-celery-worker
+    command: >
+      sh -c "
+      celery -A celery_app.celery_app worker
+      --loglevel=info
+      --concurrency=${CELERY_WORKER_CONCURRENCY:-2}
+      -Q fast,heavy
+      "
+    environment:
+      # FIX: celery (invocado como script instalado) no agrega /app al
+      # sys.path automáticamente como sí hace "python3 -c" -- sin esto,
+      # "import scheduler"/"import app" fallan con ModuleNotFoundError
+      # dentro de las tareas aunque el archivo exista en /app.
+      - PYTHONPATH=/app
+      # FIX: faltaban estas dos -- app.py exige SECRET_KEY real cuando
+      # FLASK_ENV != development, y este servicio nunca las recibía.
+      - FLASK_ENV=${FLASK_ENV:-development}
+      - SECRET_KEY=${SECRET_KEY:-dev-key-change-in-production}
+      - JOB_BACKEND=${JOB_BACKEND:-auto}
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-changeme-redis-password}@redis:6379/0
+      - CELERY_REDIS_DB=1
+      - TZ=America/Bogota
+      - ZAP_API_URL=http://zap:8080
+      - SQLMAP_API_URL=http://sqlmapapi:8775
+      - ZAP_API_KEY=${ZAP_API_KEY:-securescan-dev-key-2024}
+      - SCAN_TIMEOUT_ZAP=1200
+      - SCAN_TIMEOUT_NMAP=300
+      - SCAN_TIMEOUT_GOBUSTER=300
+      - SCAN_TIMEOUT_NUCLEI=1200
+      - SCAN_TIMEOUT_SQLMAP=600
+      - SCAN_TIMEOUT_PATATOR=180
+      - SCAN_TIMEOUT_FFUF=300
+      - SCAN_TIMEOUT_WAPPALYZER=60
+      - SCAN_TIMEOUT_SEARCHSPLOIT=120
+      - SCAN_TIMEOUT_METASPLOIT=900
+      - SCAN_TIMEOUT_VIRUSTOTAL=30
+      - SCAN_TIMEOUT_ABUSEIPDB=30
+      - SCAN_TIMEOUT_SAFEBROWSING=15
+      - SCAN_TIMEOUT_GITLEAKS=120
+      - SCAN_TIMEOUT_TRUFFLEHOG=120
+      - TRUFFLEHOG_VERIFY=true
+      - SCAN_TIMEOUT_SEMGREP=180
+      - SCAN_TIMEOUT_TRIVY=120
+      - SCAN_TIMEOUT_TRIVY_IMAGE=300
+      - SCAN_TIMEOUT_CLONE=180
+      - SCAN_TIMEOUT_DEPCHECK=300
+      - SCAN_TIMEOUT_BREACH=15
+      - SCAN_TIMEOUT_USERNAME=8
+      - SHERLOCK_TIMEOUT_PER_SITE=15
+      - SHERLOCK_OVERALL_TIMEOUT=600
+      - THEHARVESTER_TIMEOUT=90
+      - THEHARVESTER_LIMIT=200
+      - CODE_SCAN_MAX_ZIP_MB=50
+      - NVD_API_KEY=${NVD_API_KEY:-}
+      - VIRUSTOTAL_API_KEY=${VIRUSTOTAL_API_KEY:-}
+      - ABUSEIPDB_API_KEY=${ABUSEIPDB_API_KEY:-}
+      - GOOGLE_SAFE_BROWSING_API_KEY=${GOOGLE_SAFE_BROWSING_API_KEY:-}
+      - ALLOWED_LAB_TARGETS=juice-shop:3000,dvwa:80,webgoat:8080
+      - RESTRICT_TO_LAB_TARGETS=false
+      - LOG_LEVEL=INFO
+      - MSF_HOST=msfrpcd
+      - MSF_PORT=55553
+      - MSF_PASSWORD=${MSF_PASSWORD:-msf}
+      - SQLMAP_LEVEL=3
+      - SQLMAP_RISK=2
+      - SQLMAP_THREADS=5
+      - GOBUSTER_THREADS=20
+      - GOBUSTER_DELAY_MS=0
+      - ZAP_SPIDER_MAX_CHILDREN=50
+      # Notificaciones (mismo bloque que 'api' -- save_scan()/notifications.py
+      # corren dentro de este proceso cuando el Job se ejecuta vía Celery)
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - SMTP_FROM=${SMTP_FROM:-}
+      - SMTP_USE_TLS=${SMTP_USE_TLS:-true}
+      - NOTIFY_EMAIL_TO=${NOTIFY_EMAIL_TO:-}
+      - WEBHOOK_URL=${WEBHOOK_URL:-}
+      - WEBHOOK_TIMEOUT_SECONDS=${WEBHOOK_TIMEOUT_SECONDS:-5}
+      - WEBHOOK_MAX_RETRIES=${WEBHOOK_MAX_RETRIES:-2}
+      - OSINT_CACHE_TTL_SECONDS=${OSINT_CACHE_TTL_SECONDS:-3600}
+    depends_on:
+      redis:
+        condition: service_healthy
+      zap:
+        condition: service_started
+      msfrpcd:
+        condition: service_started
+    volumes:
+      - ./server:/app
+      - scan-reports:/app/reports
+      - nuclei-templates:/home/scanner/nuclei-templates
+      - /dev/shm:/dev/shm
+      - /var/run/docker.sock:/var/run/docker.sock
+    group_add:
+      - "132"
+      - "0"
+    networks:
+      - securescan-net
+      - lab-net
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    security_opt:
+      - no-new-privileges:true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    # FIX (auditoría en pruebas reales): sin esto, celery-worker hereda el
+    # HEALTHCHECK horneado en el Dockerfile (curl a localhost:5000/api/health)
+    # -- pero acá no corre ningún servidor Flask, corre "celery worker". Ese
+    # healthcheck NUNCA podía pasar, así que quedaba "unhealthy" para
+    # siempre aunque el worker funcionara perfecto (confirmado: procesaba
+    # tareas sin problema). "celery inspect ping" sí verifica lo que
+    # realmente importa: que el proceso responda.
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A celery_app.celery_app inspect ping -d celery@$$HOSTNAME --timeout 10 | grep -q OK"]
+      interval: 30s
+      timeout: 15s
+      start_period: 40s
+      retries: 5
+
+  # ── Celery Beat ──────────────────────────────────────────────────────
+  # Solo dispara tasks.check_scheduled_scans cada SCHEDULER_POLL_SECONDS
+  # (ver celery_app.py). No ejecuta scanners directamente -- delega en
+  # celery-worker igual que cualquier otro Job.
+  celery-beat:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: securescan-celery-beat
+    command: >
+      sh -c "
+      celery -A celery_app.celery_app beat
+      --loglevel=info
+      "
+    environment:
+      # Ver nota de PYTHONPATH en celery-worker -- Beat también importa
+      # scheduler.py indirectamente vía tasks.check_scheduled_scans.
+      - PYTHONPATH=/app
+      - FLASK_ENV=${FLASK_ENV:-development}
+      - SECRET_KEY=${SECRET_KEY:-dev-key-change-in-production}
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-changeme-redis-password}@redis:6379/0
+      - CELERY_REDIS_DB=1
+      - TZ=America/Bogota
+      - SCHEDULER_POLL_SECONDS=${SCHEDULER_POLL_SECONDS:-60}
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./server:/app
+    networks:
+      - securescan-net
+    restart: unless-stopped
+    # FIX: mismo problema que celery-worker (hereda el healthcheck de
+    # api/gunicorn del Dockerfile, que nunca puede pasar acá). Beat no
+    # tiene un comando de "ping" propio como los workers -- se deshabilita
+    # el healthcheck heredado en vez de forzar uno que no aplica. Si el
+    # proceso de beat muere, el contenedor completo pasa a "Exited", que
+    # ya es visible en "docker compose ps" sin necesitar healthcheck.
+    healthcheck:
+      disable: true
+
+  # ── Redis ────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: securescan-redis
+    ports:
+      - "127.0.0.1:6379:6379"
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD:-changeme-redis-password}
+      --save 60 1
+      --loglevel warning
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - securescan-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-changeme-redis-password}", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ── OWASP ZAP ────────────────────────────────────────────────────────
+  zap:
+    image: ghcr.io/zaproxy/zaproxy:stable
+    container_name: securescan-zap
+    ports:
+      - "8080:8080"
+    environment:
+      - ZAP_API_KEY=${ZAP_API_KEY:-securescan-dev-key-2024}
+    command: >
+      zap.sh -daemon
+      -host 0.0.0.0
+      -port 8080
+      -config api.key=${ZAP_API_KEY:-securescan-dev-key-2024}
+      -config api.addrs.addr.name=.*
+      -config api.addrs.addr.regex=true
+      -config scanner.antiCSRF.tokenNames=csrf_token,_token,user_token
+      -config scanner.exclude=.*User.Agent.*
+      -config rules.disableIds=10104
+      -config spider.thread=5
+      -config scanner.threadPerHost=3
+    networks:
+      - securescan-net
+      - lab-net
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/JSON/core/view/version/?apikey=${ZAP_API_KEY:-securescan-dev-key-2024}"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 5
+
+  # ── SQLMap API ───────────────────────────────────────────────────────
+  # BUG FIX: usar la misma imagen construida para 'api' en vez de rebuild
+  sqlmapapi:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: securescan-sqlmapapi
+    command: ["python3", "/opt/sqlmap/sqlmapapi.py", "-s", "-H", "0.0.0.0", "-p", "8775", "--username", "scanner", "--password", "${SQLMAP_API_PASSWORD:-sqlmapsecret}"]
+    ports:
+      - "127.0.0.1:8775:8775"
+    networks:
+      - securescan-net
+      - lab-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "-u", "scanner:${SQLMAP_API_PASSWORD:-sqlmapsecret}", "-o", "/dev/null", "http://localhost:8775/task/new"]
+      interval: 30s
+      timeout: 10s
+      start_period: 20s
+      retries: 3
+
+  # ── OWASP Juice Shop ─────────────────────────────────────────────────
+  juice-shop:
+    image: bkimminich/juice-shop:v17.0.0
+    container_name: juice-shop
+    ports:
+      - "3001:3000"
+    volumes:
+      - juice-shop-data:/data
+    networks:
+      - lab-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/nodejs/bin/node", "-e",
+             "require('http').get('http://localhost:3000', r => process.exit(r.statusCode < 400 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+
+  # ── DVWA ─────────────────────────────────────────────────────────────
+  dvwa:
+    image: ghcr.io/digininja/dvwa:latest
+    container_name: dvwa
+    ports:
+      - "3002:80"
+    environment:
+      - DB_SERVER=dvwa-db
+      - DB_DATABASE=${MYSQL_DATABASE:-dvwa}
+      - DB_USERNAME=${MYSQL_USER:-dvwa}
+      - DB_PASSWORD=${MYSQL_PASSWORD:-p@ssw0rd}
+      - DB_PORT=3306
+    depends_on:
+      dvwa-db:
+        condition: service_healthy
+    networks:
+      - lab-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      start_period: 45s
+      retries: 5
+
+  # ── DVWA Database ─────────────────────────────────────────────────────
+  dvwa-db:
+    image: mariadb:10.11
+    container_name: dvwa-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-rootpassword}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-dvwa}
+      - MYSQL_USER=${MYSQL_USER:-dvwa}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-p@ssw0rd}
+    volumes:
+      - dvwa-db-data:/var/lib/mysql
+    networks:
+      - lab-net
+    restart: unless-stopped
+    healthcheck:
+      # BUG FIX: usar variable de entorno en vez de contraseña hardcodeada
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost",
+             "-u", "${MYSQL_USER:-dvwa}", "-p${MYSQL_PASSWORD:-p@ssw0rd}"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+
+  # ── WebGoat ───────────────────────────────────────────────────────────
+  webgoat:
+    image: webgoat/webgoat:latest
+    container_name: webgoat
+    ports:
+      - "3003:8080"
+    environment:
+      - TZ=America/Bogota
+      - WEBGOAT_PORT=8080
+      - WEBGOAT_SSLENABLED=false
+    volumes:
+      - webgoat-data:/home/webgoat/.webgoat
+    networks:
+      - lab-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/WebGoat/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 5
+
+  # ── Metasploit RPC daemon ─────────────────────────────────────────────
+  msfrpcd:
+    image: metasploitframework/metasploit-framework:latest
+    container_name: securescan-msfrpcd
+    entrypoint: ["bash", "-c"]
+    command:
+      - "/usr/src/metasploit-framework/msfrpcd -P ${MSF_PASSWORD:-msf} -S -a 0.0.0.0 -p 55553 -f"
+    environment:
+      - MSF_PASSWORD=${MSF_PASSWORD:-msf}
+    ports:
+      - "55553:55553"
+    volumes:
+      - msf-data:/root/.msf4
+    networks:
+      - securescan-net
+      - lab-net
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/55553"]
+      interval: 30s
+      timeout: 10s
+      start_period: 120s
+      retries: 10
+
+# ── Redes ─────────────────────────────────────────────────────────────────────
+networks:
+  securescan-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+  lab-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+
+# ── Volúmenes ─────────────────────────────────────────────────────────────────
+volumes:
+  redis-data:
+  scan-reports:
+  dvwa-db-data:
+  msf-data:
+  nuclei-templates:
+  juice-shop-data:
+  webgoat-data:
