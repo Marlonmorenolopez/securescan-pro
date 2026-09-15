@@ -36,6 +36,7 @@ import json
 import logging
 import os
 import shutil
+import signal
 import subprocess
 import tempfile
 from typing import Any, Dict, List, Optional
@@ -98,7 +99,11 @@ class TestSSLScanner:
 
         try:
             try:
-                subprocess.run(
+                # FIX: mismo patrón que dependency_check.py -- testssl.sh es
+                # un script de shell que lanza openssl por debajo. Sin esto,
+                # un timeout solo mataba el script, dejando el proceso
+                # openssl huérfano corriendo de fondo.
+                proc = subprocess.Popen(
                     [
                         _TESTSSL_BIN,
                         '--quiet', '--warnings=off', '--color', '0',
@@ -107,10 +112,20 @@ class TestSSLScanner:
                         f'{host}:{port}',
                     ],
                     stdin=subprocess.DEVNULL,  # sin esto, testssl.sh se cuelga indefinidamente
-                    capture_output=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
                     text=True,
-                    timeout=self.timeout,
+                    start_new_session=True,
                 )
+                try:
+                    proc.communicate(timeout=self.timeout)
+                except subprocess.TimeoutExpired:
+                    try:
+                        os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                    except ProcessLookupError:
+                        pass
+                    proc.wait(timeout=5)
+                    raise
             except subprocess.TimeoutExpired:
                 return self._empty(host, port, error=f'testssl.sh no terminó en {self.timeout}s', simulated=False)
             except FileNotFoundError:
