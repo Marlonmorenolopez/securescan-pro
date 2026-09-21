@@ -50,10 +50,15 @@ const config: Config = {
         /* Tokens Cyber — accesibles como clases Tailwind */
         cyber: {
           accent:  "var(--cyber-accent)",
+          blue:    "var(--cyber-blue)",
           purple:  "var(--cyber-purple)",
           green:   "var(--cyber-green)",
           red:     "var(--cyber-red)",
           amber:   "var(--cyber-amber)",
+          void:    "#04070D",
+          navy:    "#080E1A",
+          surface: "var(--cyber-surface)",
+          surface2:"var(--cyber-surface-2)",
         },
       },
 

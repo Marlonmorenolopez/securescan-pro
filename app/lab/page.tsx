@@ -22,6 +22,8 @@ import { Header } from '@/components/header'
 import { CyberCard }    from '@/components/cyber/CyberCard'
 import { CyberPanel }   from '@/components/cyber/CyberPanel'
 import { CyberButton }  from '@/components/cyber/CyberButton'
+import { ToolTaxonomyStrip } from '@/components/cyber/ToolTaxonomyStrip'
+import { LABS } from '@/lib/nav-config'
 import { CyberBadge }   from '@/components/cyber/CyberBadge'
 import { cn } from '@/lib/utils'
 import {
@@ -279,6 +281,9 @@ export default function LabPage() {
             </p>
           </motion.div>
 
+          {/* ── Taxonomía de laboratorios ── */}
+          <ToolTaxonomyStrip sections={[LABS]} className="justify-center" />
+
           {/* ── Alertas ── */}
           <motion.div
             className="grid gap-3 sm:grid-cols-2"
@@ -348,7 +353,11 @@ export default function LabPage() {
           >
             {apps.map(app => (
               <motion.div key={app.id} variants={sv(staggerItem)}>
-              <CyberCard glow className="flex h-full flex-col">
+              <CyberCard
+                glow
+                className="flex h-full flex-col transition-transform duration-300 hover:-translate-y-0.5"
+                style={{ borderColor: 'rgba(var(--cyber-magenta-rgb),0.25)' }}
+              >
                 <div className="flex items-center justify-between">
                   <StatusIcon status={app.status} />
                   <StatusBadge status={app.status} t={t} />

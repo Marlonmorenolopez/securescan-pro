@@ -4,8 +4,8 @@
 
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import {
-  BookOpen, Code2, Layers, Network, Search, Zap, Database, Skull,
-  FileText, ChevronRight, ExternalLink, Shield, Wind, Key, Target,
+  BookOpen, Code2, Layers, Search,
+  FileText, ChevronRight, ExternalLink, Shield,
   X, GraduationCap, ScrollText, Scale, Rocket, Presentation,
   ChevronDown, ChevronUp, BookMarked, ArrowLeft, Loader2,
   AlertTriangle, List,
@@ -22,8 +22,8 @@ import { CyberButton } from '@/components/cyber/CyberButton'
 import { CyberBadge }  from '@/components/cyber/CyberBadge'
 import { cn } from '@/lib/utils'
 import { fadeIn, slideInUp, staggerContainer, staggerItem, getVariants } from '@/lib/motion'
+import { getToolDocs, type TFunc } from '@/lib/tool-docs'
 
-type TFunc = ReturnType<typeof useTranslations>
 
 // ─── Parser Markdown liviano (sin dependencias externas) ─────────────────────
 // Convierte Markdown a HTML de forma segura para mostrar en el visor.
@@ -506,51 +506,6 @@ function DocCard({
 
 // ─── Datos de herramientas / API / arquitectura (sin cambios) ────────────────
 
-function getTools(t: TFunc) {
-  return [
-    { id: 'wappalyzer', name: 'Wappalyzer', icon: Layers, description: t('docs.tool1Desc'),
-      usage: `# Wappalyzer via librería Python\nfrom Wappalyzer import Wappalyzer, WebPage\nwappalyzer = Wappalyzer.latest()\nwebpage = WebPage.new_from_url('https://target.com')\ntechs = wappalyzer.analyze_with_versions(webpage)`,
-      features: [t('docs.tool1Feature1'), t('docs.tool1Feature2'), t('docs.tool1Feature3'), t('docs.tool1Feature4'), t('docs.tool1Feature5')],
-      documentation: 'https://github.com/wappalyzer/wappalyzer' },
-    { id: 'nmap', name: 'Nmap', icon: Network, description: t('docs.tool2Desc'),
-      usage: `# Escaneo de puertos comunes\nnmap -sV -sC target.com\n\n# Escaneo agresivo\nnmap -A -T4 target.com\n\n# Scripts NSE de vulnerabilidades\nnmap --script vuln target.com`,
-      features: [t('docs.tool2Feature1'), t('docs.tool2Feature2'), t('docs.tool2Feature3'), t('docs.tool2Feature4'), t('docs.tool2Feature5')],
-      documentation: 'https://nmap.org/book/man.html' },
-    { id: 'patator', name: 'Patator', icon: Key, description: t('docs.tool3Desc'),
-      usage: `# Fuerza bruta HTTP POST\npatator http_fuzz url=https://target.com/login method=POST \\\n  body='user=FILE0&pass=FILE1' 0=users.txt 1=passwords.txt`,
-      features: [t('docs.tool3Feature1'), t('docs.tool3Feature2'), t('docs.tool3Feature3'), t('docs.tool3Feature4'), t('docs.tool3Feature5')],
-      documentation: 'https://github.com/lanjelot/patator' },
-    { id: 'metasploit', name: 'Metasploit', icon: Skull, description: t('docs.tool4Desc'),
-      usage: `# Iniciar msfconsole\nmsfconsole\n\n# Usar módulo auxiliar (solo scanners)\nmsf> use auxiliary/scanner/http/http_version\nmsf> set RHOSTS target.com\nmsf> run`,
-      features: [t('docs.tool4Feature1'), t('docs.tool4Feature2'), t('docs.tool4Feature3'), t('docs.tool4Feature4'), t('docs.tool4Feature5')],
-      documentation: 'https://docs.metasploit.com/' },
-    { id: 'ffuf', name: 'ffuf', icon: Wind, description: t('docs.tool5Desc'),
-      usage: `# Fuerza bruta de directorios\nffuf -u https://target.com/FUZZ -w wordlist.txt\n\n# Fuzzing de parámetros GET\nffuf -u https://target.com/page?FUZZ=value -w params.txt`,
-      features: [t('docs.tool5Feature1'), t('docs.tool5Feature2'), t('docs.tool5Feature3'), t('docs.tool5Feature4'), t('docs.tool5Feature5')],
-      documentation: 'https://github.com/ffuf/ffuf' },
-    { id: 'gobuster', name: 'Gobuster', icon: Search, description: t('docs.tool6Desc'),
-      usage: `# Fuerza bruta de directorios\ngobuster dir -u https://target.com -w wordlist.txt\n\n# Descubrimiento DNS\ngobuster dns -d target.com -w subdomains.txt`,
-      features: [t('docs.tool6Feature1'), t('docs.tool6Feature2'), t('docs.tool6Feature3'), t('docs.tool6Feature4'), t('docs.tool6Feature5')],
-      documentation: 'https://github.com/OJ/gobuster' },
-    { id: 'zap', name: 'OWASP ZAP', icon: Zap, description: t('docs.tool7Desc'),
-      usage: `# API - Spider\ncurl "http://localhost:8080/JSON/spider/action/scan/?url=https://target.com"\n\n# API - Active Scan\ncurl "http://localhost:8080/JSON/ascan/action/scan/?url=https://target.com"`,
-      features: [t('docs.tool7Feature1'), t('docs.tool7Feature2'), t('docs.tool7Feature3'), t('docs.tool7Feature4'), t('docs.tool7Feature5')],
-      documentation: 'https://www.zaproxy.org/docs/' },
-    { id: 'nuclei', name: 'Nuclei', icon: Target, description: t('docs.tool8Desc'),
-      usage: `# Escaneo con todas las plantillas\nnuclei -u https://target.com\n\n# Por severidad\nnuclei -u https://target.com -severity critical,high\n\n# Con cookie\nnuclei -u https://target.com -H "Cookie: session=abc"`,
-      features: [t('docs.tool8Feature1'), t('docs.tool8Feature2'), t('docs.tool8Feature3'), t('docs.tool8Feature4'), t('docs.tool8Feature5')],
-      documentation: 'https://docs.projectdiscovery.io/tools/nuclei' },
-    { id: 'sqlmap', name: 'SQLMap', icon: Database, description: t('docs.tool9Desc'),
-      usage: `# URL con parámetro\nsqlmap -u "https://target.com/page?id=1"\n\n# Con cookie de sesión\nsqlmap -u "https://target.com/page?id=1" --cookie="session=abc"\n\n# Formulario POST\nsqlmap -u "https://target.com/login" --data="user=admin&pass=test"`,
-      features: [t('docs.tool9Feature1'), t('docs.tool9Feature2'), t('docs.tool9Feature3'), t('docs.tool9Feature4'), t('docs.tool9Feature5')],
-      documentation: 'https://sqlmap.org/' },
-    { id: 'searchsploit', name: 'Searchsploit', icon: FileText, description: t('docs.tool10Desc'),
-      usage: `# Buscar por servicio y versión\nsearchsploit apache 2.4\n\n# Formato JSON\nsearchsploit -j wordpress 5.8\n\n# Búsqueda exacta\nsearchsploit -e "Apache 2.4.49"`,
-      features: [t('docs.tool10Feature1'), t('docs.tool10Feature2'), t('docs.tool10Feature3'), t('docs.tool10Feature4'), t('docs.tool10Feature5')],
-      documentation: 'https://www.exploit-db.com/searchsploit' },
-  ]
-}
-
 function getApiEndpoints(t: TFunc) {
   return [
     { method: 'POST', endpoint: '/api/scan', description: t('docs.endpoint1Desc'),
@@ -583,7 +538,7 @@ function getArchSteps(t: TFunc) {
 
 export default function DocsPage() {
   const t = useTranslations()
-  const tools        = getTools(t)
+  const tools        = getToolDocs(t)
   const apiEndpoints = getApiEndpoints(t)
   const archSteps    = getArchSteps(t)
   const prefersReduced = useReducedMotion() ?? false

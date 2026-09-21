@@ -14,6 +14,9 @@ import {
 } from 'lucide-react'
 import { Header } from '@/components/header'
 import { CyberCard } from '@/components/cyber/CyberCard'
+import { ToolCard } from '@/components/cyber/ToolCard'
+import { ToolTaxonomyStrip } from '@/components/cyber/ToolTaxonomyStrip'
+import { CODE_SECURITY } from '@/lib/nav-config'
 import { CyberPanel } from '@/components/cyber/CyberPanel'
 import { CyberButton } from '@/components/cyber/CyberButton'
 import { CyberBadge } from '@/components/cyber/CyberBadge'
@@ -168,26 +171,43 @@ function CodeScanPageInner() {
             </div>
           </motion.div>
 
-          {/* ── Qué hace esta página ── */}
+          {/* ── Taxonomía de herramientas Code Security ── */}
+          <ToolTaxonomyStrip sections={[CODE_SECURITY]} className="justify-center" />
+
+          {/* ── Herramientas Code Security (estado real) ── */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              { icon: KeyRound, name: 'Gitleaks', desc: 'Secretos hardcodeados (API keys, contraseñas, llaves privadas) con reglas curadas de la comunidad.' },
-              { icon: ShieldCheck, name: 'TruffleHog', desc: 'Igual que Gitleaks, pero verifica en vivo contra la API real del proveedor si el secreto sigue activo.' },
-              { icon: Bug, name: 'Backdoor Scanner', desc: 'Patrones de webshells conocidos: eval+base64 encadenado, exec con input del usuario, deserialización insegura.' },
-              { icon: ScanSearch, name: 'Semgrep', desc: 'SAST real: SQLi, XSS, path traversal y más, con ~280 reglas de la comunidad que entienden la sintaxis del código.' },
-              { icon: PackageSearch, name: 'Trivy', desc: 'Dependencias con CVEs conocidos vía lockfiles, o una imagen Docker completa (capa por capa) desde su registro.' },
-              { icon: ShieldAlert, name: 'OWASP Dependency-Check', desc: 'Segunda fuente de CVEs en dependencias, para contrastar contra lo que reporta Trivy.' },
-            ].map((tool) => (
-              <CyberCard key={tool.name} padding="p-3">
-                <div className="flex items-start gap-2">
-                  <tool.icon className="mt-0.5 h-4 w-4 shrink-0 text-[var(--cyber-accent)]" />
-                  <div>
-                    <div className="font-mono text-xs font-semibold text-foreground">{tool.name}</div>
-                    <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">{tool.desc}</p>
-                  </div>
-                </div>
-              </CyberCard>
-            ))}
+            {([
+              { key: 'gitleaks',         icon: KeyRound,     name: 'Gitleaks',                 category: 'Secrets',      desc: 'Secretos hardcodeados (API keys, contraseñas, llaves privadas) con reglas curadas de la comunidad.' },
+              { key: 'trufflehog',       icon: ShieldCheck,  name: 'TruffleHog',                category: 'Secrets',      desc: 'Igual que Gitleaks, pero verifica en vivo contra la API real del proveedor si el secreto sigue activo.' },
+              { key: 'backdoors',        icon: Bug,          name: 'Backdoor Scanner',          category: 'Backdoors',    desc: 'Patrones de webshells conocidos: eval+base64 encadenado, exec con input del usuario, deserialización insegura.' },
+              { key: 'semgrep',          icon: ScanSearch,   name: 'Semgrep',                   category: 'SAST',         desc: 'SAST real: SQLi, XSS, path traversal y más, con ~280 reglas de la comunidad que entienden la sintaxis del código.' },
+              { key: 'trivy',            icon: PackageSearch, name: 'Trivy',                    category: 'Containers',   desc: 'Dependencias con CVEs conocidos vía lockfiles, o una imagen Docker completa (capa por capa) desde su registro.' },
+              { key: 'dependency_check', icon: ShieldAlert,  name: 'OWASP Dependency-Check',    category: 'Dependencies', desc: 'Segunda fuente de CVEs en dependencias, para contrastar contra lo que reporta Trivy.' },
+            ] as const).map((tool) => {
+              const toolResult = (scan as any)?.[tool.key]
+              const status = !jobId
+                ? 'idle'
+                : isRunning
+                ? 'running'
+                : isDone
+                ? (toolResult?.error ? 'error' : 'completed')
+                : isError
+                ? 'error'
+                : 'idle'
+              const count = toolResult?.findings?.length
+              return (
+                <ToolCard
+                  key={tool.key}
+                  name={tool.name}
+                  icon={tool.icon}
+                  color="blue"
+                  category={tool.category}
+                  description={tool.desc}
+                  status={status}
+                  resultLabel={isDone && typeof count === 'number' ? `${count} hallazgo${count !== 1 ? 's' : ''}` : undefined}
+                />
+              )
+            })}
           </div>
 
           {/* ── Formulario (solo si no hay job activo) ── */}

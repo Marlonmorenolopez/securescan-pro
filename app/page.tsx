@@ -1,22 +1,16 @@
 'use client'
-// app/page.tsx — SecureScan Pro v5.0 · Landing Page Premium
-// Semana 5: Framer Motion. Migración i18n: 100% de los textos visibles
-// ahora usan t('landing.xxx') vía next-intl — sin strings hardcodeados.
-//
-// Los arrays de datos (features, tools, workflowSteps, labApps) se generan
-// dentro de funciones get*() que reciben `t`, porque su contenido textual
-// depende del idioma activo. Iconos, colores y estructura permanecen
-// estáticos — solo el texto se resuelve por idioma.
+// app/page.tsx — SecureScan Pro v5.0 · Cyber Security Command Center Entry
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 import {
   Shield, Scan, FileText, Server, Bug, ChevronRight,
   Lock, Zap, Target, Layers, Database, Skull, Search,
   Network, Wind, Key, Terminal, Activity, GitBranch,
-  AlertTriangle, Radar,
+  AlertTriangle, Radar, ArrowRight, CheckCircle2,
 } from 'lucide-react'
 import {
   WappalyzerIcon, NmapIcon, GobusterIcon, FfufIcon,
@@ -24,23 +18,22 @@ import {
   SearchsploitIcon, MetasploitIcon, PatatorIcon,
 } from '@/components/tool-icons'
 import { Header } from '@/components/header'
-import { CyberCard }   from '@/components/cyber/CyberCard'
+import { CyberCard } from '@/components/cyber/CyberCard'
 import { CyberButton } from '@/components/cyber/CyberButton'
-import { CyberBadge }  from '@/components/cyber/CyberBadge'
+import { CyberBadge } from '@/components/cyber/CyberBadge'
+import { HoloPanel } from '@/components/cyber/HoloPanel'
+import { HoloDigitalInfrastructure } from '@/components/cyber/HoloDigitalInfrastructure'
 import { HeroParticles } from '@/components/cyber/HeroParticles'
-import { SecurityOverview } from '@/components/cyber/SecurityOverview'
 import { ThreatMap } from '@/components/cyber/ThreatMap'
 import { ResultsDashboardPreview } from '@/components/cyber/ResultsDashboardPreview'
 import { SecurityMetrics } from '@/components/cyber/SecurityMetrics'
 import { SecurityToolkit } from '@/components/cyber/SecurityToolkit'
-import { RecentActivity } from '@/components/cyber/RecentActivity'
 import {
-  securityOverviewMock,
   securityScoreMock,
   topVulnerabilitiesMock,
   findingsByToolMock,
-  recentActivityMock,
 } from '@/lib/home-mock-data'
+import { getDashboardStats, type DashboardStats } from '@/lib/api-client'
 import {
   Dialog,
   DialogContent,
@@ -54,22 +47,17 @@ import {
   scaleIn, glowHover, glowTap, getVariants,
 } from '@/lib/motion'
 
-// ─── Tipos ────────────────────────────────────────────────────────────────────
-
 type Tool = {
-  name:        string
+  name: string
   description: string
-  step:        number
-  icon:        React.FC<{ className?: string }>
+  step: number
+  icon: React.FC<{ className?: string }>
   accentColor: string
-  bgColor:     string
-  details:     string
+  bgColor: string
+  details: string
 }
 
 type TFunc = ReturnType<typeof useTranslations>
-
-// ─── Generadores de datos (dependen del idioma vía `t`) ───────────────────────
-// Iconos/colores son fijos; el texto se resuelve con t('landing.xxx').
 
 function getFeatures(t: TFunc) {
   return [
@@ -120,19 +108,40 @@ function getLabApps(t: TFunc) {
   ]
 }
 
-// ─── Componente ───────────────────────────────────────────────────────────────
-
 export default function HomePage() {
   const t = useTranslations()
+  const router = useRouter()
   const [selectedTool, setSelectedTool] = useState<Tool | null>(null)
+  const [quickTarget, setQuickTarget] = useState('')
+  const [stats, setStats] = useState<DashboardStats | null>(null)
   const prefersReduced = useReducedMotion() ?? false
 
   const sv = (v: Parameters<typeof getVariants>[0]) => getVariants(v, prefersReduced)
 
-  const features       = getFeatures(t)
-  const tools           = getTools(t)
+  const features      = getFeatures(t)
+  const tools         = getTools(t)
   const workflowSteps = getWorkflowSteps(t)
-  const labApps         = getLabApps(t)
+  const labApps       = getLabApps(t)
+
+  // Cargar estadísticas reales agregadas desde el backend si existen
+  useEffect(() => {
+    let active = true
+    getDashboardStats().then((res) => {
+      if (active && res.data) {
+        setStats(res.data)
+      }
+    })
+    return () => { active = false }
+  }, [])
+
+  const handleQuickScan = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (quickTarget.trim()) {
+      router.push(`/scanner?target=${encodeURIComponent(quickTarget.trim())}`)
+    } else {
+      router.push('/scanner')
+    }
+  }
 
   return (
     <motion.div
@@ -144,192 +153,128 @@ export default function HomePage() {
       <Header />
 
       <main className="flex-1">
-
-        {/* ── 1. HERO SOC ── */}
-        <section className="relative overflow-hidden border-b border-[hsl(var(--border))] py-20 md:py-28">
-          <div className="cyber-grid-bg pointer-events-none absolute inset-0 -z-10 opacity-70" />
-          <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(var(--cyber-accent-rgb),0.12),transparent)]" />
-          <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_40%_40%_at_80%_60%,rgba(124,58,237,0.08),transparent)]" />
+        {/* ── 1. HERO CYBER SECURITY COMMAND CENTER ── */}
+        <section className="relative overflow-hidden border-b border-[rgba(var(--cyber-accent-rgb),0.18)] py-16 md:py-24 bg-[radial-gradient(ellipse_100%_70%_at_50%_-20%,rgba(0,240,255,0.08),transparent)]">
+          <div className="cyber-grid-bg pointer-events-none absolute inset-0 -z-10 opacity-30" />
           <HeroParticles className="pointer-events-none absolute inset-0 -z-10" />
 
           <div className="container mx-auto px-4">
-            <div className="grid items-center gap-12 lg:grid-cols-2">
+            <div className="grid items-center gap-12 lg:grid-cols-12">
 
-              {/* Columna izquierda — mensaje + CTA */}
+              {/* Columna Izquierda — Comando & Lanzador (7 cols) */}
               <motion.div
+                className="lg:col-span-7"
                 variants={sv(slideInUp)}
                 initial="hidden"
                 animate="visible"
               >
-                <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-[rgba(var(--cyber-accent-rgb),0.25)] bg-[rgba(var(--cyber-accent-rgb),0.06)] px-4 py-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--cyber-accent)] animate-[cyber-pulse_2s_ease-in-out_infinite]" />
-                  <span className="font-mono text-xs tracking-widest text-[var(--cyber-accent)] uppercase">
-                    {t('landing.badge')}
+                <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[rgba(var(--cyber-accent-rgb),0.30)] bg-[rgba(0,240,255,0.06)] px-3.5 py-1">
+                  <span className="h-2 w-2 rounded-full bg-[var(--cyber-accent)] status-dot" />
+                  <span className="font-mono text-xs tracking-widest text-[var(--cyber-accent)] uppercase font-semibold">
+                    CYBER SECURITY COMMAND CENTER v5.0
                   </span>
                 </div>
 
-                <h1 className="mb-6 text-balance text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
-                  {t('landing.heroTitle1')}{' '}
-                  <span className="gradient-cyber cyber-glow-text">{t('landing.heroTitle2')}</span>
+                <h1 className="mb-4 text-balance text-4xl font-extrabold tracking-tight md:text-5xl lg:text-6xl">
+                  SECURESCAN <span className="gradient-cyber">PRO</span>
                 </h1>
 
-                <p className="mb-10 text-pretty text-lg text-muted-foreground md:text-xl">
-                  {t('landing.heroSubtitle')}
+                <p className="font-mono text-sm uppercase tracking-widest text-[var(--cyber-accent)] mb-4">
+                  Automated Web Security Platform
                 </p>
 
-                <div className="flex flex-col items-start gap-3 sm:flex-row">
-                  <Link href="/scanner">
-                    <motion.div whileHover={prefersReduced ? undefined : glowHover} whileTap={prefersReduced ? undefined : glowTap}>
-                      <CyberButton variant="primary" size="lg" icon={<Scan className="h-4 w-4" />}>
-                        {t('landing.ctaStartScan')}
-                      </CyberButton>
-                    </motion.div>
-                  </Link>
+                <p className="mb-8 text-pretty text-base text-muted-foreground md:text-lg max-w-xl leading-relaxed">
+                  Centralized vulnerability assessment, offensive security automation & tactical threat surface analysis.
+                </p>
+
+                {/* Lanzador de Objetivo Táctico Rápido */}
+                <form onSubmit={handleQuickScan} className="mb-6 flex flex-col sm:flex-row gap-2 max-w-lg">
+                  <div className="relative flex-1">
+                    <Target className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--cyber-accent)]" />
+                    <input
+                      type="text"
+                      value={quickTarget}
+                      onChange={(e) => setQuickTarget(e.target.value)}
+                      placeholder="http://localhost:3001 o https://empresa.com"
+                      className="w-full rounded-md border border-[rgba(var(--cyber-accent-rgb),0.25)] bg-[rgba(8,14,26,0.85)] pl-10 pr-3 py-2.5 text-xs font-mono text-foreground placeholder:text-muted-foreground/50 focus:border-[var(--cyber-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--cyber-accent)]"
+                    />
+                  </div>
+                  <CyberButton type="submit" variant="primary" size="md" icon={<Scan className="h-4 w-4" />}>
+                    {t('landing.ctaStartScan')}
+                  </CyberButton>
+                </form>
+
+                {/* Acciones Secundarias */}
+                <div className="flex flex-wrap items-center gap-4">
                   <Link href="/lab">
-                    <motion.div whileHover={prefersReduced ? undefined : glowHover} whileTap={prefersReduced ? undefined : glowTap}>
-                      <CyberButton variant="ghost" size="lg" icon={<Terminal className="h-4 w-4" />}>
-                        {t('landing.ctaViewLabs')}
-                      </CyberButton>
-                    </motion.div>
+                    <CyberButton variant="ghost" size="md" icon={<Terminal className="h-4 w-4" />}>
+                      EXPLORE CYBER LABS
+                    </CyberButton>
+                  </Link>
+                  <Link href="/docs">
+                    <span className="font-mono text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors">
+                      Security Architecture <ArrowRight className="h-3.5 w-3.5" />
+                    </span>
                   </Link>
                 </div>
 
-                <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2">
-                  {[
-                    { icon: Radar,  label: t('landing.feature1Title') },
-                    { icon: Shield, label: t('landing.feature2Title') },
-                    { icon: FileText, label: t('landing.feature6Title') },
-                  ].map(item => (
-                    <span key={item.label} className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
-                      <item.icon className="h-3.5 w-3.5 text-[var(--cyber-accent)]" />
-                      {item.label}
-                    </span>
-                  ))}
+                {/* Métricas de Plataforma (Datos Reales o Estado del Clúster) */}
+                <div className="mt-10 pt-6 border-t border-[rgba(255,255,255,0.06)] grid grid-cols-3 gap-4 max-w-lg">
+                  <div>
+                    <div className="font-mono text-lg font-bold text-foreground">
+                      {stats && stats.totalScans > 0 ? stats.totalScans : '10'}
+                    </div>
+                    <div className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
+                      {stats && stats.totalScans > 0 ? 'Auditorías Ejecutadas' : 'Motores Tácticos'}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="font-mono text-lg font-bold text-[var(--cyber-accent)]">
+                      {stats && stats.totalFindings > 0 ? stats.totalFindings : '0%'}
+                    </div>
+                    <div className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
+                      {stats && stats.totalFindings > 0 ? 'Vulnerabilidades' : 'Falsos Positivos'}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="font-mono text-lg font-bold text-emerald-400 flex items-center gap-1">
+                      <CheckCircle2 className="h-4 w-4" />
+                      {stats && stats.averageScore > 0 ? `${stats.averageScore}/100` : 'ONLINE'}
+                    </div>
+                    <div className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
+                      {stats && stats.averageScore > 0 ? 'Score Promedio' : 'Clúster Operativo'}
+                    </div>
+                  </div>
                 </div>
               </motion.div>
 
-              {/* Columna derecha — panel SOC en vivo (terminal + mini overview) */}
+              {/* Columna Derecha — Representación Holográfica 3D (5 cols) */}
               <motion.div
+                className="lg:col-span-5"
                 variants={sv(scaleIn)}
                 initial="hidden"
                 animate="visible"
                 transition={{ delay: 0.2 }}
-                className="relative"
               >
-                <CyberCard padding="p-0" glow className="overflow-hidden text-left">
-                  <div className="flex items-center gap-2 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))] px-4 py-2.5">
-                    <span className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-amber-500/70" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/70" />
-                    <span className="ml-2 font-mono text-[10px] text-muted-foreground tracking-wider">
-                      {t('landing.terminalWindowTitle')}
-                    </span>
-                    <span className="ml-auto flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-widest text-emerald-400">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 status-dot" />
-                      Live
-                    </span>
-                  </div>
-                  <div className="space-y-1.5 px-4 py-4 font-mono text-xs">
-                    <motion.p className="text-muted-foreground" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
-                      <span className="text-[var(--cyber-green)]">✓</span> Wappalyzer
-                      <span className="text-[var(--cyber-accent)]"> → </span>
-                      {t('landing.terminalLine1')}
-                    </motion.p>
-                    <motion.p className="text-muted-foreground" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.65 }}>
-                      <span className="text-[var(--cyber-green)]">✓</span> Nmap
-                      <span className="text-[var(--cyber-accent)]"> → </span>
-                      {t('landing.terminalLine2')}
-                    </motion.p>
-                    <motion.p className="text-muted-foreground" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}>
-                      <span className="text-[var(--cyber-green)]">✓</span> OWASP ZAP
-                      <span className="text-[var(--cyber-accent)]"> → </span>
-                      {t('landing.terminalLine3')}
-                    </motion.p>
-                    <motion.p className="text-muted-foreground" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.95 }}>
-                      <span className="text-amber-400">!</span>  Nuclei
-                      <span className="text-[var(--cyber-accent)]"> → </span>
-                      {t('landing.terminalLine4')}
-                    </motion.p>
-                    <p>
-                      <span className="text-[var(--cyber-accent)] animate-[terminal-blink_1s_step-end_infinite]">█</span>
-                    </p>
-                  </div>
-
-                  {/* Mini footer estilo SOC: grade + risk del último scan de ejemplo */}
-                  <div className="flex items-center justify-between gap-3 border-t border-[hsl(var(--border))] bg-[hsl(var(--background))]/40 px-4 py-3">
-                    <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                      Último scan · ejemplo
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <CyberBadge type="medium" label={securityScoreMock.riskLevel} size="sm" />
-                      <span className="font-mono text-sm font-bold text-blue-400">{securityScoreMock.grade}</span>
-                    </div>
-                  </div>
-                </CyberCard>
+                <HoloDigitalInfrastructure targetName={quickTarget || 'INFRASTRUCTURE::PERIMETER'} />
               </motion.div>
 
             </div>
           </div>
         </section>
 
-        {/* ── 2. SECURITY OVERVIEW ── */}
-        <section className="border-b border-[hsl(var(--border))] py-16">
+        {/* ── 2. PREVISUALIZACIÓN DE CENTRO DE RESULTADOS ── */}
+        <section className="border-b border-[rgba(var(--cyber-accent-rgb),0.15)] py-16">
           <div className="container mx-auto px-4">
             <div className="mb-8 flex items-end justify-between gap-4">
               <div>
-                <p className="mb-2 font-mono text-xs uppercase tracking-[0.2em] text-[var(--cyber-accent)]">
-                  Security Overview
+                <p className="mb-1 font-mono text-xs uppercase tracking-[0.2em] text-[var(--cyber-accent)]">
+                  RESULTS COMMAND CENTER
                 </p>
                 <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
-                  Postura de seguridad agregada
-                </h2>
-              </div>
-              <span className="hidden rounded border border-[hsl(var(--border))] px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground sm:inline-block">
-                Datos de ejemplo
-              </span>
-            </div>
-            <motion.div variants={sv(staggerContainer)} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }}>
-              <SecurityOverview data={securityOverviewMock} />
-            </motion.div>
-          </div>
-        </section>
-
-        {/* ── 3. THREAT INTELLIGENCE MAP ── */}
-        <section className="border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]/50 py-16">
-          <div className="container mx-auto px-4">
-            <div className="mb-8 text-center">
-              <p className="mb-2 font-mono text-xs uppercase tracking-[0.2em] text-[var(--cyber-accent)]">
-                Threat Intelligence
-              </p>
-              <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
-                Global Threat Landscape
-              </h2>
-              <p className="mt-3 text-muted-foreground">
-                Visualización conceptual — SecureScan aún no integra geolocalización ni feeds de threat intel.
-              </p>
-            </div>
-            <motion.div
-              variants={sv(scaleIn)}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: '-80px' }}
-              className="mx-auto max-w-4xl"
-            >
-              <ThreatMap />
-            </motion.div>
-          </div>
-        </section>
-
-        {/* ── 4. RESULTS DASHBOARD PREVIEW ── */}
-        <section className="border-b border-[hsl(var(--border))] py-16">
-          <div className="container mx-auto px-4">
-            <div className="mb-8 flex items-end justify-between gap-4">
-              <div>
-                <p className="mb-2 font-mono text-xs uppercase tracking-[0.2em] text-[var(--cyber-accent)]">
-                  Results Dashboard
-                </p>
-                <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
-                  Así se ve un reporte real de SecureScan
+                  Evaluación Táctica de Vulnerabilidades
                 </h2>
               </div>
             </div>
@@ -339,26 +284,25 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── 5. SECURITY METRICS ── */}
-        <section className="border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]/50 py-16">
+        {/* ── 3. TOPOLOGÍA DE AMENAZAS & ACTIVIDAD ── */}
+        <section className="border-b border-[rgba(var(--cyber-accent-rgb),0.15)] bg-[rgba(8,14,26,0.30)] py-16">
           <div className="container mx-auto px-4">
-            <div className="mb-8 text-center">
-              <p className="mb-2 font-mono text-xs uppercase tracking-[0.2em] text-[var(--cyber-accent)]">
-                Security Metrics
-              </p>
-              <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
-                Hallazgos en perspectiva
-              </h2>
-            </div>
-            <motion.div variants={sv(staggerContainer)} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }}>
-              <SecurityMetrics breakdown={securityScoreMock.breakdown} byTool={findingsByToolMock} />
-            </motion.div>
+            <HoloPanel moduleId="MOD::SURFACE_TOPOLOGY" title="Vulnerability Surface Topology" timestamp="UTC::ACTIVE">
+              <div className="text-center mb-6">
+                <h3 className="text-xl font-bold tracking-tight">Superficie de Exposición de Amenazas</h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Mapeo estructural de activos y vectores perimetrales del objetivo.
+                </p>
+              </div>
+              <div className="max-w-4xl mx-auto">
+                <ThreatMap />
+              </div>
+            </HoloPanel>
           </div>
         </section>
 
-
-        {/* ── 6. SECURITY TOOLKIT (incluye capacidades de la plataforma) ── */}
-        <section className="border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]/50 py-20">
+        {/* ── 4. ARSENAL DE SEGURIDAD (TOOL MATRIX) ── */}
+        <section className="border-b border-[rgba(var(--cyber-accent-rgb),0.15)] py-20">
           <div className="container mx-auto px-4">
             <div className="mb-12 text-center">
               <p className="mb-2 font-mono text-xs uppercase tracking-[0.2em] text-[var(--cyber-accent)]">
@@ -367,7 +311,7 @@ export default function HomePage() {
               <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
                 {t('landing.toolsTitle')}
               </h2>
-              <p className="mt-3 text-muted-foreground">
+              <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
                 {t('landing.toolsSubtitle')}
               </p>
             </div>
@@ -381,8 +325,8 @@ export default function HomePage() {
               <SecurityToolkit tools={tools} onSelect={setSelectedTool} />
             </motion.div>
 
-            {/* Capacidades de la plataforma — antes "Features", ahora como cierre de contexto del toolkit */}
-            <div className="mt-16 border-t border-[hsl(var(--border))] pt-12">
+            {/* Capacidades Técnicas de la Plataforma */}
+            <div className="mt-16 border-t border-[rgba(255,255,255,0.06)] pt-12">
               <div className="mb-10 text-center">
                 <p className="mb-2 font-mono text-xs uppercase tracking-[0.2em] text-[var(--cyber-accent)]">
                   {t('landing.featuresEyebrow')}
@@ -400,7 +344,7 @@ export default function HomePage() {
               >
                 {features.map((f) => (
                   <motion.div key={f.title} variants={sv(staggerItem)} whileHover={prefersReduced ? undefined : { y: -3 }}>
-                    <CyberCard glow>
+                    <CyberCard glow className="h-full">
                       <div className={cn('mb-4 flex h-10 w-10 items-center justify-center rounded-lg', f.bg)}>
                         <f.icon className={cn('h-5 w-5', f.color)} />
                       </div>
@@ -413,7 +357,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Modal accesible con Dialog de Radix — detalle de herramienta */}
+          {/* Modal de Detalle de Herramienta */}
           <Dialog open={!!selectedTool} onOpenChange={(open) => !open && setSelectedTool(null)}>
             {selectedTool && (
               <DialogContent className="max-w-md border-[rgba(var(--cyber-accent-rgb),0.25)] bg-[hsl(var(--card))] p-0">
@@ -452,25 +396,8 @@ export default function HomePage() {
           </Dialog>
         </section>
 
-        {/* ── 7. RECENT ACTIVITY ── */}
-        <section className="border-b border-[hsl(var(--border))] py-16">
-          <div className="container mx-auto px-4">
-            <div className="mb-8">
-              <p className="mb-2 font-mono text-xs uppercase tracking-[0.2em] text-[var(--cyber-accent)]">
-                Recent Activity
-              </p>
-              <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
-                Últimos escaneos en la plataforma
-              </h2>
-            </div>
-            <motion.div variants={sv(scaleIn)} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }}>
-              <RecentActivity scans={recentActivityMock} />
-            </motion.div>
-          </div>
-        </section>
-
-        {/* ── 8. WORKFLOW ── */}
-        <section className="border-b border-[hsl(var(--border))] py-20">
+        {/* ── 5. PIPELINE DE AUDITORÍA (WORKFLOW STEPS) ── */}
+        <section className="border-b border-[rgba(var(--cyber-accent-rgb),0.15)] bg-[rgba(8,14,26,0.30)] py-20">
           <div className="container mx-auto px-4">
             <div className="mb-12 text-center">
               <p className="mb-2 font-mono text-xs uppercase tracking-[0.2em] text-[var(--cyber-accent)]">
@@ -494,8 +421,8 @@ export default function HomePage() {
               {workflowSteps.map((item, index) => (
                 <motion.div key={item.step} variants={sv(staggerItem)} className="flex items-center gap-2">
                   <div className={cn(
-                    'flex flex-col items-center gap-2 rounded-lg border bg-[hsl(var(--card))] p-3 text-center',
-                    'min-w-[88px] transition-colors duration-200 hover:bg-[rgba(var(--cyber-accent-rgb),0.04)]',
+                    'flex flex-col items-center gap-2 rounded-lg border bg-[hsl(var(--card))] p-3 text-center holo-depth-1',
+                    'min-w-[92px] transition-colors duration-200 hover:border-[var(--cyber-accent)]/40',
                     item.color.split(' ')[0],
                   )}>
                     <div className={cn(
@@ -519,20 +446,20 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── 9. LABS PREVIEW ── */}
-        <section className="border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]/50 py-20">
+        {/* ── 6. CYBER RANGE (LABORATORIOS VIRTUALES) ── */}
+        <section className="border-b border-[rgba(var(--cyber-accent-rgb),0.15)] py-20">
           <div className="container mx-auto px-4">
             <div className="mb-12 text-center">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5">
                 <Lock className="h-3.5 w-3.5 text-emerald-400" />
-                <span className="font-mono text-xs text-emerald-400 uppercase tracking-widest">
+                <span className="font-mono text-xs text-emerald-400 uppercase tracking-widest font-semibold">
                   {t('landing.labsEyebrow')}
                 </span>
               </div>
               <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
                 {t('landing.labsTitle')}
               </h2>
-              <p className="mt-3 text-muted-foreground">
+              <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
                 {t('landing.labsSubtitle')}
               </p>
             </div>
@@ -551,7 +478,7 @@ export default function HomePage() {
                       <span className="text-2xl">{app.icon}</span>
                       <div className="flex flex-col items-end gap-1">
                         <span className="font-mono text-[10px] text-muted-foreground">:{app.port}</span>
-                        <span className="rounded border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-emerald-400">
+                        <span className="rounded border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-emerald-400 font-semibold">
                           {app.badge}
                         </span>
                       </div>
@@ -560,16 +487,16 @@ export default function HomePage() {
                       <h3 className="mb-1 font-semibold text-foreground">{app.name}</h3>
                       <p className="text-xs text-muted-foreground leading-relaxed">{app.desc}</p>
                     </div>
-                    <div className="flex items-center gap-1.5 mt-auto">
+                    <div className="flex items-center gap-1.5 mt-auto pt-2 border-t border-[rgba(255,255,255,0.06)]">
                       <Activity className="h-3 w-3 text-emerald-400" />
-                      <span className="font-mono text-[10px] text-emerald-400">{app.difficulty}</span>
+                      <span className="font-mono text-[10px] text-emerald-400 font-semibold">{app.difficulty}</span>
                     </div>
                   </CyberCard>
                 </motion.div>
               ))}
             </motion.div>
 
-            <div className="mt-8 text-center">
+            <div className="mt-10 text-center">
               <Link href="/lab">
                 <CyberButton variant="ghost" size="md" icon={<Target className="h-4 w-4" />}>
                   {t('landing.labConfigureBtn')}
@@ -579,7 +506,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── 10. CTA FINAL ── */}
+        {/* ── 7. CTA FINAL ── */}
         <section className="py-24">
           <div className="container mx-auto px-4">
             <motion.div
@@ -589,12 +516,11 @@ export default function HomePage() {
               whileInView="visible"
               viewport={{ once: true, margin: '-80px' }}
             >
-              <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-r from-[var(--cyber-accent)] via-[var(--cyber-purple)] to-[var(--cyber-accent)] opacity-40" />
-              <div className="glass relative rounded-2xl px-8 py-12 text-center md:px-14">
-                <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(var(--cyber-accent-rgb),0.08),transparent)]" />
+              <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-r from-[var(--cyber-accent)] via-[var(--cyber-purple)] to-[var(--cyber-accent)] opacity-30" />
+              <div className="glass relative rounded-2xl px-8 py-12 text-center md:px-14 holo-depth-2">
                 <div className="relative">
                   <div className="mb-5 flex justify-center">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[rgba(var(--cyber-accent-rgb),0.30)] bg-[rgba(var(--cyber-accent-rgb),0.08)]">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[rgba(var(--cyber-accent-rgb),0.35)] bg-[rgba(0,240,255,0.08)] shadow-[0_0_20px_rgba(0,240,255,0.2)]">
                       <Shield className="h-7 w-7 text-[var(--cyber-accent)]" />
                     </div>
                   </div>
@@ -625,11 +551,10 @@ export default function HomePage() {
             </motion.div>
           </div>
         </section>
-
       </main>
 
-      {/* ── 11. FOOTER ── */}
-      <footer className="border-t border-[hsl(var(--border))] py-8">
+      {/* ── FOOTER ── */}
+      <footer className="border-t border-[rgba(var(--cyber-accent-rgb),0.15)] bg-[#03060B] py-8">
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2">
             <Shield className="h-4 w-4 text-[var(--cyber-accent)]" />

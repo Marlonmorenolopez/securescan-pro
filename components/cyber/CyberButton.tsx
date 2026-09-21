@@ -76,6 +76,7 @@ export const CyberButton = forwardRef<HTMLButtonElement, CyberButtonProps>(
         className={cn(
           'inline-flex items-center justify-center rounded-md font-mono',
           'transition-all duration-200 ease-out',
+          !isDisabled && 'hover:-translate-y-px active:translate-y-0',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cyber-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-background',
           'select-none',
           isDisabled && 'pointer-events-none opacity-50',

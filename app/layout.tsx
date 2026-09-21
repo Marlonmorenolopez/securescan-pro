@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 import { PageTransition } from '@/components/page-transition'
 import { ParticlesProvider } from '@/components/particles-provider'
+import { Sidebar } from '@/components/cyber/Sidebar'
 import './globals.css'
 
 // FIX: eliminadas Inter y JetBrains_Mono de next/font/google
@@ -69,7 +70,12 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             <ParticlesProvider>
-              <PageTransition>{children}</PageTransition>
+              <div className="lg:flex">
+                <Sidebar />
+                <div className="min-w-0 flex-1">
+                  <PageTransition>{children}</PageTransition>
+                </div>
+              </div>
             </ParticlesProvider>
             <Toaster position="bottom-right" />
           </ThemeProvider>

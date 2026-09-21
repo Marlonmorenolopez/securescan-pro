@@ -51,6 +51,8 @@ import { SafeBrowsingPanel } from '@/components/results/intel/SafeBrowsingPanel'
 import { useScan } from '@/lib/scan-context'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
+import { HUELLA_DIGITAL, COLOR_VARS } from '@/lib/nav-config'
+import { useGroupLabel } from '@/lib/nav-i18n'
 
 // ── ScoreCard ─────────────────────────────────────────────────────────────────
 interface ScoreCardProps {
@@ -156,6 +158,31 @@ function ScoreCard({ score }: ScoreCardProps) {
         </div>
       )}
     </CyberCard>
+  )
+}
+
+// ── Huella Digital: resumen de superficie por grupo (Dominios/Infra/
+// Reputación/TLS-SSL). Cuenta real de fuentes con datos, nunca inventada.
+function FootprintGroupChip({
+  groupKey, active, total,
+}: { groupKey: 'dominios' | 'infraestructura' | 'reputacion' | 'tlsSsl'; active: number; total: number }) {
+  const group = HUELLA_DIGITAL.groups.find(g => g.key === groupKey)!
+  const label = useGroupLabel(HUELLA_DIGITAL, group)
+  const c = COLOR_VARS.emerald
+  const hasSignal = active > 0
+
+  return (
+    <div
+      className="flex items-center gap-2 rounded-lg border px-3 py-2"
+      style={{ borderColor: `rgba(${c.rgb},${hasSignal ? 0.35 : 0.15})`, background: `rgba(${c.rgb},${hasSignal ? 0.08 : 0.02})` }}
+    >
+      <span
+        className="h-2 w-2 shrink-0 rounded-full"
+        style={{ background: hasSignal ? c.fg : 'rgba(148,163,184,0.4)', boxShadow: hasSignal ? `0 0 6px rgba(${c.rgb},0.7)` : undefined }}
+      />
+      <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-foreground/90">{label}</span>
+      <span className="ml-auto font-mono text-[10px] tabular-nums text-muted-foreground">{active}/{total}</span>
+    </div>
   )
 }
 
@@ -583,6 +610,14 @@ export function ResultsDashboard() {
               </div>
             ) : (
               <div className="space-y-6">
+                {/* Resumen de superficie por grupo — visual rápido antes del detalle */}
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  <FootprintGroupChip groupKey="dominios" active={[crtshResult, dnstwistResult].filter(Boolean).length} total={2} />
+                  <FootprintGroupChip groupKey="infraestructura" active={shodanResult ? 1 : 0} total={1} />
+                  <FootprintGroupChip groupKey="reputacion" active={[vtResult, abuseResult, safebrowsingResult].filter(Boolean).length} total={3} />
+                  <FootprintGroupChip groupKey="tlsSsl" active={testsslResult ? 1 : 0} total={1} />
+                </div>
+
                 {/* Cada herramienta del grupo es su propio bloque, leyendo
                     currentScan.threat_intel.<herramienta>. Para sumar Shodan,
                     crt.sh, etc. se agrega un bloque más acá, igual a estos. */}

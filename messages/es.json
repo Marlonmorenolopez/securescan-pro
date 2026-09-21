@@ -24,7 +24,10 @@
     "github": "GitHub",
     "schedules": "Programaciones",
     "settings": "Ajustes",
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "collapseSidebar": "Colapsar",
+    "openNav": "Abrir navegación",
+    "searchPlaceholder": "Buscar herramientas, secciones…"
   },
   "scanner": {
     "title": "Iniciar Análisis de Seguridad",
@@ -528,5 +531,164 @@
     "sevMedium": "Media o superior",
     "sevHigh": "Alta o superior",
     "sevCritical": "Solo crítica"
+  },
+  "navCatalog": {
+    "sections": {
+      "pentesting": {
+        "label": "Pentesting",
+        "description": "Evalúa y explota vulnerabilidades en tus objetivos.",
+        "groups": {
+          "reconocimiento": "Reconocimiento",
+          "enumeracion": "Enumeración",
+          "webSecurity": "Web Security",
+          "authentication": "Authentication",
+          "sqlInjection": "SQL Injection",
+          "exploitation": "Exploitation"
+        }
+      },
+      "osint": {
+        "label": "OSINT",
+        "description": "Recopila información pública y descubre lo que otros no ven.",
+        "groups": {
+          "personas": "Personas",
+          "dominios": "Dominios",
+          "breaches": "Breaches"
+        }
+      },
+      "huella-digital": {
+        "label": "Huella Digital",
+        "description": "Analiza la exposición y huella en internet de tus activos.",
+        "groups": {
+          "dominios": "Dominios",
+          "infraestructura": "Infraestructura",
+          "reputacion": "Reputación",
+          "tlsSsl": "TLS / SSL"
+        }
+      },
+      "code-security": {
+        "label": "Code Security",
+        "description": "Analiza tu código y dependencias en busca de riesgos.",
+        "groups": {
+          "secrets": "Secrets",
+          "sast": "SAST",
+          "backdoors": "Backdoors",
+          "dependencies": "Dependencies",
+          "containers": "Containers"
+        }
+      },
+      "laboratorios": {
+        "label": "Laboratorios",
+        "description": "Practica en entornos seguros y aprende con escenarios reales.",
+        "groups": {
+          "entornos": "Entornos"
+        }
+      },
+      "analisis": {
+        "label": "Análisis",
+        "description": "Convierte los resultados en información valiosa y accionable.",
+        "groups": {
+          "findingsRiskScoring": "Findings & Risk Scoring",
+          "compararAnalisis": "Comparar Análisis",
+          "reportes": "Reportes"
+        }
+      },
+      "operaciones": {
+        "label": "Operaciones",
+        "description": "Gestiona tus escaneos, historial y configuración.",
+        "groups": {
+          "historial": "Historial",
+          "programacion": "Programación",
+          "notificaciones": "Notificaciones"
+        }
+      }
+    },
+    "leaves": {
+      "inicio": "Inicio",
+      "dashboard": "Dashboard",
+      "docs": "Documentación",
+      "findings": "Findings",
+      "compare": "Comparar Análisis",
+      "timeline": "Tendencias",
+      "historial": "Historial",
+      "schedules": "Escaneos Programados",
+      "notifications": "Notificaciones",
+      "settings": "Configuración"
+    },
+    "operationsPanel": {
+      "quickAccess": "Ver todas"
+    },
+    "topGroups": {
+      "security": "Security",
+      "labs": "Laboratorios",
+      "analysis": "Análisis",
+      "operations": "Operaciones"
+    },
+    "overview": {
+      "pentestingTools": "Herramientas de Pentesting",
+      "footprintTools": "Herramientas de Huella Digital",
+      "codeSecurityTools": "Herramientas de Code Security",
+      "labsAvailable": "Laboratorios Disponibles"
+    }
+  },
+  "dashboard": {
+    "securityOverview": "Security Overview",
+    "welcomePrefix": "Bienvenido a",
+    "subtitle": "Plataforma integral de ciberseguridad para análisis, evaluación y protección de tus activos.",
+    "technicalTitle": "Dashboard técnico",
+    "technicalSubtitle": "Datos reales agregados de todos tus escaneos — Web Scan, Code Scan y OSINT juntos.",
+    "statusOperational": "OPERATIVO",
+    "statusChecking": "VERIFICANDO",
+    "statusDegraded": "DEGRADADO",
+    "securityPosture": "Postura de Seguridad",
+    "securityPostureSubtitle": "Score, riesgo y hallazgos acumulados de todos tus escaneos",
+    "securityOperations": "Actividad de Seguridad",
+    "securityOperationsSubtitle": "Distribución por módulo y severidad de todos tus escaneos",
+    "byModuleTitle": "Escaneos por módulo",
+    "statTotalScans": "Total escaneos",
+    "statTotalFindings": "Hallazgos totales",
+    "statCritical": "Críticos",
+    "statHigh": "Altos",
+    "scoreAverage": "Score promedio",
+    "loadingStats": "Cargando estadísticas…",
+    "loadErrorTitle": "No se pudo cargar el dashboard",
+    "retry": "Reintentar",
+    "emptyScansTitle": "Todavía no hay escaneos",
+    "emptyScansDetail": "Corre tu primer Web Scan, Code Scan u OSINT y este dashboard se va a llenar solo con datos reales.",
+    "severityTitle": "Distribución de severidad",
+    "severitySubtitle": "Todos los hallazgos, todas las familias de scan",
+    "toolTitle": "Herramientas con más hallazgos",
+    "toolSubtitle": "Acumulado histórico",
+    "recentActivityTitle": "Actividad reciente",
+    "recentActivitySubtitle": "Últimos 10 Jobs, cualquier familia"
+  },
+  "severity": {
+    "critical": "Critical",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "info": "Info",
+    "empty": "Sin hallazgos registrados todavía."
+  },
+  "severityPanel": {
+    "title": "Security Analysis",
+    "subtitle": "Distribución de severidad — todos los hallazgos de tu historial"
+  },
+  "toolDetail": {
+    "close": "Cerrar",
+    "target": "Target",
+    "statusLabel": "Estado",
+    "result": "Resultado",
+    "features": "Capacidades",
+    "usage": "Uso real",
+    "officialDocs": "Documentación oficial",
+    "noDocs": "Todavía no hay documentación detallada para esta herramienta en el proyecto.",
+    "executionNote": "Esta herramienta no se ejecuta de forma individual: corre como parte de un único Web Scan orquestado junto con el resto de herramientas de Pentesting y Huella Digital.",
+    "status": {
+      "idle": "En espera",
+      "running": "Ejecutando",
+      "completed": "Completado",
+      "error": "Error",
+      "skipped": "Omitido"
+    }
   }
 }

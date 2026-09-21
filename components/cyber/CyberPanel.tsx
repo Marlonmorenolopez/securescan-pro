@@ -20,8 +20,8 @@ export function CyberPanel({ title, subtitle, action, noPadding = false, classNa
     <div
       className={cn(
         'relative rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))]',
-        'transition-colors duration-300',
-        'hover:border-[rgba(var(--cyber-accent-rgb),0.25)]',
+        'transition-all duration-300',
+        'depth-1 shadow-cyber-inset hover:border-[rgba(var(--cyber-accent-rgb),0.25)] hover:depth-2',
         className
       )}
       {...props}

@@ -21,6 +21,12 @@ import { ScanProvider, useScan } from '@/lib/scan-context'
 import { CyberCard }   from '@/components/cyber/CyberCard'
 import { CyberBadge }  from '@/components/cyber/CyberBadge'
 import { RiskGauge }   from '@/components/cyber/RiskGauge'
+import { ToolTaxonomyStrip } from '@/components/cyber/ToolTaxonomyStrip'
+import { ToolCard } from '@/components/cyber/ToolCard'
+import { ToolDetailDrawer } from '@/components/cyber/ToolDetailDrawer'
+import { PENTESTING, HUELLA_DIGITAL } from '@/lib/nav-config'
+import { getToolDocs } from '@/lib/tool-docs'
+import { useTranslations } from 'next-intl'
 import type { SecurityScore } from '@/lib/api-client'
 import { staggerContainer, staggerItem, getVariants } from '@/lib/motion'
 import {
@@ -32,7 +38,7 @@ import {
   Loader2, Shield, AlertTriangle,
   Layers, Network, Key, Skull, Wind, Search,
   Zap, Target, Database, FileText, ExternalLink,
-  CheckCircle2, XCircle, Clock,
+  CheckCircle2,
 } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { cn } from '@/lib/utils'
@@ -288,7 +294,7 @@ function GlobalScore({ score, counts }: { score: SecurityScore; counts: Record<S
 }
 
 // ─── Tool Grid ────────────────────────────────────────────────────────────────
-function ToolGrid({ stats }: { stats: ToolStat[] }) {
+function ToolGrid({ stats, onSelectTool }: { stats: ToolStat[]; onSelectTool: (id: string) => void }) {
   return (
     <CyberCard padding="p-4">
       <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
@@ -300,57 +306,20 @@ function ToolGrid({ stats }: { stats: ToolStat[] }) {
         initial="hidden"
         animate="visible"
       >
-        {stats.map(tool => {
-          const SvgIcon = tool.svgIcon
-          const LucideIcon = tool.icon
-
-          const statusIcon =
-            tool.status === 'completed' ? <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" /> :
-            tool.status === 'error'     ? <XCircle      className="h-3 w-3 text-red-500 shrink-0"     /> :
-            tool.status === 'running'   ? <Loader2      className="h-3 w-3 animate-spin text-[var(--cyber-accent)] shrink-0" /> :
-                                          <Clock        className="h-3 w-3 text-muted-foreground/40 shrink-0" />
-
-          const rowBg =
-            tool.status === 'running'   ? 'bg-[rgba(var(--cyber-accent-rgb),0.06)] border-[rgba(var(--cyber-accent-rgb),0.20)]' :
-            tool.status === 'completed' ? 'bg-emerald-500/5 border-emerald-900/30' :
-            tool.status === 'error'     ? 'bg-red-500/5 border-red-900/30' :
-            'bg-transparent border-transparent'
-
-          return (
-            <motion.div
-              key={tool.id}
-              layout
-              variants={staggerItem}
-              className={cn(
-                'flex items-center gap-2 rounded-md border px-2 py-1.5 transition-colors duration-200',
-                rowBg
-              )}
-            >
-              {/* Icono herramienta */}
-              <div className="shrink-0">
-                {SvgIcon
-                  ? <SvgIcon className={cn('h-3.5 w-3.5', tool.color)} />
-                  : <LucideIcon className={cn('h-3.5 w-3.5', tool.color)} />
-                }
-              </div>
-
-              {/* Nombre */}
-              <span className="flex-1 truncate font-mono text-[10px] text-foreground/75">
-                {tool.name}
-              </span>
-
-              {/* Conteo */}
-              {tool.count > 0 && (
-                <span className={cn('font-mono text-[10px] font-bold tabular-nums shrink-0', tool.color)}>
-                  {tool.count}
-                </span>
-              )}
-
-              {/* Estado */}
-              {statusIcon}
-            </motion.div>
-          )
-        })}
+        {stats.map(tool => (
+          <motion.div key={tool.id} layout variants={staggerItem}>
+            <ToolCard
+              compact
+              name={tool.name}
+              icon={tool.icon}
+              svgIcon={tool.svgIcon}
+              color="cyan"
+              status={tool.status}
+              resultLabel={tool.count > 0 ? String(tool.count) : undefined}
+              onClick={() => onSelectTool(tool.id)}
+            />
+          </motion.div>
+        ))}
       </motion.div>
     </CyberCard>
   )
@@ -426,6 +395,9 @@ function ScannerError({ error, reset }: { error: Error; reset: () => void }) {
 function ScannerContent() {
   const { currentScan, error, clearError, isLoading } = useScan()
   const [mounted, setMounted] = useState(false)
+  const [selectedToolId, setSelectedToolId] = useState<string | null>(null)
+  const tDocs = useTranslations()
+  const toolDocs = useMemo(() => getToolDocs(tDocs), [tDocs])
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -452,6 +424,8 @@ function ScannerContent() {
   )
 
   if (!mounted) return <ScannerSkeleton />
+
+  const selectedTool = toolStats.find(ts => ts.id === selectedToolId)
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -481,6 +455,9 @@ function ScannerContent() {
               <LabsBar />
             </div>
           </div>
+
+          {/* ── Taxonomía de herramientas (Pentesting + Huella Digital) ── */}
+          <ToolTaxonomyStrip sections={[PENTESTING, HUELLA_DIGITAL]} className="justify-center" />
 
           {/* ── Error global ── */}
           {error && (
@@ -531,14 +508,14 @@ function ScannerContent() {
                   {currentScan.score && (
                     <GlobalScore score={currentScan.score} counts={severityCounts} />
                   )}
-                  <ToolGrid stats={toolStats} />
+                  <ToolGrid stats={toolStats} onSelectTool={setSelectedToolId} />
                 </div>
               )}
 
               {/* Tool grid durante escaneo (fila completa) */}
               {isRunning && (
                 <div className="lg:col-span-3">
-                  <ToolGrid stats={toolStats} />
+                  <ToolGrid stats={toolStats} onSelectTool={setSelectedToolId} />
                 </div>
               )}
             </div>
@@ -579,6 +556,17 @@ function ScannerContent() {
           <p className="mt-0.5 opacity-50">Solo para uso ético y autorizado en entornos de prueba</p>
         </div>
       </footer>
+
+      <ToolDetailDrawer
+        open={!!selectedToolId}
+        onClose={() => setSelectedToolId(null)}
+        doc={toolDocs.find(d => d.id === selectedToolId)}
+        name={selectedTool?.name ?? selectedToolId ?? ''}
+        color="cyan"
+        status={selectedTool?.status ?? 'idle'}
+        resultLabel={selectedTool && selectedTool.count > 0 ? String(selectedTool.count) : undefined}
+        target={currentScan?.target}
+      />
     </div>
   )
 }

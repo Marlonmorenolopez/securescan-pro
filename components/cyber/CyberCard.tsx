@@ -18,6 +18,13 @@ interface CyberCardProps extends HTMLAttributes<HTMLDivElement> {
   brackets?: boolean
   /** Padding interno (por defecto: p-4) */
   padding?: string
+  /**
+   * Nivel de superficie del Design System (0-3, ver globals.css → Surface
+   * system). Opcional — si se omite, se mantiene el comportamiento previo
+   * (depth-1 con hover:depth-2). Úsalo cuando quieras un nivel explícito
+   * distinto al default (ej. surface={3} para un panel flotante/hero).
+   */
+  surface?: 0 | 1 | 2 | 3
 }
 
 const variantStyles: Record<CyberCardVariant, string> = {
@@ -40,8 +47,15 @@ const bracketColor: Record<CyberCardVariant, string> = {
   ghost:    'border-[rgba(var(--cyber-accent-rgb),0.30)]',
 }
 
+const surfaceClass: Record<0 | 1 | 2 | 3, string> = {
+  0: 'surface-0',
+  1: 'surface-1',
+  2: 'surface-2',
+  3: 'surface-3',
+}
+
 export const CyberCard = forwardRef<HTMLDivElement, CyberCardProps>(
-  ({ className, variant = 'default', glow = false, brackets = true, padding = 'p-4', children, ...props }, ref) => {
+  ({ className, variant = 'default', glow = false, brackets = true, padding = 'p-4', surface, children, ...props }, ref) => {
     return (
       <div
         ref={ref}
@@ -49,6 +63,9 @@ export const CyberCard = forwardRef<HTMLDivElement, CyberCardProps>(
           'relative rounded-lg border bg-[hsl(var(--card))]',
           'transition-all duration-300 ease-out',
           variantStyles[variant],
+          surface !== undefined
+            ? surfaceClass[surface]
+            : variant !== 'ghost' && 'depth-1 shadow-cyber-inset hover:depth-2 hover:-translate-y-px',
           glow && 'hover:shadow-cyber',
           padding,
           className

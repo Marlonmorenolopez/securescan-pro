@@ -73,15 +73,21 @@ export default function NotificationSettingsPage() {
       <main className="flex-1 py-10">
         <div className="container mx-auto max-w-2xl space-y-6 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
-            <Bell className="h-6 w-6 text-[var(--cyber-accent)]" />
-            <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[rgba(var(--cyber-accent-rgb),0.3)] bg-[rgba(var(--cyber-accent-rgb),0.10)]">
+              <Bell className="h-5 w-5 text-[var(--cyber-accent)]" />
+            </span>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
+              <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground">
-            {t('subtitle')}
-          </p>
 
           {loading && (
-            <div className="h-48 animate-pulse rounded-lg bg-muted/30" />
+            <div className="space-y-4">
+              {[0, 1, 2].map(i => (
+                <div key={i} className="h-24 animate-pulse rounded-lg border border-[hsl(var(--border))] bg-muted/20" />
+              ))}
+            </div>
           )}
 
           {!loading && error && (
@@ -93,7 +99,7 @@ export default function NotificationSettingsPage() {
 
           {!loading && !error && (
             <>
-              <CyberCard>
+              <CyberCard className="transition-colors duration-200 hover:border-[rgba(var(--cyber-accent-rgb),0.25)]">
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-[var(--cyber-accent)]" />
@@ -114,7 +120,7 @@ export default function NotificationSettingsPage() {
                 />
               </CyberCard>
 
-              <CyberCard>
+              <CyberCard className="transition-colors duration-200 hover:border-[rgba(var(--cyber-accent-rgb),0.25)]">
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Webhook className="h-4 w-4 text-[var(--cyber-accent)]" />
@@ -138,7 +144,7 @@ export default function NotificationSettingsPage() {
                 </p>
               </CyberCard>
 
-              <CyberCard>
+              <CyberCard className="transition-colors duration-200 hover:border-[rgba(var(--cyber-accent-rgb),0.25)]">
                 <h2 className="mb-3 font-semibold text-foreground">{t('events')}</h2>
                 <div className="space-y-3">
                   {EVENT_ROWS.map(ev => (

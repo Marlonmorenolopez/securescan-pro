@@ -54,6 +54,10 @@
   --cyber-green:         #059669;
   --cyber-red:           #dc2626;
   --cyber-amber:         #d97706;
+  --cyber-blue:          #1d4ed8;
+  --cyber-blue-rgb:      29, 78, 216;
+  --cyber-magenta:       #a21caf;
+  --cyber-magenta-rgb:   162, 28, 175;
   --cyber-glow:          rgba(0, 151, 179, 0.12);
   --cyber-glow-strong:   rgba(0, 151, 179, 0.28);
   --cyber-grid-color:    rgba(0, 151, 179, 0.05);
@@ -110,6 +114,10 @@
   --cyber-green:         #00ff88;
   --cyber-red:           #ff3b3b;
   --cyber-amber:         #ffb800;
+  --cyber-blue:          #3b82f6;
+  --cyber-blue-rgb:      59, 130, 246;
+  --cyber-magenta:       #e879f9;
+  --cyber-magenta-rgb:   232, 121, 249;
   --cyber-glow:          rgba(0, 212, 255, 0.12);
   --cyber-glow-strong:   rgba(0, 212, 255, 0.30);
   --cyber-grid-color:    rgba(0, 212, 255, 0.035);
@@ -190,6 +198,55 @@
     background-size: 48px 48px;
     animation: gridPulse 10s ease-in-out infinite;
   }
+
+  /* ── Profundidad / Holographic UI (Polish final) ──────────────────
+     Utilidades de superficie con sensación física real: highlight
+     superior (luz), sombra inferior (peso) y un leve realce interior.
+     Solo box-shadow/gradients — GPU-friendly, sin filtros costosos
+     salvo el backdrop-blur ya usado en Header/Sidebar. */
+  .glass-surface {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 40%),
+      hsl(var(--card));
+    backdrop-filter: blur(10px);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.06),
+      0 1px 0 rgba(0,0,0,0.20),
+      0 8px 24px -12px rgba(0,0,0,0.45);
+  }
+
+  /* Niveles de elevación — panel "flotando" sobre el fondo */
+  .depth-1 { box-shadow: 0 1px 2px rgba(0,0,0,0.20), 0 2px 8px -4px rgba(0,0,0,0.35); }
+  .depth-2 { box-shadow: 0 2px 6px rgba(0,0,0,0.25), 0 8px 20px -8px rgba(0,0,0,0.45); }
+  .depth-3 { box-shadow: 0 4px 12px rgba(0,0,0,0.30), 0 16px 40px -14px rgba(0,0,0,0.55); }
+
+  /* Borde holográfico sutil — gradiente de acento que recorre el borde */
+  .holo-edge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(var(--cyber-accent-rgb), 0.35),
+    transparent 40%,
+    transparent 60%,
+    rgba(var(--cyber-accent-rgb), 0.20)
+  );
+
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+
+  pointer-events: none;
+}
 
   /* Glassmorphism */
   .glass {
@@ -327,8 +384,83 @@
 }
 
 /* ─────────────────────────────────────────────────────────────
-   KEYFRAMES
+   DESIGN SYSTEM v2 — "Cyber Security Command Center"
+   Formaliza el vocabulario visual ya existente (glass-surface,
+   depth-1/2/3, cyber-glow, corner-brackets...) en un sistema con
+   nombres semánticos consistentes. 100% aditivo — nada de lo de
+   arriba se modifica ni se elimina; los componentes existentes que
+   usan .depth-* / .glass-surface / .cyber-glow siguen funcionando igual.
    ───────────────────────────────────────────────────────────── */
+@layer utilities {
+
+  /* ── SURFACES ──────────────────────────────────────────────────
+     4 niveles de elevación, del fondo de la app hacia el elemento
+     más "flotante". Cada nivel = más contraste + más profundidad,
+     nunca más blur (el blur se satura rápido y daña legibilidad). */
+
+  /* Surface 0 — el fondo de la aplicación. Nada flota aquí. */
+  .surface-0 { background: hsl(var(--background)); }
+
+  /* Surface 1 — paneles primarios (CyberCard/CyberPanel por defecto). */
+  .surface-1 {
+    background: hsl(var(--card));
+    box-shadow: 0 1px 2px rgba(0,0,0,0.20), 0 2px 8px -4px rgba(0,0,0,0.35); /* = .depth-1 */
+  }
+
+  /* Surface 2 — paneles elevados (hover de cards, paneles activos). */
+  .surface-2 {
+    background: hsl(var(--card));
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.06),
+      0 2px 6px rgba(0,0,0,0.25), 0 8px 20px -8px rgba(0,0,0,0.45); /* = .depth-2 + highlight */
+  }
+
+  /* Surface 3 — holográfico/flotante (modales, drawers, hero). = .glass-surface + .depth-3 */
+  .surface-3 {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 40%),
+      hsl(var(--card));
+    backdrop-filter: blur(10px);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.06),
+      0 4px 12px rgba(0,0,0,0.30), 0 16px 40px -14px rgba(0,0,0,0.55);
+  }
+
+  /* ── BORDER SYSTEM ─────────────────────────────────────────────
+     Un solo lenguaje de borde para toda la app: reposo, hover,
+     activo, y los 2 estados semánticos que más se repiten (crítico
+     / éxito). El resto de severidades (high/medium/low/info) ya las
+     cubre CyberCard/CyberBadge — no se duplican aquí. */
+  .border-cyber        { border-color: rgba(var(--cyber-accent-rgb), 0.18); }
+  .border-cyber-hover:hover { border-color: rgba(var(--cyber-accent-rgb), 0.40); }
+  .border-cyber-active { border-color: rgba(var(--cyber-accent-rgb), 0.55); }
+  .border-critical      { border-color: rgba(var(--cyber-red), 0.5); }
+  .border-success       { border-color: rgba(16, 185, 129, 0.5); }
+
+  /* ── GLOW SYSTEM ───────────────────────────────────────────────
+     .cyber-glow / .cyber-glow-strong (cyan) ya existían — se agregan
+     las variantes de color que faltaban. Mismo patrón, mismo peso
+     visual, para que ningún color "grite" más que otro. */
+  .glow-blue    { box-shadow: 0 0 12px rgba(var(--cyber-blue-rgb), 0.18),    0 0 28px rgba(var(--cyber-blue-rgb), 0.10); }
+  .glow-purple  { box-shadow: 0 0 12px rgba(var(--cyber-purple-rgb), 0.18), 0 0 28px rgba(var(--cyber-purple-rgb), 0.10); }
+  .glow-critical{ box-shadow: 0 0 12px rgba(248, 113, 113, 0.20),           0 0 28px rgba(248, 113, 113, 0.10); }
+  .glow-success { box-shadow: 0 0 12px rgba(16, 185, 129, 0.18),            0 0 28px rgba(16, 185, 129, 0.10); }
+  .glow-warning { box-shadow: 0 0 12px rgba(251, 191, 36, 0.18),            0 0 28px rgba(251, 191, 36, 0.10); }
+
+  /* ── TIPOGRAFÍA ────────────────────────────────────────────────
+     Jerarquía explícita: Marketing (display/h1) vs UI (h2/h3/body)
+     vs Data/Technical (mono, para IDs, targets, comandos, hashes). */
+  .text-display   { @apply text-4xl sm:text-5xl font-bold tracking-tight; }
+  .text-h1        { @apply text-3xl font-bold tracking-tight; }
+  .text-h2        { @apply text-xl  font-bold tracking-tight; }
+  .text-h3        { @apply text-base font-semibold; }
+  .text-body      { @apply text-sm leading-relaxed; }
+  .text-small     { @apply text-xs text-muted-foreground; }
+  .text-caption   { @apply text-[10px] uppercase tracking-wider text-muted-foreground font-mono; }
+  .text-technical { @apply font-mono text-xs tabular-nums; }
+}
+
+
 @keyframes gridPulse {
   0%,  100% { opacity: 0.55; }
   50%        { opacity: 1;    }
@@ -427,4 +559,21 @@
     animation-iteration-count: 1     !important;
     transition-duration:      0.01ms !important;
   }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   ACCESIBILIDAD — foco visible consistente (Fase 2)
+   No quita el outline nativo salvo que el propio elemento ya
+   defina su propio focus-visible (ej. ToolCard); solo homogeneiza
+   color/grosor para el resto de botones, links y controles.
+   ───────────────────────────────────────────────────────────── */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--cyber-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
 }

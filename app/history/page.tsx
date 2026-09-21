@@ -5,6 +5,10 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import { ANALYSIS_LEAVES, type NavLeaf } from '@/lib/nav-config'
+import { useLeafLabel } from '@/lib/nav-i18n'
+import { useTranslations } from 'next-intl'
+import { SeverityBars } from '@/components/cyber/SeverityBars'
 import { motion, useReducedMotion } from 'framer-motion'
 import { toast } from 'sonner'
 import {
@@ -39,6 +43,20 @@ import {
 } from 'recharts'
 
 // ─── Helpers (sin cambios) ────────────────────────────────────────────────────
+function AnalysisQuickLink({ leaf }: { leaf: NavLeaf }) {
+  const label = useLeafLabel(leaf)
+  const Icon = leaf.icon
+  return (
+    <Link
+      href={leaf.href}
+      className="flex items-center gap-1.5 rounded-full border border-[rgba(217,119,6,0.30)] bg-[rgba(217,119,6,0.06)] px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-[var(--cyber-amber)] transition-colors hover:bg-[rgba(217,119,6,0.12)]"
+    >
+      <Icon className="h-3 w-3" />
+      {label}
+    </Link>
+  )
+}
+
 function getGradeColor(grade: string): string {
   if (grade?.startsWith('A')) return 'text-emerald-400'
   if (grade?.startsWith('B')) return 'text-amber-400'
@@ -237,6 +255,7 @@ function HistorySkeleton() {
 export default function HistoryPage() {
   const prefersReduced = useReducedMotion() ?? false
   const sv = (v: Parameters<typeof getVariants>[0]) => getVariants(v, prefersReduced)
+  const tAnalysis = useTranslations('severityPanel')
 
   const [scans, setScans]             = useState<ScanStatusResponse[]>([])
   const [loading, setLoading]         = useState(true)
@@ -286,6 +305,23 @@ export default function HistoryPage() {
     errors:    scans.filter(s => s.status === 'error').length,
     critical:  scans.filter(s => (s.score?.breakdown?.critical ?? 0) > 0).length,
   }
+
+  // Distribución de severidad agregada — suma real de los breakdowns de
+  // cada escaneo cargado (ningún número inventado; 0 si no hay datos).
+  const severityTotals = scans.reduce(
+    (acc, s) => {
+      const b = s.score?.breakdown
+      if (b) {
+        acc.critical += b.critical
+        acc.high     += b.high
+        acc.medium   += b.medium
+        acc.low      += b.low
+        acc.info     += b.info
+      }
+      return acc
+    },
+    { critical: 0, high: 0, medium: 0, low: 0, info: 0 }
+  )
 
   // Tendencia de score en el tiempo — usa currentScan.score.total real (la
   // misma fuente de verdad que ScoreCard/GlobalScore en el Scanner), ordenado
@@ -337,6 +373,13 @@ export default function HistoryPage() {
               </CyberButton>
             </div>
           </motion.div>
+
+          {/* ── Accesos rápidos de Análisis ── */}
+          <div className="flex flex-wrap gap-2">
+            {ANALYSIS_LEAVES.map((leaf) => (
+              <AnalysisQuickLink key={leaf.id} leaf={leaf} />
+            ))}
+          </div>
 
           {/* ── Toggle de vista ── */}
           <div className="flex gap-2">
@@ -436,6 +479,17 @@ export default function HistoryPage() {
                 </span>
               </motion.div>
             ))}
+          </motion.div>
+
+          {/* ── SECURITY ANALYSIS — distribución de severidad agregada ── */}
+          <motion.div variants={sv(fadeIn)} initial="hidden" animate="visible">
+            <CyberPanel
+              title={tAnalysis('title')}
+              subtitle={tAnalysis('subtitle')}
+              action={<Shield className="h-4 w-4 text-[var(--cyber-amber)]" />}
+            >
+              <SeverityBars breakdown={severityTotals} />
+            </CyberPanel>
           </motion.div>
 
           {/* ── Tendencia de Score en el tiempo ── */}

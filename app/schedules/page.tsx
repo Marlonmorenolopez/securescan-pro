@@ -188,8 +188,8 @@ function ScheduleRow({ schedule, onChange, onDelete }: {
   return (
     <div className={cn(
       'grid grid-cols-[1fr_auto] gap-4 rounded-lg border p-4 transition-all duration-200',
-      'border-[hsl(var(--border))] bg-[hsl(var(--card))]',
-      'hover:border-[rgba(var(--cyber-accent-rgb),0.25)] hover:shadow-cyber-sm',
+      'border-[hsl(var(--border))] bg-[hsl(var(--card))]/70 backdrop-blur-sm',
+      'hover:border-[rgba(var(--cyber-accent-rgb),0.3)] hover:shadow-cyber-sm hover:bg-[hsl(var(--card))]',
     )}>
       <div className="flex min-w-0 flex-col gap-1">
         <div className="flex items-center gap-2">

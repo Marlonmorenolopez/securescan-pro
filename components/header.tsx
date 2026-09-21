@@ -1,21 +1,18 @@
 'use client'
- 
-import { useState, useEffect } from 'react'
+
+import { useState, useEffect, useMemo, useRef } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Shield, Github, Menu, X, Moon, Sun, Monitor, Bell } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Github, Moon, Sun, Bell, Search, X } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { getHealth } from '@/lib/api-client'
+import {
+  ALL_SECTIONS, TOP_LEAVES, OPERATIONS_LEAVES, ANALYSIS_LEAVES, DOCS_LEAF, COLOR_VARS,
+} from '@/lib/nav-config'
 
 type SystemStatus = 'checking' | 'online' | 'offline'
 
@@ -61,77 +58,136 @@ function SystemStatusIndicator() {
     </span>
   )
 }
- 
+
+// Índice de búsqueda plano, construido a partir del catálogo único de
+// navegación (lib/nav-config.tsx). Búsqueda 100% cliente sobre rutas
+// existentes — no se inventa ninguna capacidad de backend.
+interface SearchEntry { label: string; sub?: string; href: string; color: keyof typeof COLOR_VARS }
+
+function buildSearchIndex(
+  tLeaves: (key: string) => string,
+  tSections: (key: string) => string,
+): SearchEntry[] {
+  const entries: SearchEntry[] = []
+  for (const leaf of [...TOP_LEAVES, ...OPERATIONS_LEAVES, ...ANALYSIS_LEAVES, DOCS_LEAF]) {
+    entries.push({ label: tLeaves(leaf.id), href: leaf.href, color: 'cyan' })
+  }
+  for (const section of ALL_SECTIONS) {
+    const sectionLabel = tSections(`${section.id}.label`)
+    entries.push({ label: sectionLabel, href: section.href, color: section.color })
+    for (const group of section.groups) {
+      const groupLabel = tSections(`${section.id}.groups.${group.key}`)
+      for (const tool of group.tools) {
+        entries.push({ label: tool, sub: `${sectionLabel} · ${groupLabel}`, href: section.href, color: section.color })
+      }
+    }
+  }
+  return entries
+}
+
+function QuickSearch() {
+  const [query, setQuery] = useState('')
+  const [open, setOpen] = useState(false)
+  const router = useRouter()
+  const boxRef = useRef<HTMLDivElement>(null)
+  const tLeaves = useTranslations('navCatalog.leaves')
+  const tSections = useTranslations('navCatalog.sections')
+  const tNav = useTranslations('nav')
+  const index = useMemo(() => buildSearchIndex(tLeaves, tSections), [tLeaves, tSections])
+
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return []
+    return index
+      .filter((e) => e.label.toLowerCase().includes(q) || e.sub?.toLowerCase().includes(q))
+      .slice(0, 8)
+  }, [query, index])
+
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onClick)
+    return () => document.removeEventListener('mousedown', onClick)
+  }, [])
+
+  function go(href: string) {
+    setOpen(false)
+    setQuery('')
+    router.push(href)
+  }
+
+  return (
+    <div ref={boxRef} className="relative hidden flex-1 max-w-md md:block">
+      <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+      <input
+        value={query}
+        onChange={(e) => { setQuery(e.target.value); setOpen(true) }}
+        onFocus={() => setOpen(true)}
+        onKeyDown={(e) => { if (e.key === 'Enter' && results[0]) go(results[0].href) }}
+        placeholder={tNav('searchPlaceholder')}
+        className="h-9 w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--secondary))]/50 pl-9 pr-8 font-mono text-xs text-foreground placeholder:text-muted-foreground focus:border-[rgba(var(--cyber-accent-rgb),0.45)] focus:outline-none"
+      />
+      {query && (
+        <button
+          onClick={() => { setQuery(''); setOpen(false) }}
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      )}
+
+      {open && results.length > 0 && (
+        <div className="absolute left-0 right-0 top-11 z-50 max-h-80 overflow-y-auto rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--popover))] p-1.5 shadow-2xl">
+          {results.map((r, i) => {
+            const c = COLOR_VARS[r.color]
+            return (
+              <button
+                key={`${r.href}-${r.label}-${i}`}
+                onClick={() => go(r.href)}
+                className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-xs hover:bg-[rgba(var(--cyber-accent-rgb),0.08)]"
+              >
+                <span className="flex flex-col">
+                  <span className="font-medium text-foreground">{r.label}</span>
+                  {r.sub && <span className="text-[10px] text-muted-foreground">{r.sub}</span>}
+                </span>
+                <span
+                  className="shrink-0 rounded border px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider"
+                  style={{ color: c.fg, borderColor: `rgba(${c.rgb},0.35)` }}
+                >
+                  {r.href}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 interface HeaderProps {}
 
 export function Header({}: HeaderProps) {
   const t = useTranslations('nav')
-
-  // navItems se construye dentro del componente para acceder a las traducciones
-  const navItems = [
-    { href: '/',         label: t('home')    },
-    { href: '/dashboard', label: t('dashboard') },
-    { href: '/scanner',  label: t('scanner') },
-    { href: '/code-scan', label: t('codeScan') },
-    { href: '/osint',    label: t('osint') },
-    { href: '/history',  label: t('history') },
-    { href: '/schedules', label: t('schedules') },
-    { href: '/lab',      label: t('lab')     },
-    { href: '/docs',     label: t('docs')    },
-  ]
-
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
-  const pathname = usePathname()
   const { setTheme, resolvedTheme } = useTheme()
- 
+
   // CRÍTICO: sin este guard, next-themes causa hydration mismatch
   // y el toggle queda congelado o muestra el ícono equivocado
   useEffect(() => {
     setMounted(true)
   }, [])
- 
+
   // resolvedTheme resuelve 'system' al valor real ('light' | 'dark')
   const isDark = mounted && resolvedTheme === 'dark'
- 
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-[hsl(var(--border))]/60 bg-background/85 backdrop-blur-lg">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg overflow-hidden border border-[rgba(var(--cyber-accent-rgb),0.20)] bg-[rgba(var(--cyber-accent-rgb),0.06)] transition-all group-hover:border-[rgba(var(--cyber-accent-rgb),0.45)]">
-            <img
-              src={isDark ? '/icon-dark-100x100.png' : '/icon-light-100x100.png'}
-              alt="SecureScan Pro"
-              width={36}
-              height={36}
-              className="h-9 w-9 object-contain"
-            />
-          </div>
-          <div className="hidden flex-col sm:flex">
-            <span className="font-mono text-sm font-semibold leading-tight">SecureScan Pro</span>
-            <span className="font-mono text-[10px] text-[var(--cyber-accent)]">v5.0</span>
-          </div>
-        </Link>
- 
-        <nav className="hidden items-center gap-1 md:flex">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'rounded-md px-3 py-2 font-mono text-xs font-medium uppercase tracking-wider transition-colors',
-                'hover:bg-[rgba(var(--cyber-accent-rgb),0.08)] hover:text-[var(--cyber-accent)]',
-                pathname === item.href
-                  ? 'bg-[rgba(var(--cyber-accent-rgb),0.10)] text-[var(--cyber-accent)]'
-                  : 'text-muted-foreground'
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
- 
-        <div className="flex items-center gap-2">
+    <header className="sticky top-0 z-40 w-full border-b border-[hsl(var(--border))]/60 glass-surface">
+      <div className="flex h-16 items-center gap-4 px-4 pl-16 lg:pl-6">
+        <QuickSearch />
+
+        <div className="ml-auto flex items-center gap-2">
           <SystemStatusIndicator />
 
           <Button variant="ghost" size="icon" className="h-9 w-9" asChild>
@@ -158,7 +214,7 @@ export function Header({}: HeaderProps) {
             )}
             <span className="sr-only">{t('toggleTheme')}</span>
           </Button>
- 
+
           <Button variant="ghost" size="icon" className="h-9 w-9" asChild>
             <a
               href="https://github.com/Marlonmorenolopez/SecureScan"
@@ -172,44 +228,8 @@ export function Header({}: HeaderProps) {
 
           {/* Selector de idioma ES / EN */}
           <LanguageSwitcher />
- 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 md:hidden"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
-          </Button>
         </div>
       </div>
- 
-      {mobileMenuOpen && (
-        <nav className="border-t border-border bg-background md:hidden">
-          <div className="container mx-auto flex flex-col gap-1 p-4">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className={cn(
-                  'rounded-md px-3 py-2 font-mono text-xs font-medium uppercase tracking-wider transition-colors',
-                  'hover:bg-[rgba(var(--cyber-accent-rgb),0.08)] hover:text-[var(--cyber-accent)]',
-                  pathname === item.href
-                    ? 'bg-[rgba(var(--cyber-accent-rgb),0.10)] text-[var(--cyber-accent)]'
-                    : 'text-muted-foreground'
-                )}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
-        </nav>
-      )}
     </header>
   )
 }

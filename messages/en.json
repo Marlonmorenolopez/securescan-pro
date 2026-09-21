@@ -24,7 +24,10 @@
     "github": "GitHub",
     "schedules": "Schedules",
     "settings": "Settings",
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "collapseSidebar": "Collapse",
+    "openNav": "Open navigation",
+    "searchPlaceholder": "Search tools, sections…"
   },
   "scanner": {
     "title": "Start Security Analysis",
@@ -528,5 +531,164 @@
     "sevMedium": "Medium or above",
     "sevHigh": "High or above",
     "sevCritical": "Critical only"
+  },
+  "navCatalog": {
+    "sections": {
+      "pentesting": {
+        "label": "Pentesting",
+        "description": "Assess and exploit vulnerabilities in your targets.",
+        "groups": {
+          "reconocimiento": "Reconnaissance",
+          "enumeracion": "Enumeration",
+          "webSecurity": "Web Security",
+          "authentication": "Authentication",
+          "sqlInjection": "SQL Injection",
+          "exploitation": "Exploitation"
+        }
+      },
+      "osint": {
+        "label": "OSINT",
+        "description": "Gather public information and discover what others don't see.",
+        "groups": {
+          "personas": "People",
+          "dominios": "Domains",
+          "breaches": "Breaches"
+        }
+      },
+      "huella-digital": {
+        "label": "Digital Footprint",
+        "description": "Analyze your assets' exposure and digital footprint.",
+        "groups": {
+          "dominios": "Domains",
+          "infraestructura": "Infrastructure",
+          "reputacion": "Reputation",
+          "tlsSsl": "TLS / SSL"
+        }
+      },
+      "code-security": {
+        "label": "Code Security",
+        "description": "Analyze your code and dependencies for risks.",
+        "groups": {
+          "secrets": "Secrets",
+          "sast": "SAST",
+          "backdoors": "Backdoors",
+          "dependencies": "Dependencies",
+          "containers": "Containers"
+        }
+      },
+      "laboratorios": {
+        "label": "Labs",
+        "description": "Practice in safe environments with real-world scenarios.",
+        "groups": {
+          "entornos": "Environments"
+        }
+      },
+      "analisis": {
+        "label": "Analysis",
+        "description": "Turn results into actionable insight.",
+        "groups": {
+          "findingsRiskScoring": "Findings & Risk Scoring",
+          "compararAnalisis": "Compare Scans",
+          "reportes": "Reports"
+        }
+      },
+      "operaciones": {
+        "label": "Operations",
+        "description": "Manage your scans, history and configuration.",
+        "groups": {
+          "historial": "History",
+          "programacion": "Scheduling",
+          "notificaciones": "Notifications"
+        }
+      }
+    },
+    "leaves": {
+      "inicio": "Home",
+      "dashboard": "Dashboard",
+      "docs": "Documentation",
+      "findings": "Findings",
+      "compare": "Compare Scans",
+      "timeline": "Trends",
+      "historial": "History",
+      "schedules": "Scheduled Scans",
+      "notifications": "Notifications",
+      "settings": "Settings"
+    },
+    "operationsPanel": {
+      "quickAccess": "View all"
+    },
+    "topGroups": {
+      "security": "Security",
+      "labs": "Labs",
+      "analysis": "Analysis",
+      "operations": "Operations"
+    },
+    "overview": {
+      "pentestingTools": "Pentesting Tools",
+      "footprintTools": "Digital Footprint Tools",
+      "codeSecurityTools": "Code Security Tools",
+      "labsAvailable": "Labs Available"
+    }
+  },
+  "dashboard": {
+    "securityOverview": "Security Overview",
+    "welcomePrefix": "Welcome to",
+    "subtitle": "An integrated cybersecurity platform to analyze, assess, and protect your assets.",
+    "technicalTitle": "Technical Dashboard",
+    "technicalSubtitle": "Real data aggregated across all your scans — Web Scan, Code Scan, and OSINT together.",
+    "statusOperational": "OPERATIONAL",
+    "statusChecking": "CHECKING",
+    "statusDegraded": "DEGRADED",
+    "securityPosture": "Security Posture",
+    "securityPostureSubtitle": "Score, risk, and accumulated findings across all your scans",
+    "securityOperations": "Security Activity",
+    "securityOperationsSubtitle": "Breakdown by module and severity across all your scans",
+    "byModuleTitle": "Scans by module",
+    "statTotalScans": "Total scans",
+    "statTotalFindings": "Total findings",
+    "statCritical": "Critical",
+    "statHigh": "High",
+    "scoreAverage": "Average score",
+    "loadingStats": "Loading statistics…",
+    "loadErrorTitle": "Couldn't load the dashboard",
+    "retry": "Retry",
+    "emptyScansTitle": "No scans yet",
+    "emptyScansDetail": "Run your first Web Scan, Code Scan, or OSINT search and this dashboard will fill up with real data.",
+    "severityTitle": "Severity distribution",
+    "severitySubtitle": "All findings, all scan families",
+    "toolTitle": "Tools with most findings",
+    "toolSubtitle": "Historical total",
+    "recentActivityTitle": "Recent activity",
+    "recentActivitySubtitle": "Last 10 jobs, any family"
+  },
+  "severity": {
+    "critical": "Critical",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "info": "Info",
+    "empty": "No findings recorded yet."
+  },
+  "severityPanel": {
+    "title": "Security Analysis",
+    "subtitle": "Severity distribution — all findings across your history"
+  },
+  "toolDetail": {
+    "close": "Close",
+    "target": "Target",
+    "statusLabel": "Status",
+    "result": "Result",
+    "features": "Capabilities",
+    "usage": "Real usage",
+    "officialDocs": "Official documentation",
+    "noDocs": "There's no detailed documentation for this tool in the project yet.",
+    "executionNote": "This tool doesn't run on its own: it runs as part of a single orchestrated Web Scan together with the rest of the Pentesting and Digital Footprint tools.",
+    "status": {
+      "idle": "Idle",
+      "running": "Running",
+      "completed": "Completed",
+      "error": "Error",
+      "skipped": "Skipped"
+    }
   }
 }
