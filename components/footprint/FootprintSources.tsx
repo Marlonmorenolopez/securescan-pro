@@ -75,6 +75,7 @@ function GroupTabTrigger({ groupKey }: { groupKey: string }) {
 
 export function FootprintSources({ model, target }: { model: FootprintModel; target?: string }) {
   const t = useTranslations('footprint')
+  const tSkills = useTranslations('skills')
   const tDocs = useTranslations()
   const toolDocs = useMemo(() => getToolDocs(tDocs), [tDocs])
   const resultLabel = useResultLabel()
@@ -96,7 +97,7 @@ export function FootprintSources({ model, target }: { model: FootprintModel; tar
                 icon={view.skill.icon}
                 svgIcon={getSkillSvgIcon(view.skill.id)}
                 color="emerald"
-                description={t(`sources.role.${view.skill.id}`)}
+                description={tSkills(`${view.skill.id}.short`)}
                 status={STATE_TO_TOOL_STATUS[view.state]}
                 statusLabel={t(`state.${view.state}.title`)}
                 resultLabel={resultLabel(view)}

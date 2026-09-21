@@ -11,16 +11,6 @@ import {
   JuiceShopIcon,
   DvwaIcon,
   WebGoatIcon,
-  WappalyzerIcon,
-  NmapIcon,
-  GobusterIcon,
-  FfufIcon,
-  ZapIcon as ZapToolIcon,
-  NucleiIcon,
-  SqlmapIcon,
-  SearchsploitIcon,
-  MetasploitIcon,
-  PatatorIcon,
 } from '@/components/tool-icons'
 import { Button }   from '@/components/ui/button'
 import { Input }    from '@/components/ui/input'
@@ -34,6 +24,7 @@ import { useScan, type ScanOptions } from '@/lib/scan-context'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { getSkillsByCategory, getSkillById } from '@/lib/skills'
+import { getSkillSvgIcon } from '@/lib/tool-docs'
 
 // labTargets movido dentro de ScanForm — ver B1-c
 
@@ -41,10 +32,10 @@ type ToolId =
   | 'wappalyzer' | 'nmap' | 'gobuster' | 'zap' | 'searchsploit'
   | 'metasploit'  | 'nuclei' | 'sqlmap'  | 'patator' | 'ffuf'
 
+// Identidad de cada herramienta (nombre, logo) = Skill Registry, con el mismo
+// id. Aquí solo vive lo propio del formulario: tiempo estimado y opt-in.
 interface ToolConfig {
   id: ToolId
-  name: string
-  icon: React.ElementType
   estimatedTime: string
   optional?: boolean
   /**
@@ -56,28 +47,29 @@ interface ToolConfig {
   covers?: string[]
 }
 
-// Descripciones traducidas en messages/{es,en}.json → scanner.toolDesc.<id>
+// Descripción traducida: messages/{es,en}.json → skills.<id>.short
 const toolsConfig: ToolConfig[] = [
   // ── Reconocimiento ──────────────────────────────────────────────────
-  { id: 'wappalyzer',   name: 'Wappalyzer',    icon: WappalyzerIcon,   estimatedTime: '10s' },
-  { id: 'nmap',         name: 'Nmap',           icon: NmapIcon,         estimatedTime: '30s' },
-  { id: 'gobuster',     name: 'Gobuster',       icon: GobusterIcon,     estimatedTime: '2m' },
-  { id: 'ffuf',         name: 'ffuf',           icon: FfufIcon,         estimatedTime: '2m' },
+  { id: 'wappalyzer', estimatedTime: '10s' },
+  { id: 'nmap', estimatedTime: '30s' },
+  { id: 'gobuster', estimatedTime: '2m' },
+  { id: 'ffuf', estimatedTime: '2m' },
   // ── Análisis de vulnerabilidades ────────────────────────────────────
-  { id: 'zap',          name: 'OWASP ZAP',      icon: ZapToolIcon,      estimatedTime: '10m', covers: ['zap-spider'] },
-  { id: 'nuclei',       name: 'Nuclei',         icon: NucleiIcon,       estimatedTime: '5m' },
-  { id: 'sqlmap',       name: 'SQLMap',         icon: SqlmapIcon,       estimatedTime: '4m', covers: ['injection-scanner'] },
+  { id: 'zap', estimatedTime: '10m', covers: ['zap-spider'] },
+  { id: 'nuclei', estimatedTime: '5m' },
+  { id: 'sqlmap', estimatedTime: '4m', covers: ['injection-scanner'] },
   // ── Explotación y exploits ──────────────────────────────────────────
-  { id: 'searchsploit', name: 'Searchsploit',   icon: SearchsploitIcon, estimatedTime: '10s' },
-  { id: 'metasploit',   name: 'Metasploit',     icon: MetasploitIcon,   estimatedTime: '5m', optional: true },
+  { id: 'searchsploit', estimatedTime: '10s' },
+  { id: 'metasploit', estimatedTime: '5m', optional: true },
   // ── Fuerza bruta ────────────────────────────────────────────────────
-  { id: 'patator',      name: 'Patator',        icon: PatatorIcon,      estimatedTime: '2m' },
+  { id: 'patator', estimatedTime: '2m' },
 ]
 
 // intensityProfiles movido dentro de ScanForm — ver B1-c (se añade DESPUÉS de labTargets)
 
 export function ScanForm() {
   const t = useTranslations('scanner')
+  const tSkills = useTranslations('skills')
   const { startScan, isScanning, error, clearError } = useScan()
   // Nombres de las 12 herramientas de Pentesting, derivados del Skill Registry
   const pentestingToolNames = getSkillsByCategory('pentesting').map(sk => sk.name).join(' · ')
@@ -450,7 +442,8 @@ export function ScanForm() {
             <CollapsibleContent className="pt-3">
               <div className="grid gap-3 sm:grid-cols-2">
                 {toolsConfig.map(tool => {
-                  const Icon = tool.icon
+                  const skill = getSkillById(tool.id)!
+                  const Icon = getSkillSvgIcon(tool.id) ?? skill.icon
                   const isEnabled = options.tools?.[tool.id] ?? false
                   return (
                     <div
@@ -468,13 +461,13 @@ export function ScanForm() {
                       <div className="flex-1 min-w-0">
                         <label htmlFor={`tool-${tool.id}`} className="flex items-center gap-2 cursor-pointer">
                           <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                          <span className="font-medium text-sm">{tool.name}</span>
+                          <span className="font-medium text-sm">{skill.name}</span>
                           {tool.optional && (
                             <Badge variant="outline" className="text-xs border-orange-500/50 text-orange-500">{t('optIn')}</Badge>
                           )}
                         </label>
                         <p className="text-xs text-muted-foreground mt-0.5 ml-6">
-                          {t(`toolDesc.${tool.id}`)} · {tool.estimatedTime}
+                          {tSkills(`${tool.id}.short`)} · {tool.estimatedTime}
                         </p>
                         {tool.covers && (
                           <p className="text-[11px] text-muted-foreground/80 mt-0.5 ml-6">

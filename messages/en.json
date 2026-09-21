@@ -120,18 +120,6 @@
       "checklist": "Verify these are running:",
       "retry": "Retry"
     },
-    "toolDesc": {
-      "wappalyzer": "Web technology fingerprinting",
-      "nmap": "Port and active service scanning",
-      "gobuster": "Directory and path enumeration",
-      "ffuf": "Fast fuzzing of endpoints and API routes",
-      "zap": "DAST — full Spider and Active Scan",
-      "nuclei": "CVE scanner with up-to-date YAML templates",
-      "sqlmap": "Automated injection detection (10 techniques, with SQLMap as fallback)",
-      "searchsploit": "Local ExploitDB exploit search",
-      "metasploit": "MSF auxiliary modules (requires msfrpcd)",
-      "patator": "HTTP brute force — auto-detects login form"
-    },
     "footprintOnlyNotice": "The latest scan ({target}) was launched with Digital Footprint only, so it has no Pentesting results.",
     "footprintOnlyAction": "View in Digital Footprint"
   },
@@ -368,66 +356,6 @@
     "searchNoResults": "No results for “{query}”",
     "featuresLabel": "Features",
     "usageLabel": "Usage",
-    "tool1Desc": "Full technology stack fingerprinting. Detects CMS, frameworks, web servers, JS libraries and e-commerce platforms.",
-    "tool1Feature1": "CMS detection (WordPress, Drupal, Joomla)",
-    "tool1Feature2": "Framework identification (Laravel, Django, Rails)",
-    "tool1Feature3": "Web server versions",
-    "tool1Feature4": "JavaScript libraries and CDNs",
-    "tool1Feature5": "Security headers",
-    "tool2Desc": "The world's most popular network scanner. Discovers hosts, ports, services, versions and operating systems.",
-    "tool2Feature1": "TCP/UDP port discovery",
-    "tool2Feature2": "Service version detection",
-    "tool2Feature3": "Operating system fingerprinting",
-    "tool2Feature4": "NSE scripts for vulnerabilities",
-    "tool2Feature5": "Firewall detection",
-    "tool3Desc": "Modular, multi-purpose brute-force tool. Supports HTTP, SSH, FTP, SMTP and more protocols.",
-    "tool3Feature1": "Multi-protocol support (HTTP, SSH, FTP, SMTP)",
-    "tool3Feature2": "Thread and retry control",
-    "tool3Feature3": "Response code filtering",
-    "tool3Feature4": "Session cookie support",
-    "tool3Feature5": "Compatible with complex forms",
-    "tool4Desc": "Penetration testing framework for controlled exploit validation via RPC daemon. Requires explicit authorization.",
-    "tool4Feature1": "Thousands of exploit and auxiliary modules",
-    "tool4Feature2": "Control via RPC API (msfrpcd)",
-    "tool4Feature3": "Verification modules only in SecureScan",
-    "tool4Feature4": "Customizable payloads",
-    "tool4Feature5": "Integrated reporting",
-    "tool5Desc": "High-speed web fuzzer written in Go. Ideal for content, parameter and virtual host discovery.",
-    "tool5Feature1": "High speed with configurable concurrency",
-    "tool5Feature2": "URL, header and body fuzzing",
-    "tool5Feature3": "Virtual host (vhost) discovery",
-    "tool5Feature4": "Filtering by size, words or status",
-    "tool5Feature5": "Multiple wordlist support",
-    "tool6Desc": "Brute-force tool for discovering directories, files, subdomains and vhosts on web servers.",
-    "tool6Feature1": "Directory and file brute-forcing",
-    "tool6Feature2": "DNS subdomain enumeration",
-    "tool6Feature3": "Virtual host discovery",
-    "tool6Feature4": "Multiple wordlist support",
-    "tool6Feature5": "HTTP status code filtering",
-    "tool7Desc": "Comprehensive security proxy for DAST. Traditional Spider, Ajax Spider, active scan and vulnerability fuzzing.",
-    "tool7Feature1": "Traditional Spider and Ajax Spider",
-    "tool7Feature2": "Active vulnerability scanning",
-    "tool7Feature3": "GET/POST parameter fuzzing",
-    "tool7Feature4": "HTTP/HTTPS traffic interception",
-    "tool7Feature5": "REST API for full automation",
-    "tool8Desc": "Vulnerability scanner based on community YAML templates. Covers CVEs, misconfigurations and exposed panels.",
-    "tool8Feature1": "Thousands of community YAML templates",
-    "tool8Feature2": "Known CVE detection",
-    "tool8Feature3": "Misconfiguration identification",
-    "tool8Feature4": "Exposed admin panels",
-    "tool8Feature5": "Cookie authentication support",
-    "tool9Desc": "Automated tool for SQL injection detection and exploitation. Supports all SQLi types and multiple DBMS.",
-    "tool9Feature1": "Automatic SQLi detection (blind, error, time-based, UNION)",
-    "tool9Feature2": "Support for MySQL, PostgreSQL, MSSQL, Oracle",
-    "tool9Feature3": "Database and table extraction",
-    "tool9Feature4": "Session cookie compatible",
-    "tool9Feature5": "Integration with endpoints discovered by ZAP and ffuf",
-    "tool10Desc": "CLI interface for the Exploit-DB database. Offline exploit search by service/version with CVE reference.",
-    "tool10Feature1": "45,000+ documented exploits",
-    "tool10Feature2": "Offline search, no internet connection needed",
-    "tool10Feature3": "CVE reference for every exploit",
-    "tool10Feature4": "Local copy of exploit code",
-    "tool10Feature5": "Integration with versions detected by Wappalyzer and Nmap",
     "apiTitle": "REST API",
     "apiSubtitle": "Available endpoints for programmatic integration",
     "endpoint1Desc": "Start a new scan",
@@ -456,46 +384,7 @@
     "stackBackend": "Backend",
     "fileStructureTitle": "File Structure",
     "goToScanner": "Go to Scanner",
-    "configureLab": "Configure Lab",
-    "zapSpiderDesc": "OWASP ZAP's spider: crawls the application and discovers URLs, paths and forms. In SecureScan it runs before the active scan as part of the ZAP full scan, and its URLs are listed in the Pentesting results.",
-    "zapSpiderFeature1": "Discovers URLs and paths by crawling the application",
-    "zapSpiderFeature2": "Runs before the active scan inside the ZAP full scan",
-    "zapSpiderFeature3": "Discovered URLs are shown in the ZAP Spider tab",
-    "injectionScannerDesc": "SecureScan Pro's own module that detects 10 injection types with active payloads. It runs in the SQLMap step; if the module isn't available, the backend falls back to SQLMap.",
-    "injectionScannerFeature1": "10 techniques: SQLi, NoSQLi, XPath, XXE, XSS, command injection, path traversal (LFI), SSRF, SSTI and LDAP",
-    "injectionScannerFeature2": "SQLi as error-based, UNION, boolean-blind, time-blind, auth bypass, stacked and second-order",
-    "injectionScannerFeature3": "Built for Juice Shop, DVWA and WebGoat; basic detection on forms of other targets",
-    "injectionScannerFeature4": "Can use the session cookie obtained by Patator",
-    "crtshDesc": "Discovers subdomains from public Certificate Transparency logs by querying crt.sh. No API key required. It may list old subdomains that no longer resolve.",
-    "crtshFeature1": "Unique subdomains and number of certificates found",
-    "crtshFeature2": "Public service, no API key",
-    "crtshFeature3": "If the target is an IP, it tries a reverse DNS (PTR) lookup to get a domain",
-    "dnstwistDesc": "Detects typosquatting and phishing domains similar to the target using the real dnstwist library (14 techniques, including homoglyphs and bitsquatting) and resolves which ones are registered. It caps the number of variants to keep runtime reasonable.",
-    "dnstwistFeature1": "Lists similar domains that are already registered, with their IP",
-    "dnstwistFeature2": "Reports how many variants were checked",
-    "dnstwistFeature3": "If the target is an IP, it first tries a reverse DNS lookup to find a hostname",
-    "shodanDesc": "External exposure via Shodan InternetDB (free, no API key): open ports, hostnames, CPEs, tags and CVEs associated with the IP. It only works with IPs; a domain target is resolved via DNS.",
-    "shodanFeature1": "Open ports and known hostnames of the IP",
-    "shodanFeature2": "CVEs inferred from the banner version: may be false positives if the service is patched",
-    "shodanFeature3": "Tags such as cdn, vpn, tor or compromised",
-    "shodanFeature4": "No API key required; InternetDB data isn't real-time",
-    "virustotalDesc": "Queries the report VirusTotal already has for the domain or IP (API v3); it does not scan the target. Requires the VIRUSTOTAL_API_KEY variable on the server: without it the result is marked as no real data.",
-    "virustotalFeature1": "Engine verdicts: malicious, suspicious, harmless and undetected",
-    "virustotalFeature2": "List of engines that flagged the target",
-    "virustotalFeature3": "Link to the full report on VirusTotal",
-    "abuseipdbDesc": "IP reputation on AbuseIPDB (API v2). It only works with IPs: a domain is resolved via DNS and the resulting IP is reported. Requires the ABUSEIPDB_API_KEY variable on the server.",
-    "abuseipdbFeature1": "Abuse confidence score (0–100) and number of reports",
-    "abuseipdbFeature2": "Country, ISP and usage type of the IP",
-    "abuseipdbFeature3": "Date of the last report and a link to the AbuseIPDB detail",
-    "safebrowsingDesc": "Checks whether Google Safe Browsing already flags the URL as malware, social engineering (phishing) or unwanted software. Requires the GOOGLE_SAFE_BROWSING_API_KEY variable on the server.",
-    "safebrowsingFeature1": "Tells whether the URL is flagged as a threat",
-    "safebrowsingFeature2": "Lists the detected threat types",
-    "safebrowsingFeature3": "Uses the v4 threatMatches:find API",
-    "testsslDesc": "Analyzes the target's TLS/SSL configuration with testssl.sh: offered protocols, known vulnerabilities and certificate data. It connects directly to the target's port.",
-    "testsslFeature1": "Offered protocols (SSLv3, TLS 1.0–1.3) with their severity",
-    "testsslFeature2": "Known TLS vulnerabilities (Heartbleed, ROBOT, etc.)",
-    "testsslFeature3": "Certificate data: subject, expiry, key size and signature algorithm",
-    "testsslFeature4": "If the port doesn't speak TLS or the analysis times out, it is reported as an error"
+    "configureLab": "Configure Lab"
   },
   "lab": {
     "pageTitle": "Practice Lab",
@@ -1056,16 +945,7 @@
     },
     "sources": {
       "title": "Source coverage",
-      "subtitle": "The 7 Digital Footprint sources and their status in this scan",
-      "role": {
-        "crtsh": "Subdomains via Certificate Transparency",
-        "dnstwist": "Typosquatting and phishing",
-        "shodan": "Ports, hostnames and CVEs of the IP",
-        "virustotal": "Domain / IP reputation",
-        "abuseipdb": "Abuse reports about the IP",
-        "safebrowsing": "Malware and phishing per Google",
-        "testssl": "TLS protocols, vulnerabilities and certificate"
-      }
+      "subtitle": "The 7 Digital Footprint sources and their status in this scan"
     },
     "result": {
       "crtsh": "{count, plural, one {# subdomain} other {# subdomains}}",
@@ -1178,6 +1058,232 @@
         "cert_signatureAlgorithm": "Signature algorithm",
         "cert_revocation": "Revocation (CRL/OCSP)"
       }
+    }
+  },
+  "skills": {
+    "wappalyzer": {
+      "short": "Web technology fingerprinting",
+      "description": "Full technology stack fingerprinting. Detects CMS, frameworks, web servers, JS libraries and e-commerce platforms.",
+      "features": [
+        "CMS detection (WordPress, Drupal, Joomla)",
+        "Framework identification (Laravel, Django, Rails)",
+        "Web server versions",
+        "JavaScript libraries and CDNs",
+        "Security headers"
+      ]
+    },
+    "nmap": {
+      "short": "Port and active service scanning",
+      "description": "The world's most popular network scanner. Discovers hosts, ports, services, versions and operating systems.",
+      "features": [
+        "TCP/UDP port discovery",
+        "Service version detection",
+        "Operating system fingerprinting",
+        "NSE scripts for vulnerabilities",
+        "Firewall detection"
+      ]
+    },
+    "gobuster": {
+      "short": "Directory and path enumeration",
+      "description": "Brute-force tool for discovering directories, files, subdomains and vhosts on web servers.",
+      "features": [
+        "Directory and file brute-forcing",
+        "DNS subdomain enumeration",
+        "Virtual host discovery",
+        "Multiple wordlist support",
+        "HTTP status code filtering"
+      ]
+    },
+    "ffuf": {
+      "short": "Fast fuzzing of endpoints and API routes",
+      "description": "High-speed web fuzzer written in Go. Ideal for content, parameter and virtual host discovery.",
+      "features": [
+        "High speed with configurable concurrency",
+        "URL, header and body fuzzing",
+        "Virtual host (vhost) discovery",
+        "Filtering by size, words or status",
+        "Multiple wordlist support"
+      ]
+    },
+    "zap": {
+      "short": "DAST — full Spider and Active Scan",
+      "description": "Comprehensive security proxy for DAST. Traditional Spider, Ajax Spider, active scan and vulnerability fuzzing.",
+      "features": [
+        "Traditional Spider and Ajax Spider",
+        "Active vulnerability scanning",
+        "GET/POST parameter fuzzing",
+        "HTTP/HTTPS traffic interception",
+        "REST API for full automation"
+      ]
+    },
+    "zap-spider": {
+      "short": "Crawls URLs, paths and forms before the active scan",
+      "description": "OWASP ZAP's spider: crawls the application and discovers URLs, paths and forms. In SecureScan it runs before the active scan as part of the ZAP full scan, and its URLs are listed in the Pentesting results.",
+      "features": [
+        "Discovers URLs and paths by crawling the application",
+        "Runs before the active scan inside the ZAP full scan",
+        "Discovered URLs are shown in the ZAP Spider tab"
+      ]
+    },
+    "nuclei": {
+      "short": "CVE scanner with up-to-date YAML templates",
+      "description": "Vulnerability scanner based on community YAML templates. Covers CVEs, misconfigurations and exposed panels.",
+      "features": [
+        "Thousands of community YAML templates",
+        "Known CVE detection",
+        "Misconfiguration identification",
+        "Exposed admin panels",
+        "Cookie authentication support"
+      ]
+    },
+    "injection-scanner": {
+      "short": "Active detection of 10 injection types (SQLi, XSS, SSRF…)",
+      "description": "SecureScan Pro's own module that detects 10 injection types with active payloads. It runs in the SQLMap step; if the module isn't available, the backend falls back to SQLMap.",
+      "features": [
+        "10 techniques: SQLi, NoSQLi, XPath, XXE, XSS, command injection, path traversal (LFI), SSRF, SSTI and LDAP",
+        "SQLi as error-based, UNION, boolean-blind, time-blind, auth bypass, stacked and second-order",
+        "Built for Juice Shop, DVWA and WebGoat; basic detection on forms of other targets",
+        "Can use the session cookie obtained by Patator"
+      ]
+    },
+    "patator": {
+      "short": "HTTP brute force — auto-detects login form",
+      "description": "Modular, multi-purpose brute-force tool. Supports HTTP, SSH, FTP, SMTP and more protocols.",
+      "features": [
+        "Multi-protocol support (HTTP, SSH, FTP, SMTP)",
+        "Thread and retry control",
+        "Response code filtering",
+        "Session cookie support",
+        "Compatible with complex forms"
+      ]
+    },
+    "sqlmap": {
+      "short": "Automated injection detection (10 techniques, with SQLMap as fallback)",
+      "description": "Automated tool for SQL injection detection and exploitation. Supports all SQLi types and multiple DBMS.",
+      "features": [
+        "Automatic SQLi detection (blind, error, time-based, UNION)",
+        "Support for MySQL, PostgreSQL, MSSQL, Oracle",
+        "Database and table extraction",
+        "Session cookie compatible",
+        "Integration with endpoints discovered by ZAP and ffuf"
+      ]
+    },
+    "metasploit": {
+      "short": "MSF auxiliary modules (requires msfrpcd)",
+      "description": "Penetration testing framework for controlled exploit validation via RPC daemon. Requires explicit authorization.",
+      "features": [
+        "Thousands of exploit and auxiliary modules",
+        "Control via RPC API (msfrpcd)",
+        "Verification modules only in SecureScan",
+        "Customizable payloads",
+        "Integrated reporting"
+      ]
+    },
+    "searchsploit": {
+      "short": "Local ExploitDB exploit search",
+      "description": "CLI interface for the Exploit-DB database. Offline exploit search by service/version with CVE reference.",
+      "features": [
+        "45,000+ documented exploits",
+        "Offline search, no internet connection needed",
+        "CVE reference for every exploit",
+        "Local copy of exploit code",
+        "Integration with versions detected by Wappalyzer and Nmap"
+      ]
+    },
+    "username-search": {
+      "short": "Checks ~19 curated platforms (GitHub, Reddit, npm...) in parallel, in seconds."
+    },
+    "sherlock": {
+      "short": "The real tool, 414 sites. Much more thorough, but takes minutes instead of seconds."
+    },
+    "theharvester": {
+      "short": "From a domain, discovers emails, subdomains and IPs by cross-checking several public sources."
+    },
+    "xposedornot": {
+      "short": "Checks whether an email appears in known data breaches (billions of records)."
+    },
+    "crtsh": {
+      "short": "Subdomains via Certificate Transparency",
+      "description": "Discovers subdomains from public Certificate Transparency logs by querying crt.sh. No API key required. It may list old subdomains that no longer resolve.",
+      "features": [
+        "Unique subdomains and number of certificates found",
+        "Public service, no API key",
+        "If the target is an IP, it tries a reverse DNS (PTR) lookup to get a domain"
+      ]
+    },
+    "dnstwist": {
+      "short": "Typosquatting and phishing",
+      "description": "Detects typosquatting and phishing domains similar to the target using the real dnstwist library (14 techniques, including homoglyphs and bitsquatting) and resolves which ones are registered. It caps the number of variants to keep runtime reasonable.",
+      "features": [
+        "Lists similar domains that are already registered, with their IP",
+        "Reports how many variants were checked",
+        "If the target is an IP, it first tries a reverse DNS lookup to find a hostname"
+      ]
+    },
+    "shodan": {
+      "short": "Ports, hostnames and CVEs of the IP",
+      "description": "External exposure via Shodan InternetDB (free, no API key): open ports, hostnames, CPEs, tags and CVEs associated with the IP. It only works with IPs; a domain target is resolved via DNS.",
+      "features": [
+        "Open ports and known hostnames of the IP",
+        "CVEs inferred from the banner version: may be false positives if the service is patched",
+        "Tags such as cdn, vpn, tor or compromised",
+        "No API key required; InternetDB data isn't real-time"
+      ]
+    },
+    "virustotal": {
+      "short": "Domain / IP reputation",
+      "description": "Queries the report VirusTotal already has for the domain or IP (API v3); it does not scan the target. Requires the VIRUSTOTAL_API_KEY variable on the server: without it the result is marked as no real data.",
+      "features": [
+        "Engine verdicts: malicious, suspicious, harmless and undetected",
+        "List of engines that flagged the target",
+        "Link to the full report on VirusTotal"
+      ]
+    },
+    "abuseipdb": {
+      "short": "Abuse reports about the IP",
+      "description": "IP reputation on AbuseIPDB (API v2). It only works with IPs: a domain is resolved via DNS and the resulting IP is reported. Requires the ABUSEIPDB_API_KEY variable on the server.",
+      "features": [
+        "Abuse confidence score (0–100) and number of reports",
+        "Country, ISP and usage type of the IP",
+        "Date of the last report and a link to the AbuseIPDB detail"
+      ]
+    },
+    "safebrowsing": {
+      "short": "Malware and phishing per Google",
+      "description": "Checks whether Google Safe Browsing already flags the URL as malware, social engineering (phishing) or unwanted software. Requires the GOOGLE_SAFE_BROWSING_API_KEY variable on the server.",
+      "features": [
+        "Tells whether the URL is flagged as a threat",
+        "Lists the detected threat types",
+        "Uses the v4 threatMatches:find API"
+      ]
+    },
+    "testssl": {
+      "short": "TLS protocols, vulnerabilities and certificate",
+      "description": "Analyzes the target's TLS/SSL configuration with testssl.sh: offered protocols, known vulnerabilities and certificate data. It connects directly to the target's port.",
+      "features": [
+        "Offered protocols (SSLv3, TLS 1.0–1.3) with their severity",
+        "Known TLS vulnerabilities (Heartbleed, ROBOT, etc.)",
+        "Certificate data: subject, expiry, key size and signature algorithm",
+        "If the port doesn't speak TLS or the analysis times out, it is reported as an error"
+      ]
+    },
+    "gitleaks": {
+      "short": "Hardcoded secrets (API keys, passwords, private keys) with community-curated rules."
+    },
+    "trufflehog": {
+      "short": "Like Gitleaks, but verifies live against the provider's real API whether the secret is still active."
+    },
+    "semgrep": {
+      "short": "Real SAST: SQLi, XSS, path traversal and more, with ~280 community rules that understand code syntax."
+    },
+    "backdoor-scanner": {
+      "short": "Known webshell patterns: chained eval+base64, exec with user input, insecure deserialization."
+    },
+    "dependency-check": {
+      "short": "A second CVE source for dependencies, to cross-check against what Trivy reports."
+    },
+    "trivy": {
+      "short": "Dependencies with known CVEs via lockfiles, or a full Docker image (layer by layer) from its registry."
     }
   }
 }

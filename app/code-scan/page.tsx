@@ -17,6 +17,7 @@ import { CyberCard } from '@/components/cyber/CyberCard'
 import { ToolCard } from '@/components/cyber/ToolCard'
 import { ToolTaxonomyStrip } from '@/components/cyber/ToolTaxonomyStrip'
 import { CODE_SECURITY } from '@/lib/nav-config'
+import { useTranslations } from 'next-intl'
 import { CyberPanel } from '@/components/cyber/CyberPanel'
 import { CyberButton } from '@/components/cyber/CyberButton'
 import { CyberBadge } from '@/components/cyber/CyberBadge'
@@ -54,6 +55,7 @@ function CodeScanPageInner() {
   const searchParams = useSearchParams()
   const viewOnlyId = searchParams.get('id')
 
+  const tSkills = useTranslations('skills')
   const [mode, setMode] = useState<Mode>('repo')
   const [repoUrl, setRepoUrl] = useState('')
   const [file, setFile] = useState<File | null>(null)
@@ -177,12 +179,12 @@ function CodeScanPageInner() {
           {/* ── Herramientas Code Security (estado real) ── */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {([
-              { key: 'gitleaks',         icon: KeyRound,     name: 'Gitleaks',                 category: 'Secrets',      desc: 'Secretos hardcodeados (API keys, contraseñas, llaves privadas) con reglas curadas de la comunidad.' },
-              { key: 'trufflehog',       icon: ShieldCheck,  name: 'TruffleHog',                category: 'Secrets',      desc: 'Igual que Gitleaks, pero verifica en vivo contra la API real del proveedor si el secreto sigue activo.' },
-              { key: 'backdoors',        icon: Bug,          name: 'Backdoor Scanner',          category: 'Backdoors',    desc: 'Patrones de webshells conocidos: eval+base64 encadenado, exec con input del usuario, deserialización insegura.' },
-              { key: 'semgrep',          icon: ScanSearch,   name: 'Semgrep',                   category: 'SAST',         desc: 'SAST real: SQLi, XSS, path traversal y más, con ~280 reglas de la comunidad que entienden la sintaxis del código.' },
-              { key: 'trivy',            icon: PackageSearch, name: 'Trivy',                    category: 'Containers',   desc: 'Dependencias con CVEs conocidos vía lockfiles, o una imagen Docker completa (capa por capa) desde su registro.' },
-              { key: 'dependency_check', icon: ShieldAlert,  name: 'OWASP Dependency-Check',    category: 'Dependencies', desc: 'Segunda fuente de CVEs en dependencias, para contrastar contra lo que reporta Trivy.' },
+              { key: 'gitleaks',         icon: KeyRound,     name: 'Gitleaks',                 category: 'Secrets',      skillId: 'gitleaks' },
+              { key: 'trufflehog',       icon: ShieldCheck,  name: 'TruffleHog',                category: 'Secrets',      skillId: 'trufflehog' },
+              { key: 'backdoors',        icon: Bug,          name: 'Backdoor Scanner',          category: 'Backdoors',    skillId: 'backdoor-scanner' },
+              { key: 'semgrep',          icon: ScanSearch,   name: 'Semgrep',                   category: 'SAST',         skillId: 'semgrep' },
+              { key: 'trivy',            icon: PackageSearch, name: 'Trivy',                    category: 'Containers',   skillId: 'trivy' },
+              { key: 'dependency_check', icon: ShieldAlert,  name: 'OWASP Dependency-Check',    category: 'Dependencies', skillId: 'dependency-check' },
             ] as const).map((tool) => {
               const toolResult = (scan as any)?.[tool.key]
               const status = !jobId
@@ -202,7 +204,7 @@ function CodeScanPageInner() {
                   icon={tool.icon}
                   color="blue"
                   category={tool.category}
-                  description={tool.desc}
+                  description={tSkills(`${tool.skillId}.short`)}
                   status={status}
                   resultLabel={isDone && typeof count === 'number' ? `${count} hallazgo${count !== 1 ? 's' : ''}` : undefined}
                 />

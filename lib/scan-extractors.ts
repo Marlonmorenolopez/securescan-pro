@@ -365,14 +365,33 @@ export function getTlsSeverityBreakdown(tls: TestSSLResult): TlsSeverityBreakdow
 
 // ─── Cobertura Registry ↔ extractores (aviso en desarrollo) ──────────────────
 
+/**
+ * Skills 'available' de Pentesting/Huella Digital sin extractor, y extractores
+ * huérfanos (sin Skill). Lo consumen `assertExtractorCoverage()` (aviso en
+ * desarrollo) y scripts/check-skills.mjs.
+ */
+export function getExtractorCoverageGaps(): string[] {
+  const gaps: string[] = []
+  const pentest = getPentestingSkills()
+  const footprint = getFootprintSkills()
+  for (const sk of pentest) {
+    if (!PENTEST_EXTRACTORS[sk.id]) gaps.push(`La Skill de Pentesting "${sk.id}" no tiene extractor en PENTEST_EXTRACTORS.`)
+  }
+  for (const sk of footprint) {
+    if (!FOOTPRINT_KEYS[sk.id]) gaps.push(`La Skill de Huella Digital "${sk.id}" no tiene clave en FOOTPRINT_KEYS.`)
+  }
+  for (const id of Object.keys(PENTEST_EXTRACTORS)) {
+    if (!pentest.some(sk => sk.id === id)) gaps.push(`PENTEST_EXTRACTORS."${id}" no corresponde a una Skill 'available' de Pentesting.`)
+  }
+  for (const id of Object.keys(FOOTPRINT_KEYS)) {
+    if (!footprint.some(sk => sk.id === id)) gaps.push(`FOOTPRINT_KEYS."${id}" no corresponde a una Skill 'available' de Huella Digital.`)
+  }
+  return gaps
+}
+
 export function assertExtractorCoverage(): void {
   if (process.env.NODE_ENV === 'production') return
-  for (const s of getPentestingSkills()) {
-    if (!PENTEST_EXTRACTORS[s.id]) console.warn(`[scan-extractors] La Skill de Pentesting "${s.id}" no tiene extractor.`)
-  }
-  for (const s of getFootprintSkills()) {
-    if (!FOOTPRINT_KEYS[s.id]) console.warn(`[scan-extractors] La Skill de Huella Digital "${s.id}" no tiene clave en threat_intel.`)
-  }
+  for (const gap of getExtractorCoverageGaps()) console.warn(`[scan-extractors] ${gap}`)
 }
 
 // Aviso en desarrollo si el Registry y los extractores se desincronizan.

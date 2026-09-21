@@ -16,6 +16,7 @@ import { ToolCard } from '@/components/cyber/ToolCard'
 import { ToolTaxonomyStrip } from '@/components/cyber/ToolTaxonomyStrip'
 import { OSINT } from '@/lib/nav-config'
 import { useGroupLabel } from '@/lib/nav-i18n'
+import { useTranslations } from 'next-intl'
 import { CyberPanel } from '@/components/cyber/CyberPanel'
 import { CyberButton } from '@/components/cyber/CyberButton'
 import { CyberBadge } from '@/components/cyber/CyberBadge'
@@ -41,6 +42,7 @@ function riskBadgeType(label: string | null): 'critical' | 'medium' | 'low' | 'i
 }
 
 export default function OsintPage() {
+  const tSkills = useTranslations('skills')
   const [mode, setMode] = useState<Mode>('email')
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(false)
@@ -200,7 +202,7 @@ export default function OsintPage() {
               icon={Mail}
               color="purple"
               category={categoryBreaches}
-              description="Verifica si un correo aparece en brechas de datos conocidas (miles de millones de registros)."
+              description={tSkills('xposedornot.short')}
               status={loading && mode === 'email' ? 'running' : emailResult ? 'completed' : 'idle'}
               resultLabel={emailResult ? (emailResult.breached ? `${emailResult.breach_count} brecha${emailResult.breach_count !== 1 ? 's' : ''}` : 'Sin brechas') : undefined}
               onClick={() => switchMode('email')}
@@ -210,7 +212,7 @@ export default function OsintPage() {
               icon={AtSign}
               color="purple"
               category={categoryPersonas}
-              description="Revisa ~19 plataformas curadas (GitHub, Reddit, npm...) en paralelo, en segundos."
+              description={tSkills('username-search.short')}
               status={loading && mode === 'username' ? 'running' : usernameResult ? 'completed' : 'idle'}
               resultLabel={usernameResult ? `${usernameResult.found.length} sitio${usernameResult.found.length !== 1 ? 's' : ''}` : undefined}
               onClick={() => switchMode('username')}
@@ -220,7 +222,7 @@ export default function OsintPage() {
               icon={Telescope}
               color="purple"
               category={categoryPersonas}
-              description="La herramienta real, 414 sitios. Mucho más completa, pero tarda minutos en vez de segundos."
+              description={tSkills('sherlock.short')}
               status={deepStarting ? 'running' : deepScan ? (deepScan.status === 'running' ? 'running' : deepScan.status === 'completed' ? 'completed' : 'error') : 'idle'}
               resultLabel={deepScan?.status === 'completed' ? `${deepScan.found.length} sitio${deepScan.found.length !== 1 ? 's' : ''}` : undefined}
               onClick={() => switchMode('username')}
@@ -230,7 +232,7 @@ export default function OsintPage() {
               icon={Globe2}
               color="purple"
               category={categoryDominios}
-              description="A partir de un dominio, descubre correos, subdominios e IPs cruzando varias fuentes públicas."
+              description={tSkills('theharvester.short')}
               status={loading && mode === 'domain' ? 'running' : harvestScan ? (harvestScan.status === 'running' ? 'running' : harvestScan.status === 'completed' ? 'completed' : 'error') : 'idle'}
               resultLabel={harvestScan?.status === 'completed' ? `${harvestScan.emails.length + harvestScan.hosts.length + harvestScan.ips.length} activos` : undefined}
               onClick={() => switchMode('domain')}

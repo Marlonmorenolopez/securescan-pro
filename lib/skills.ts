@@ -11,10 +11,11 @@
 // cada uno) en vez de repetir los datos.
 //
 // QUÉ *NO* VIVE AQUÍ (a propósito):
-//   - El texto traducido (descripción, features) — vive en
-//     messages/{es,en}.json. Este archivo solo guarda la CLAVE i18n
-//     (`docsKey`), nunca el string literal, para no crear una segunda
-//     fuente de contenido traducible.
+//   - El texto traducido. Vive en messages/{es,en}.json bajo una convención
+//     por id (ver SKILL_TEXT_NAMESPACE abajo): `skills.<id>.short`,
+//     `skills.<id>.description`, `skills.<id>.features[]`. El Registry no
+//     guarda claves ni strings traducibles: agregar una Skill no exige
+//     inventar numeración ni elegir entre varios namespaces.
 //   - La extracción de resultados reales del backend (qué campo de
 //     `currentScan` corresponde a qué herramienta, qué paso del pipeline
 //     reporta su estado) — eso vive en lib/scan-extractors.ts
@@ -23,9 +24,19 @@
 //     catálogo. Las páginas /scanner (Pentesting) y /footprint (Huella
 //     Digital) derivan sus herramientas de este Registry a través de ese
 //     archivo. Registrar una Skill aquí NO la conecta al backend.
+//   - Color y ruta de la categoría: ya viven en lib/nav-config.tsx
+//     (NavSection.color / NavSection.href) — no se duplican aquí.
+//
+// ESTADO (`status`) — semántica real, aplicada por los helpers de abajo:
+//   - 'available' → el backend ya la ejecuta. Aparece en navegación,
+//     búsqueda, conteos, /docs, ToolGrid y selectores.
+//   - 'planned'   → catalogada, SIN capacidad real todavía. Los helpers de
+//     consulta NO la devuelven, así que no aparece en ninguna superficie
+//     ejecutable ni en /docs, y no puede llevar `docs` (no se documenta lo
+//     que no existe). Ver scripts/check-skills.mjs.
 //
 // REGISTRAR una Skill (agregarla a SKILLS) es distinto de INTEGRARLA
-// (que el backend realmente la ejecute). Ver docs/adding-a-skill.md.
+// (que el backend realmente la ejecute). Ver public/docs/adding-a-skill.md.
 
 import type { LucideIcon } from 'lucide-react'
 import {
@@ -33,32 +44,35 @@ import {
   UserSearch, Globe2, ShieldAlert, Network, Lock,
   KeySquare, ScanSearch, Eye, FileWarning, Box,
 } from 'lucide-react'
-import type { CyberColor } from '@/lib/nav-config'
 
 /** Categoría real = NavSection.id (lib/nav-config.tsx). No se inventa taxonomía nueva. */
 export type SkillCategory = 'pentesting' | 'osint' | 'huella-digital' | 'code-security'
 
 /**
- * 'available'  → el backend ya la ejecuta de verdad (las 29 actuales).
- * 'planned'    → está catalogada para poder mostrarse/documentarse en el
- *                futuro, pero el backend TODAVÍA no la implementa. El
- *                frontend nunca debe fingir que una Skill 'planned' se
- *                puede ejecutar (sin botón de acción, sin resultados).
+ * 'available' → el backend ya la ejecuta de verdad (las 29 actuales).
+ * 'planned'   → catalogada pero SIN capacidad real: los helpers de consulta
+ *               la excluyen, por lo que ninguna UI puede mostrarla como
+ *               ejecutable. No puede tener `docs`.
  */
 export type SkillStatus = 'available' | 'planned'
 
 export type TargetType = 'domain' | 'ip' | 'url' | 'username' | 'email' | 'repo' | 'zip' | 'image'
 
 export interface SkillDocs {
-  /** Clave en messages/{es,en}.json → docs.<key> */
-  descriptionKey: string
-  /** Claves en messages/{es,en}.json → docs.<key>, en orden */
-  featureKeys: string[]
   /** Comando/uso real, no traducido (es código, no prosa) */
   usage: string
   /** URL de documentación oficial de la herramienta (no de SecureScan) */
   documentationUrl: string
 }
+
+/**
+ * Convención i18n por id de Skill (messages/{es,en}.json → "skills"):
+ *   skills.<id>.short        una línea (ToolCards, form, cobertura)  — TODAS
+ *   skills.<id>.description  párrafo de /docs y del drawer            — solo con `docs`
+ *   skills.<id>.features     lista de puntos de /docs y del drawer    — solo con `docs`
+ * scripts/check-skills.mjs verifica que existan en ES y EN.
+ */
+export const SKILL_TEXT_NAMESPACE = 'skills'
 
 export interface Skill {
   id: string
@@ -74,34 +88,10 @@ export interface Skill {
    * no todas las Skills tienen logo custom dibujado a mano.
    */
   svgIconKey?: string
-  /** Documentación real (solo si existe contenido real — nunca inventar) */
+  /** Documentación real (solo si existe contenido real — nunca inventar; nunca en `planned`) */
   docs?: SkillDocs
   /** Tipos de target que la herramienta acepta, solo donde es evidente por el formulario real */
   targetSupport?: TargetType[]
-  /** Etiquetas libres, decorativas — no consumidas por ninguna UI todavía */
-  tags?: string[]
-  /** Orden visual dentro de su subgroup (menor = primero). Si se omite, se usa el orden de inserción. */
-  order?: number
-  /** Prerrequisitos conocidos (ninguno documentado hoy para las 29 actuales) */
-  requirements?: string[]
-  /** Bolsa libre para metadata futura sin tener que tocar la interfaz */
-  meta?: Record<string, unknown>
-}
-
-/** color visual de una Skill = el color de su categoría (lib/nav-config.tsx → COLOR_VARS) */
-export const CATEGORY_COLOR: Record<SkillCategory, CyberColor> = {
-  pentesting: 'cyan',
-  osint: 'purple',
-  'huella-digital': 'emerald',
-  'code-security': 'blue',
-}
-
-/** ruta real de una Skill = la ruta de su categoría (lib/nav-config.tsx → NavSection.href) */
-export const CATEGORY_ROUTE: Record<SkillCategory, string> = {
-  pentesting: '/scanner',
-  osint: '/osint',
-  'huella-digital': '/footprint',
-  'code-security': '/code-scan',
 }
 
 // ─── SKILLS ────────────────────────────────────────────────────────────────
@@ -112,62 +102,62 @@ export const CATEGORY_ROUTE: Record<SkillCategory, string> = {
 export const SKILLS: Skill[] = [
   // ── Pentesting ──────────────────────────────────────────────────────────
   { id: 'wappalyzer', name: 'Wappalyzer', category: 'pentesting', subgroup: 'reconocimiento', status: 'available', icon: Radar, svgIconKey: 'Wappalyzer',
-    docs: { descriptionKey: 'tool1Desc', featureKeys: ['tool1Feature1','tool1Feature2','tool1Feature3','tool1Feature4','tool1Feature5'],
+    docs: {
       usage: `# Wappalyzer via librería Python\nfrom Wappalyzer import Wappalyzer, WebPage\nwappalyzer = Wappalyzer.latest()\nwebpage = WebPage.new_from_url('https://target.com')\ntechs = wappalyzer.analyze_with_versions(webpage)`,
       documentationUrl: 'https://github.com/wappalyzer/wappalyzer' },
     targetSupport: ['domain', 'url'] },
   { id: 'nmap', name: 'Nmap', category: 'pentesting', subgroup: 'reconocimiento', status: 'available', icon: Radar, svgIconKey: 'Nmap',
-    docs: { descriptionKey: 'tool2Desc', featureKeys: ['tool2Feature1','tool2Feature2','tool2Feature3','tool2Feature4','tool2Feature5'],
+    docs: {
       usage: `# Escaneo de puertos comunes\nnmap -sV -sC target.com\n\n# Escaneo agresivo\nnmap -A -T4 target.com\n\n# Scripts NSE de vulnerabilidades\nnmap --script vuln target.com`,
       documentationUrl: 'https://nmap.org/book/man.html' },
     targetSupport: ['domain', 'ip'] },
   { id: 'gobuster', name: 'Gobuster', category: 'pentesting', subgroup: 'enumeracion', status: 'available', icon: ListTree, svgIconKey: 'Gobuster',
-    docs: { descriptionKey: 'tool6Desc', featureKeys: ['tool6Feature1','tool6Feature2','tool6Feature3','tool6Feature4','tool6Feature5'],
+    docs: {
       usage: `# Fuerza bruta de directorios\ngobuster dir -u https://target.com -w wordlist.txt\n\n# Descubrimiento DNS\ngobuster dns -d target.com -w subdomains.txt`,
       documentationUrl: 'https://github.com/OJ/gobuster' },
     targetSupport: ['domain', 'url'] },
   { id: 'ffuf', name: 'ffuf', category: 'pentesting', subgroup: 'enumeracion', status: 'available', icon: ListTree, svgIconKey: 'ffuf',
-    docs: { descriptionKey: 'tool5Desc', featureKeys: ['tool5Feature1','tool5Feature2','tool5Feature3','tool5Feature4','tool5Feature5'],
+    docs: {
       usage: `# Fuerza bruta de directorios\nffuf -u https://target.com/FUZZ -w wordlist.txt\n\n# Fuzzing de parámetros GET\nffuf -u https://target.com/page?FUZZ=value -w params.txt`,
       documentationUrl: 'https://github.com/ffuf/ffuf' },
     targetSupport: ['domain', 'url'] },
   { id: 'zap', name: 'OWASP ZAP', category: 'pentesting', subgroup: 'webSecurity', status: 'available', icon: ShieldCheck, svgIconKey: 'OWASP ZAP',
-    docs: { descriptionKey: 'tool7Desc', featureKeys: ['tool7Feature1','tool7Feature2','tool7Feature3','tool7Feature4','tool7Feature5'],
+    docs: {
       usage: `# API - Spider\ncurl "http://localhost:8080/JSON/spider/action/scan/?url=https://target.com"\n\n# API - Active Scan\ncurl "http://localhost:8080/JSON/ascan/action/scan/?url=https://target.com"`,
       documentationUrl: 'https://www.zaproxy.org/docs/' },
     targetSupport: ['domain', 'url'] },
   { id: 'zap-spider', name: 'ZAP Spider', category: 'pentesting', subgroup: 'webSecurity', status: 'available', icon: ShieldCheck, svgIconKey: 'ZAP Spider',
-    docs: { descriptionKey: 'zapSpiderDesc', featureKeys: ['zapSpiderFeature1','zapSpiderFeature2','zapSpiderFeature3'],
+    docs: {
       usage: `# API de ZAP — iniciar el Spider\ncurl "http://localhost:8080/JSON/spider/action/scan/?url=https://target.com"\n\n# Estado del Spider\ncurl "http://localhost:8080/JSON/spider/view/status/?scanId=0"`,
       documentationUrl: 'https://www.zaproxy.org/docs/desktop/start/features/spider/' },
     targetSupport: ['domain', 'url'] },
   { id: 'nuclei', name: 'Nuclei', category: 'pentesting', subgroup: 'webSecurity', status: 'available', icon: ShieldCheck, svgIconKey: 'Nuclei',
-    docs: { descriptionKey: 'tool8Desc', featureKeys: ['tool8Feature1','tool8Feature2','tool8Feature3','tool8Feature4','tool8Feature5'],
+    docs: {
       usage: `# Escaneo con todas las plantillas\nnuclei -u https://target.com\n\n# Por severidad\nnuclei -u https://target.com -severity critical,high\n\n# Con cookie\nnuclei -u https://target.com -H "Cookie: session=abc"`,
       documentationUrl: 'https://docs.projectdiscovery.io/tools/nuclei' },
     targetSupport: ['domain', 'url'] },
   { id: 'injection-scanner', name: 'Injection Scanner', category: 'pentesting', subgroup: 'webSecurity', status: 'available', icon: ShieldCheck,
-    docs: { descriptionKey: 'injectionScannerDesc', featureKeys: ['injectionScannerFeature1','injectionScannerFeature2','injectionScannerFeature3','injectionScannerFeature4'],
+    docs: {
       usage: `# Módulo propio de SecureScan (server/modules/injection_scanner.py): no tiene CLI.\n# Se activa con la opción SQLMap del formulario de Pentesting.\n# Técnicas: SQLi · NoSQLi · XPath · XXE · XSS · CMDi · Path Traversal · SSRF · SSTI · LDAP`,
       documentationUrl: 'https://github.com/Marlonmorenolopez/SecureScan' },
     targetSupport: ['domain', 'url'] },
   { id: 'patator', name: 'Patator', category: 'pentesting', subgroup: 'authentication', status: 'available', icon: KeyRound, svgIconKey: 'Patator',
-    docs: { descriptionKey: 'tool3Desc', featureKeys: ['tool3Feature1','tool3Feature2','tool3Feature3','tool3Feature4','tool3Feature5'],
+    docs: {
       usage: `# Fuerza bruta HTTP POST\npatator http_fuzz url=https://target.com/login method=POST \\\n  body='user=FILE0&pass=FILE1' 0=users.txt 1=passwords.txt`,
       documentationUrl: 'https://github.com/lanjelot/patator' },
     targetSupport: ['url'] },
   { id: 'sqlmap', name: 'SQLMap', category: 'pentesting', subgroup: 'sqlInjection', status: 'available', icon: Bug, svgIconKey: 'SQLMap',
-    docs: { descriptionKey: 'tool9Desc', featureKeys: ['tool9Feature1','tool9Feature2','tool9Feature3','tool9Feature4','tool9Feature5'],
+    docs: {
       usage: `# URL con parámetro\nsqlmap -u "https://target.com/page?id=1"\n\n# Con cookie de sesión\nsqlmap -u "https://target.com/page?id=1" --cookie="session=abc"\n\n# Formulario POST\nsqlmap -u "https://target.com/login" --data="user=admin&pass=test"`,
       documentationUrl: 'https://sqlmap.org/' },
     targetSupport: ['url'] },
   { id: 'metasploit', name: 'Metasploit', category: 'pentesting', subgroup: 'exploitation', status: 'available', icon: Swords, svgIconKey: 'Metasploit',
-    docs: { descriptionKey: 'tool4Desc', featureKeys: ['tool4Feature1','tool4Feature2','tool4Feature3','tool4Feature4','tool4Feature5'],
+    docs: {
       usage: `# Iniciar msfconsole\nmsfconsole\n\n# Usar módulo auxiliar (solo scanners)\nmsf> use auxiliary/scanner/http/http_version\nmsf> set RHOSTS target.com\nmsf> run`,
       documentationUrl: 'https://docs.metasploit.com/' },
     targetSupport: ['domain', 'ip'] },
   { id: 'searchsploit', name: 'Searchsploit', category: 'pentesting', subgroup: 'exploitation', status: 'available', icon: Swords, svgIconKey: 'Searchsploit',
-    docs: { descriptionKey: 'tool10Desc', featureKeys: ['tool10Feature1','tool10Feature2','tool10Feature3','tool10Feature4','tool10Feature5'],
+    docs: {
       usage: `# Buscar por servicio y versión\nsearchsploit apache 2.4\n\n# Formato JSON\nsearchsploit -j wordpress 5.8\n\n# Búsqueda exacta\nsearchsploit -e "Apache 2.4.49"`,
       documentationUrl: 'https://www.exploit-db.com/searchsploit' } },
 
@@ -183,37 +173,37 @@ export const SKILLS: Skill[] = [
 
   // ── Huella Digital ──────────────────────────────────────────────────────
   { id: 'crtsh', name: 'crt.sh', category: 'huella-digital', subgroup: 'dominios', status: 'available', icon: Globe2,
-    docs: { descriptionKey: 'crtshDesc', featureKeys: ['crtshFeature1','crtshFeature2','crtshFeature3'],
+    docs: {
       usage: `# Subdominios en logs de Certificate Transparency\ncurl "https://crt.sh/?q=%25.example.com&output=json"`,
       documentationUrl: 'https://crt.sh/' },
     targetSupport: ['domain'] },
   { id: 'dnstwist', name: 'dnstwist', category: 'huella-digital', subgroup: 'dominios', status: 'available', icon: Globe2,
-    docs: { descriptionKey: 'dnstwistDesc', featureKeys: ['dnstwistFeature1','dnstwistFeature2','dnstwistFeature3'],
+    docs: {
       usage: `# Variantes del dominio que ya están registradas\ndnstwist --registered example.com`,
       documentationUrl: 'https://github.com/elceef/dnstwist' },
     targetSupport: ['domain'] },
   { id: 'shodan', name: 'Shodan', category: 'huella-digital', subgroup: 'infraestructura', status: 'available', icon: Network,
-    docs: { descriptionKey: 'shodanDesc', featureKeys: ['shodanFeature1','shodanFeature2','shodanFeature3','shodanFeature4'],
+    docs: {
       usage: `# Shodan InternetDB (gratis, sin API key, solo IPs)\ncurl https://internetdb.shodan.io/8.8.8.8`,
       documentationUrl: 'https://internetdb.shodan.io/' },
     targetSupport: ['domain', 'ip'] },
   { id: 'virustotal', name: 'VirusTotal', category: 'huella-digital', subgroup: 'reputacion', status: 'available', icon: ShieldAlert,
-    docs: { descriptionKey: 'virustotalDesc', featureKeys: ['virustotalFeature1','virustotalFeature2','virustotalFeature3'],
+    docs: {
       usage: `# Reporte existente de un dominio (requiere VIRUSTOTAL_API_KEY)\ncurl -H "x-apikey: $VIRUSTOTAL_API_KEY" https://www.virustotal.com/api/v3/domains/example.com`,
       documentationUrl: 'https://docs.virustotal.com/reference/overview' },
     targetSupport: ['domain', 'ip', 'url'] },
   { id: 'abuseipdb', name: 'AbuseIPDB', category: 'huella-digital', subgroup: 'reputacion', status: 'available', icon: ShieldAlert,
-    docs: { descriptionKey: 'abuseipdbDesc', featureKeys: ['abuseipdbFeature1','abuseipdbFeature2','abuseipdbFeature3'],
+    docs: {
       usage: `# Reputación de una IP (requiere ABUSEIPDB_API_KEY)\ncurl -G https://api.abuseipdb.com/api/v2/check \\\n  --data-urlencode "ipAddress=8.8.8.8" \\\n  -H "Key: $ABUSEIPDB_API_KEY" -H "Accept: application/json"`,
       documentationUrl: 'https://docs.abuseipdb.com/' },
     targetSupport: ['ip'] },
   { id: 'safebrowsing', name: 'Google Safe Browsing', category: 'huella-digital', subgroup: 'reputacion', status: 'available', icon: ShieldAlert,
-    docs: { descriptionKey: 'safebrowsingDesc', featureKeys: ['safebrowsingFeature1','safebrowsingFeature2','safebrowsingFeature3'],
+    docs: {
       usage: `# threatMatches:find (requiere GOOGLE_SAFE_BROWSING_API_KEY)\n# POST https://safebrowsing.googleapis.com/v4/threatMatches:find?key=$GOOGLE_SAFE_BROWSING_API_KEY\n# threatEntryTypes: URL · platformTypes: ANY_PLATFORM\n# threatEntries: [{"url": "https://example.com/"}]`,
       documentationUrl: 'https://developers.google.com/safe-browsing/v4' },
     targetSupport: ['domain', 'url'] },
   { id: 'testssl', name: 'testssl.sh', category: 'huella-digital', subgroup: 'tlsSsl', status: 'available', icon: Lock,
-    docs: { descriptionKey: 'testsslDesc', featureKeys: ['testsslFeature1','testsslFeature2','testsslFeature3','testsslFeature4'],
+    docs: {
       usage: `# Protocolos (-p), defaults del servidor/certificado (-S) y vulnerabilidades (-U)\ntestssl.sh -U -S -p example.com`,
       documentationUrl: 'https://testssl.sh/' },
     targetSupport: ['domain'] },
@@ -234,20 +224,30 @@ export const SKILLS: Skill[] = [
 ]
 
 // ─── Helpers de consulta ────────────────────────────────────────────────────
+// Todos los helpers de listado devuelven SOLO Skills 'available'. Así una
+// Skill 'planned' nunca llega a la navegación, a la búsqueda, a los conteos,
+// a /docs, al ToolGrid ni a los selectores de fuentes (que enviarían un id
+// inexistente al backend). `getSkillById` sí resuelve cualquier Skill.
+
+const isAvailable = (s: Skill) => s.status === 'available'
+
+/** Skills ejecutables (status 'available'), en el orden del registro. */
+export const AVAILABLE_SKILLS: Skill[] = SKILLS.filter(isAvailable)
 
 export function getSkillsByCategory(category: SkillCategory): Skill[] {
-  return SKILLS.filter(s => s.category === category)
+  return AVAILABLE_SKILLS.filter(s => s.category === category)
 }
 
 export function getSkillsBySubgroup(category: SkillCategory, subgroup: string): Skill[] {
-  return SKILLS.filter(s => s.category === category && s.subgroup === subgroup)
+  return AVAILABLE_SKILLS.filter(s => s.category === category && s.subgroup === subgroup)
 }
 
+/** Cualquier Skill del catálogo (incluye 'planned'); undefined si el id no existe. */
 export function getSkillById(id: string): Skill | undefined {
   return SKILLS.find(s => s.id === id)
 }
 
-/** Nombres de las Skills de un subgroup, en el orden del registro — esto es lo que antes se escribía a mano en cada `NavToolGroup.tools`. */
+/** Nombres de las Skills de un subgroup, en el orden del registro — lo que alimenta `NavToolGroup.tools`. */
 export function getSkillNames(category: SkillCategory, subgroup: string): string[] {
   return getSkillsBySubgroup(category, subgroup).map(s => s.name)
 }

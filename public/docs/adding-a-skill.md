@@ -1,170 +1,138 @@
 # Cómo agregar una nueva Skill a SecureScan Pro
 
-Este documento explica el procedimiento para **registrar** una nueva Skill
-(herramienta de seguridad) en el catálogo del frontend, y por qué eso es
-distinto de **integrarla** de verdad al backend.
+Este documento explica cómo **catalogar** una nueva Skill (herramienta de
+seguridad) en el frontend y qué hace falta para **integrarla** de verdad.
+Son cosas distintas, y el sistema está diseñado para que no se confundan.
 
 > **Distinción importante**
 >
-> - **Registrar una Skill** = agregarla a `lib/skills.ts` para que el
->   catálogo, la navegación y (si tiene documentación) `/docs` sepan que
->   existe.
-> - **Integrar una Skill** = que `SecurityOrchestrator` (backend) realmente
->   la ejecute y que `app/scanner/page.tsx` sepa extraer sus resultados
->   reales de la respuesta del scan.
+> - **Catalogar** = agregar la Skill al Registry (`lib/skills.ts`).
+> - **Integrar** = que el backend realmente la ejecute y el frontend sepa
+>   leer su resultado.
 >
-> Registrar **nunca** debe hacer que el frontend finja que puede ejecutar
-> una herramienta que el backend todavía no soporta. Por eso el campo
-> `status` de cada Skill distingue `'available'` (el backend ya la corre)
-> de `'planned'` (está catalogada, pero no se ejecuta todavía).
+> El campo `status` lo separa: `'available'` (el backend ya la ejecuta) y
+> `'planned'` (catalogada, sin capacidad real todavía).
+> **Una Skill `planned` es inerte:** los helpers del Registry no la devuelven,
+> así que no aparece en la navegación, el buscador, los conteos del dashboard,
+> `/docs`, el ToolGrid de `/scanner` ni los selectores de `/footprint`. No hay
+> botones, endpoints ni resultados simulados para ella.
 
-## Arquitectura actual (fuente única de verdad)
+## Arquitectura (fuente única de verdad)
 
 ```
-lib/skills.ts                 ← EL CATÁLOGO. Metadata de cada Skill.
+lib/skills.ts                  EL CATÁLOGO. Metadata estructural de cada Skill.
+  │                            Los helpers (getSkillsByCategory, getSkillNames,
+  │                            AVAILABLE_SKILLS…) devuelven solo 'available'.
   │
-  ├── lib/nav-config.tsx       consume SKILLS vía getSkillNames() para
-  │                            construir la navegación agrupada.
-  │
-  ├── lib/tool-docs.ts         consume SKILLS (campo .docs) para construir
-  │                            la vista de documentación de /docs y del
-  │                            ToolDetailDrawer en /scanner y /footprint.
-  │
-  └── components/tool-icons.tsx  catálogo APARTE de logos SVG custom,
-                                  referenciado por Skill.svgIconKey.
-                                  (se mantiene separado a propósito: es un
-                                  activo visual, no metadata de catálogo)
+  ├── lib/nav-config.tsx       nombres por subgroup → navegación, taxonomía,
+  │                            conteos, buscador. Define los GROUPS (key/icono).
+  ├── lib/tool-docs.ts         docs de /docs y del ToolDetailDrawer.
+  │                            Textos: messages → skills.<id>.description / features[]
+  ├── lib/scan-extractors.ts   contrato con el backend (paso del pipeline, flag,
+  │                            campo del scan / clave de threat_intel). Consume el
+  │                            Registry; lo usan /scanner y /footprint.
+  ├── components/tool-icons.tsx logos SVG (activo visual). Se enlazan con
+  │                            Skill.svgIconKey → TOOL_ICONS[svgIconKey].
+  └── messages/{es,en}.json    convención por id: skills.<id>.short (todas),
+                               skills.<id>.description y .features[] (con docs).
 ```
 
-Lo que **NO** vive en `lib/skills.ts` (y no debe moverse ahí):
+Lo que **no** vive en el Registry (a propósito): el texto traducido, el
+contrato de ejecución con el backend, y el color/ruta de cada categoría (ya
+están en `nav-config.tsx`).
 
-- El texto traducido (descripción, features) — vive en
-  `messages/{es,en}.json`. El registro solo guarda la **clave** i18n.
-- La extracción de resultados reales del backend — vive en
-  `lib/scan-extractors.ts` (`getPentestingToolStats`, `getFootprintModel`,
-  `extractSeverityCounts`). Esa lógica traduce campos reales de la respuesta
-  del scan (`currentScan.nuclei_findings`, `currentScan.threat_intel`, etc.) y
-  está acoplada al contrato del backend, no es metadata de catálogo. Las
-  páginas `/scanner` (Pentesting) y `/footprint` (Huella Digital) la consumen
-  y derivan sus herramientas del Registry: **no** mantienen listas propias.
+## Convención de textos por Skill (i18n)
 
-## Pasos para registrar una Skill nueva
+En **ambos** `messages/es.json` y `messages/en.json`:
 
-### 1. Registrar metadata
+```json
+"skills": {
+  "amass": {
+    "short": "Una línea, para ToolCards, formularios y cobertura.",
+    "description": "Párrafo para /docs y el drawer (solo si la Skill tiene `docs`).",
+    "features": ["Punto 1", "Punto 2"]
+  }
+}
+```
 
-Agrega un objeto a `SKILLS` en `lib/skills.ts`:
+- `short` es obligatorio para toda Skill `available`.
+- `description` y `features` (lista, misma longitud en ES y EN) solo si la
+  Skill tiene `docs`.
+- El nombre de la herramienta es un nombre propio y **no** se traduce.
+- No hay claves numéricas ni namespaces alternativos: la clave es el `id`.
+
+## Qué archivos toca cada tipo de Skill
+
+| Tipo | Archivos |
+|---|---|
+| **Planned** (sin backend) | `lib/skills.ts` (1 entrada con `status: 'planned'`, sin `docs`). Correr `npm run check:skills`. |
+| **Available — OSINT / Code Security** | `lib/skills.ts` + bloque `skills.<id>` (ES/EN) + la página propia del módulo (`app/osint`, `app/code-scan`), que llama a sus endpoints existentes. |
+| **Available — fuente de Huella Digital** | `lib/skills.ts` + `skills.<id>` (ES/EN) + `FOOTPRINT_KEYS` en `lib/scan-extractors.ts` + su panel de resultados (`components/results/intel/`, `FootprintSources`, `FootprintOverview`). El backend debe devolverla en `threat_intel`. |
+| **Available — herramienta de Pentesting** | `lib/skills.ts` + `skills.<id>` (ES/EN) + `PENTEST_EXTRACTORS` en `lib/scan-extractors.ts` + contrato de ejecución del Web Scan: pasos del pipeline (`scan-context`, `scan-progress`, `ScanPipeline`), switch del formulario (`scan-form`) y `requestedTools`. Esas listas reflejan el contrato del backend y no se derivan del Registry. |
+| **Logo propio** (opcional) | `components/tool-icons.tsx` (componente + entrada en `TOOL_ICONS`) y `svgIconKey` en la Skill. Sin logo se usa el icono Lucide de la Skill. |
+| **Grupo (subgroup) nuevo** | Un `group` en la `NavSection` de `lib/nav-config.tsx` + su label en `navCatalog.sections.<sección>.groups.<key>` (ES/EN). |
+
+## Pasos
+
+### 1. Registrar la Skill
 
 ```ts
 {
-  id: 'amass',
+  id: 'amass',                 // kebab-case, único
   name: 'Amass',
-  category: 'osint',        // debe ser una SkillCategory real existente
-  subgroup: 'dominios',     // debe existir como `key` en ese grupo en nav-config.tsx
-  status: 'planned',        // 'planned' hasta que el backend la ejecute de verdad
-  icon: Globe2,             // icono lucide de respaldo
+  category: 'osint',           // pentesting | osint | huella-digital | code-security
+  subgroup: 'dominios',        // debe existir como `key` en el group de esa NavSection
+  status: 'planned',           // 'available' SOLO si el backend ya la ejecuta
+  icon: Globe2,                // icono Lucide de respaldo
 }
 ```
 
-### 2. Definir categoría/subcategoría
+Campos opcionales con consumidor real: `svgIconKey` (logo), `docs`
+(`{ usage, documentationUrl }`, solo con contenido real y nunca en `planned`),
+`targetSupport` (dato verificado; todavía sin vista que lo use).
 
-`category` debe ser una de las 4 ya existentes (`pentesting`, `osint`,
-`huella-digital`, `code-security`) — no inventes una categoría nueva sin
-también agregar la `NavSection` correspondiente en `nav-config.tsx`.
+### 2. Textos (solo `available`)
 
-`subgroup` debe coincidir con un `key` ya definido en el `groups[]` de esa
-`NavSection`, o necesitarás agregar un grupo nuevo ahí también.
+Agrega el bloque `skills.<id>` en ES y EN (ver convención arriba).
 
-### 3. Agregar traducciones (si vas a documentarla)
+### 3. Integración con el backend (solo cuando exista de verdad)
 
-Si la Skill va a tener descripción real, agrega las claves en
-`messages/es.json` **y** `messages/en.json`, bajo el namespace `docs`:
+Requisitos **del backend** que este repositorio no implementa: la herramienta
+debe ejecutarse en el orquestador y su resultado debe llegar en el scan
+(`currentScan.<campo>` o `threat_intel.<clave>`), o tener un endpoint propio
+(OSINT / Code Security). Cuando eso exista:
 
-```json
-"docs": {
-  "amassDesc": "...",
-  "amassFeature1": "..."
-}
-```
+1. `status: 'available'`.
+2. Extractor en `lib/scan-extractors.ts` (según la tabla).
+3. Piezas de UI/contrato indicadas en la tabla.
 
-Verifica paridad de claves entre ambos archivos antes de continuar.
+**Nunca** actives `available` sin que la capacidad exista: sería mostrar algo
+que no funciona.
 
-### 4. Agregar documentación (solo si existe de verdad)
-
-Si tiene documentación real, agrega el campo `docs` a su entrada en
-`lib/skills.ts`:
-
-```ts
-docs: {
-  descriptionKey: 'amassDesc',
-  featureKeys: ['amassFeature1', 'amassFeature2'],
-  usage: `amass enum -d target.com`,
-  documentationUrl: 'https://github.com/owasp-amass/amass',
-}
-```
-
-Si **no** tiene documentación todavía, simplemente omite el campo `docs`.
-`ToolDetailDrawer` ya maneja ese caso mostrando un mensaje honesto
-("no hay documentación disponible") en vez de inventar contenido.
-
-### 5. Conectar el identificador con el backend (solo cuando exista de verdad)
-
-Esto es un paso **aparte y posterior**, y solo aplica cuando el backend
-realmente implemente la herramienta:
-
-1. Cambia `status: 'planned'` a `status: 'available'` en `lib/skills.ts`.
-2. Si es una herramienta de **Pentesting** que corre dentro del Web Scan,
-   agrega su extractor en `PENTEST_EXTRACTORS` de `lib/scan-extractors.ts`
-   (paso del pipeline, flag de `options.tools` y campo real que el backend
-   devuelve en `currentScan`). `/scanner` la mostrará sola porque itera el
-   Registry. Si es una fuente de **Huella Digital**, agrega su clave en
-   `FOOTPRINT_KEYS` (la clave dentro de `currentScan.threat_intel`) y su
-   métrica en `getFootprintModel()`; `/footprint` la mostrará en la
-   cobertura de fuentes. En desarrollo, `assertExtractorCoverage()` avisa si
-   una Skill del Registry no tiene extractor.
-3. Si tiene logo propio, agrégalo a `components/tool-icons.tsx` y referencia
-   su key en `svgIconKey`.
-
-**Nunca actives `status: 'available'` sin que el paso anterior esté hecho
-de verdad** — eso sería mostrar una capacidad que no existe.
-
-### 6. Verificar resultados
-
-- La Skill debe aparecer en el Sidebar, en la tarjeta de categoría del
-  Dashboard, y en el buscador rápido del Header — automáticamente, sin
-  tocar esos archivos (todos derivan de `nav-config.tsx` → `lib/skills.ts`).
-- Si tiene `docs`, debe aparecer en `/docs`.
-- Si `status: 'planned'`, NO debe tener botón de ejecución en ningún lado.
-
-### 7. Ejecutar validaciones
+### 4. Validar
 
 ```bash
+npm run check:skills   # coherencia del catálogo
 npx tsc --noEmit
 npm run build
 npm audit
 ```
 
-Y confirma que la paridad de claves ES/EN se mantiene (0 faltantes, 0
-duplicadas).
+`npm run check:skills` verifica: ids únicos y kebab-case; `planned` sin `docs`;
+cada `subgroup` existe en `nav-config` con su label ES/EN; cada `svgIconKey`
+existe en `TOOL_ICONS`; cada Skill `available` tiene `skills.<id>.short` (y
+`description`/`features` si tiene `docs`) en ES y EN con igual número de
+features; paridad completa ES/EN; y que cada Skill de Pentesting/Huella tenga
+extractor (y viceversa).
 
-## Ejemplo conceptual: agregar "Amass" (sin implementarlo)
-
-Amass es una herramienta real de descubrimiento de subdominios. Para
-catalogarla (sin fingir que el backend la ejecuta):
+## Ejemplo: catalogar "Amass" sin backend
 
 ```ts
-{
-  id: 'amass',
-  name: 'Amass',
-  category: 'osint',
-  subgroup: 'dominios',
-  status: 'planned',
-  icon: Globe2,
-  targetSupport: ['domain'],
-  tags: ['subdomains', 'recon'],
-}
+{ id: 'amass', name: 'Amass', category: 'osint', subgroup: 'dominios',
+  status: 'planned', icon: Globe2 }
 ```
 
-Con esto, Amass aparecería listada bajo OSINT → Dominios (sidebar,
-tarjeta de categoría, buscador), pero **sin** botón de ejecución ni
-resultados — porque `SecurityOrchestrator` todavía no la implementa. El
-día que el backend la integre de verdad, se sigue el paso 5 de arriba.
+Con solo esa entrada (y `npm run check:skills` en verde) Amass queda
+catalogada pero **inerte**: no aparece en ninguna superficie ejecutable ni en
+`/docs`. El día que el backend la integre, se cambia a `available` y se siguen
+los pasos 2 y 3.
