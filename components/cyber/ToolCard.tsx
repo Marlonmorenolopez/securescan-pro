@@ -9,6 +9,7 @@
 // este componente no inventa ni asume nada, solo presenta.
 
 import { CheckCircle2, XCircle, Loader2, Clock, MinusCircle } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { CyberCard } from '@/components/cyber/CyberCard'
 import { COLOR_VARS, type CyberColor } from '@/lib/nav-config'
 import { cn } from '@/lib/utils'
@@ -29,22 +30,28 @@ interface ToolCardProps {
   className?: string
   /** Variante compacta (fila) para grillas densas como el ToolGrid de /scanner */
   compact?: boolean
+  /** Texto de estado que sustituye al genérico de `status` (ej. "Sin datos reales"
+   *  en Huella Digital, donde "Omitido" o "En espera" serían imprecisos). */
+  statusLabel?: string
 }
 
-const STATUS_META: Record<ToolStatus, { icon: React.ElementType; label: string; cls: string }> = {
-  idle:      { icon: Clock,        label: 'En espera',  cls: 'text-muted-foreground/50' },
-  running:   { icon: Loader2,      label: 'Ejecutando', cls: 'text-[var(--cyber-accent)]' },
-  completed: { icon: CheckCircle2, label: 'Completado',  cls: 'text-emerald-400' },
-  error:     { icon: XCircle,      label: 'Error',       cls: 'text-red-400' },
-  skipped:   { icon: MinusCircle,  label: 'Omitido',     cls: 'text-muted-foreground/40' },
+// El texto del estado vive en messages/{es,en}.json → toolCard.status.<status>
+const STATUS_META: Record<ToolStatus, { icon: React.ElementType; cls: string }> = {
+  idle:      { icon: Clock,        cls: 'text-muted-foreground/50' },
+  running:   { icon: Loader2,      cls: 'text-[var(--cyber-accent)]' },
+  completed: { icon: CheckCircle2, cls: 'text-emerald-400' },
+  error:     { icon: XCircle,      cls: 'text-red-400' },
+  skipped:   { icon: MinusCircle,  cls: 'text-muted-foreground/40' },
 }
 
 export function ToolCard({
   name, icon: Icon, svgIcon: SvgIcon, category, color = 'cyan', description,
-  status, resultLabel, onClick, className, compact = false,
+  status, resultLabel, onClick, className, compact = false, statusLabel: statusLabelOverride,
 }: ToolCardProps) {
+  const t = useTranslations('toolCard')
   const c = COLOR_VARS[color]
   const meta = STATUS_META[status]
+  const statusLabel = statusLabelOverride ?? t(`status.${status}`)
   const StatusIcon = meta.icon
 
   if (compact) {
@@ -53,6 +60,7 @@ export function ToolCard({
         type="button"
         onClick={onClick}
         disabled={!onClick}
+        aria-label={resultLabel ? `${name}: ${statusLabel}, ${resultLabel}` : `${name}: ${statusLabel}`}
         className={cn(
           'flex items-center gap-2 rounded-md border px-2 py-1.5 text-left transition-all duration-200',
           status === 'running'   && 'bg-[rgba(var(--cyber-accent-rgb),0.06)] border-[rgba(var(--cyber-accent-rgb),0.25)]',
@@ -75,7 +83,7 @@ export function ToolCard({
             {resultLabel}
           </span>
         )}
-        <StatusIcon className={cn('h-3 w-3 shrink-0', meta.cls, status === 'running' && 'animate-spin')} />
+        <StatusIcon aria-hidden="true" className={cn('h-3 w-3 shrink-0', meta.cls, status === 'running' && 'animate-spin')} />
       </button>
     )
   }
@@ -94,6 +102,7 @@ export function ToolCard({
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } } : undefined}
+      aria-label={onClick ? `${name}: ${statusLabel}` : undefined}
       style={{
         borderColor: status === 'idle' ? undefined : `rgba(${c.rgb},0.28)`,
         background: status === 'running' ? `rgba(${c.rgb},0.06)` : undefined,
@@ -117,8 +126,9 @@ export function ToolCard({
             )}
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-1" title={meta.label}>
-          <StatusIcon className={cn('h-3.5 w-3.5', meta.cls, status === 'running' && 'animate-spin')} />
+        <div className="flex shrink-0 items-center gap-1" title={statusLabel}>
+          <StatusIcon aria-hidden="true" className={cn('h-3.5 w-3.5', meta.cls, status === 'running' && 'animate-spin')} />
+          <span className="sr-only">{statusLabel}</span>
         </div>
       </div>
 
@@ -131,7 +141,7 @@ export function ToolCard({
           className="mt-auto flex items-center justify-between rounded-md border px-2 py-1"
           style={{ borderColor: `rgba(${c.rgb},0.20)` }}
         >
-          <span className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">Resultado</span>
+          <span className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">{t('result')}</span>
           <span className="font-mono text-[11px] font-bold tabular-nums" style={{ color: c.fg }}>
             {resultLabel}
           </span>

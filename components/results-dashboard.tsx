@@ -1,4 +1,9 @@
 'use client'
+// components/results-dashboard.tsx — Resultados de PENTESTING.
+// Solo presenta los resultados de las herramientas de Pentesting y su score
+// (que el backend calcula únicamente con hallazgos de Pentesting). Los
+// resultados de Huella Digital (threat_intel) se presentan en /footprint;
+// aquí solo se enlaza a ellos cuando el mismo análisis los recopiló.
 
 import { useMemo } from 'react'
 import {
@@ -22,7 +27,9 @@ import {
   Waves,
   Fingerprint,
   Compass,
+  ArrowRight,
 } from 'lucide-react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
@@ -41,18 +48,10 @@ import { RiskGauge } from '@/components/cyber/RiskGauge'
 import { SecurityMetrics } from '@/components/cyber/SecurityMetrics'
 import { EmptyState } from '@/components/cyber/EmptyState'
 import { ReportDownloadModal } from '@/components/report-download-modal'
-import { VirusTotalPanel } from '@/components/results/intel/VirusTotalPanel'
-import { AbuseIPDBPanel } from '@/components/results/intel/AbuseIPDBPanel'
-import { ShodanPanel } from '@/components/results/intel/ShodanPanel'
-import { CrtShPanel } from '@/components/results/intel/CrtShPanel'
-import { TestSSLPanel } from '@/components/results/intel/TestSSLPanel'
-import { DnstwistPanel } from '@/components/results/intel/DnstwistPanel'
-import { SafeBrowsingPanel } from '@/components/results/intel/SafeBrowsingPanel'
 import { useScan } from '@/lib/scan-context'
 import { cn } from '@/lib/utils'
-import { useTranslations } from 'next-intl'
-import { HUELLA_DIGITAL, COLOR_VARS } from '@/lib/nav-config'
-import { useGroupLabel } from '@/lib/nav-i18n'
+import { useTranslations, useLocale } from 'next-intl'
+import { getPentestingToolStats, getFootprintModel } from '@/lib/scan-extractors'
 
 // ── ScoreCard ─────────────────────────────────────────────────────────────────
 interface ScoreCardProps {
@@ -133,7 +132,7 @@ function ScoreCard({ score }: ScoreCardProps) {
           <div className="font-mono text-3xl font-bold text-foreground">{totalIssues}</div>
           {criticalHigh > 0 && (
             <div className="font-mono text-xs font-medium text-red-400">
-              {criticalHigh} requieren atención urgente
+              {t('urgentAttention', { count: criticalHigh })}
             </div>
           )}
         </div>
@@ -161,34 +160,42 @@ function ScoreCard({ score }: ScoreCardProps) {
   )
 }
 
-// ── Huella Digital: resumen de superficie por grupo (Dominios/Infra/
-// Reputación/TLS-SSL). Cuenta real de fuentes con datos, nunca inventada.
-function FootprintGroupChip({
-  groupKey, active, total,
-}: { groupKey: 'dominios' | 'infraestructura' | 'reputacion' | 'tlsSsl'; active: number; total: number }) {
-  const group = HUELLA_DIGITAL.groups.find(g => g.key === groupKey)!
-  const label = useGroupLabel(HUELLA_DIGITAL, group)
-  const c = COLOR_VARS.emerald
-  const hasSignal = active > 0
+// ── Enlace a Huella Digital ──────────────────────────────────────────────────
+// Un mismo análisis del backend puede devolver, además de los resultados de
+// Pentesting, datos de Threat Intelligence. Aquí NO se mezclan con los de
+// Pentesting: solo se avisa y se enlaza al módulo Huella Digital.
+function FootprintCrossLink({ scan }: { scan: Parameters<typeof getFootprintModel>[0] }) {
+  const t = useTranslations('results')
+  const model = useMemo(() => getFootprintModel(scan), [scan])
+  if (!model.hasAnyResult) return null
 
   return (
-    <div
-      className="flex items-center gap-2 rounded-lg border px-3 py-2"
-      style={{ borderColor: `rgba(${c.rgb},${hasSignal ? 0.35 : 0.15})`, background: `rgba(${c.rgb},${hasSignal ? 0.08 : 0.02})` }}
-    >
-      <span
-        className="h-2 w-2 shrink-0 rounded-full"
-        style={{ background: hasSignal ? c.fg : 'rgba(148,163,184,0.4)', boxShadow: hasSignal ? `0 0 6px rgba(${c.rgb},0.7)` : undefined }}
-      />
-      <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-foreground/90">{label}</span>
-      <span className="ml-auto font-mono text-[10px] tabular-nums text-muted-foreground">{active}/{total}</span>
-    </div>
+    <CyberCard variant="ghost" padding="p-4" className="border-[rgba(var(--cyber-accent-rgb),0.20)]">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <Fingerprint aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-[var(--cyber-accent)]" />
+          <div>
+            <p className="text-sm font-semibold text-foreground">{t('footprintLinkTitle')}</p>
+            <p className="text-xs text-muted-foreground">
+              {t('footprintLinkDetail', { withData: model.withData, total: model.total })}
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/footprint"
+          className="inline-flex items-center gap-1.5 rounded-md border border-[rgba(var(--cyber-accent-rgb),0.35)] px-3 py-1.5 font-mono text-xs font-semibold text-[var(--cyber-accent)] transition-colors hover:bg-[rgba(var(--cyber-accent-rgb),0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cyber-accent)]"
+        >
+          {t('footprintLinkAction')} <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+        </Link>
+      </div>
+    </CyberCard>
   )
 }
 
 // ── ResultsDashboard ─────────────────────────────────────────────────────────
 export function ResultsDashboard() {
   const t = useTranslations('results')
+  const locale = useLocale()
   const { currentScan } = useScan()
 
   const hasResults = useMemo(() => {
@@ -211,7 +218,7 @@ export function ResultsDashboard() {
 
   const formatDate = (dateStr: string) => {
     try {
-      return new Date(dateStr).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' })
+      return new Date(dateStr).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' })
     } catch { return dateStr }
   }
 
@@ -219,41 +226,14 @@ export function ResultsDashboard() {
   const hasErrors   = currentScan.status === 'error'
 
   // ── Datos reales para el tab "Resumen" (gráficos) ──────────────────────────
-  // Mismo mapeo 1:1 que extractToolStats() en app/scanner/page.tsx — una sola
-  // fuente de verdad sobre qué array de datos corresponde a cada herramienta.
-  const byTool = [
-    { tool: 'OWASP ZAP',    findings: currentScan.vulnerabilities?.length ?? 0 },
-    { tool: 'Nuclei',       findings: currentScan.nuclei_findings?.length ?? 0 },
-    { tool: 'SQLMap',       findings: currentScan.sqli_results?.length ?? 0 },
-    { tool: 'Nmap',         findings: currentScan.ports?.length ?? 0 },
-    { tool: 'Gobuster',     findings: currentScan.directories?.length ?? 0 },
-    { tool: 'ffuf',         findings: currentScan.ffuf_endpoints?.length ?? 0 },
-    { tool: 'Searchsploit', findings: currentScan.exploits?.length ?? 0 },
-    { tool: 'Metasploit',   findings: currentScan.metasploit?.length ?? 0 },
-    { tool: 'Patator',      findings: currentScan.brute_force_results?.filter((r: any) => r.success)?.length ?? 0 },
-  ].filter(t => t.findings > 0)
+  // Derivado del Skill Registry vía lib/scan-extractors.ts (una sola fuente de
+  // verdad sobre qué campo del scan corresponde a cada herramienta). Wappalyzer
+  // (tecnologías) y ZAP Spider (URLs) no son "hallazgos" y no entran al gráfico.
+  const byTool = getPentestingToolStats(currentScan)
+    .filter(st => st.count > 0 && st.skill.id !== 'wappalyzer' && st.skill.id !== 'zap-spider')
+    .map(st => ({ tool: st.skill.name, findings: st.count }))
 
   const totalFindingsAllTools = byTool.reduce((sum, t) => sum + t.findings, 0)
-
-  // ── Huella Digital (Threat Intel) — suma de señales de todas las
-  // herramientas del grupo. Al sumar Shodan, crt.sh, etc. solo hay que
-  // sumar su propio conteo de señales acá.
-  const vtResult      = currentScan.threat_intel?.virustotal
-  const abuseResult   = currentScan.threat_intel?.abuseipdb
-  const shodanResult  = currentScan.threat_intel?.shodan
-  const crtshResult   = currentScan.threat_intel?.crtsh
-  const testsslResult = currentScan.threat_intel?.testssl
-  const dnstwistResult = currentScan.threat_intel?.dnstwist
-  const safebrowsingResult = currentScan.threat_intel?.safebrowsing
-  const shodanRiskyTags = ['compromised', 'malware', 'honeypot', 'tor']
-  const threatIntelFlags =
-    (vtResult?.malicious ?? 0) + (vtResult?.suspicious ?? 0) +
-    (abuseResult && abuseResult.abuse_confidence_score >= 25 ? 1 : 0) +
-    (shodanResult?.vulns?.length ?? 0) +
-    (shodanResult?.tags?.filter((t: string) => shodanRiskyTags.includes(t.toLowerCase())).length ?? 0) +
-    (testsslResult?.warnings?.length ?? 0) +
-    (dnstwistResult?.registered_variants?.length ?? 0) +
-    (safebrowsingResult?.flagged ? 1 : 0)
 
   // El breakdown real ya lo calcula scoring.py en el backend — currentScan.score.breakdown
   // es la misma fuente de verdad que usa ScoreCard, sin recalcular nada aquí.
@@ -267,7 +247,7 @@ export function ResultsDashboard() {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_100%_50%,rgba(var(--cyber-accent-rgb),0.06),transparent)]" />
         <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xl font-bold tracking-tight">{t('title')}</h2>
+            <h2 className="text-xl font-bold tracking-tight">{t('pentestingTitle')}</h2>
             <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs text-muted-foreground">
               <span>
                 <span className="text-[var(--cyber-accent)]">target</span>{' '}
@@ -310,6 +290,9 @@ export function ResultsDashboard() {
         </Alert>
       )}
 
+      {/* ── Enlace a Huella Digital (resultados separados en /footprint) ── */}
+      <FootprintCrossLink scan={currentScan} />
+
       {/* ── Tabs ── */}
       <Tabs defaultValue="summary" className="space-y-4">
         <TabsList className="grid w-full grid-cols-2 h-auto gap-2 bg-transparent p-0 sm:grid-cols-6">
@@ -318,25 +301,12 @@ export function ResultsDashboard() {
           <TabsTrigger value="summary" className="flex flex-col items-start gap-1 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 h-auto text-left transition-all duration-200 hover:border-[rgba(var(--cyber-accent-rgb),0.40)] data-[state=active]:border-[var(--cyber-accent)] data-[state=active]:bg-[rgba(var(--cyber-accent-rgb),0.08)] data-[state=active]:shadow-cyber-sm">
             <div className="flex items-center gap-1.5 w-full">
               <BarChart3 className="h-4 w-4 text-[var(--cyber-accent)] shrink-0" />
-              <span className="text-xs font-mono font-medium truncate">Resumen</span>
+              <span className="text-xs font-mono font-medium truncate">{t('tabSummary')}</span>
             </div>
             <div className="font-mono text-2xl font-bold leading-none text-[var(--cyber-accent)]">
               {totalFindingsAllTools}
             </div>
-            <div className="font-mono text-[10px] text-muted-foreground">hallazgos totales</div>
-          </TabsTrigger>
-
-          {/* Huella Digital — Threat Intel, corre en paralelo (no es una fase secuencial) */}
-          <TabsTrigger value="huella-digital" className="flex flex-col items-start gap-1 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 h-auto text-left transition-all duration-200 hover:border-cyan-500/40 data-[state=active]:border-cyan-500 data-[state=active]:bg-cyan-500/8 data-[state=active]:shadow-[0_0_12px_rgba(6,182,212,0.15)]">
-            <div className="flex items-center gap-1.5 w-full">
-              <Fingerprint className="h-4 w-4 text-cyan-400 shrink-0" />
-              <span className="text-xs font-mono font-medium truncate">Huella Digital</span>
-              <span className="ml-auto font-mono text-[9px] text-muted-foreground/50">∥</span>
-            </div>
-            <div className={cn("font-mono text-2xl font-bold leading-none", threatIntelFlags > 0 ? "text-red-400" : "text-cyan-400")}>
-              {threatIntelFlags}
-            </div>
-            <div className="font-mono text-[10px] text-muted-foreground">{t('tabThreatIntel')}</div>
+            <div className="font-mono text-[10px] text-muted-foreground">{t('tabSummaryUnit')}</div>
           </TabsTrigger>
 
           {/* F1 — Wappalyzer */}
@@ -476,10 +446,10 @@ export function ResultsDashboard() {
           <SecurityMetrics
             breakdown={severityBreakdown}
             byTool={byTool}
-            severityTitle="Vulnerabilidades por severidad"
-            severitySubtitle="Distribución real de este escaneo"
-            toolTitle="Hallazgos por herramienta"
-            toolSubtitle="Conteo real de este escaneo"
+            severityTitle={t('summarySeverityTitle')}
+            severitySubtitle={t('summarySeveritySubtitle')}
+            toolTitle={t('summaryToolTitle')}
+            toolSubtitle={t('summaryToolSubtitle')}
           />
         </TabsContent>
 
@@ -590,91 +560,6 @@ export function ResultsDashboard() {
         </TabsContent>
 
         {/* ══ TAB: Tecnologías ══ */}
-        <TabsContent value="huella-digital">
-          <CyberPanel
-            title={t('threatIntelTitle')}
-            subtitle={t('threatIntelSubtitle')}
-            action={
-              vtResult || abuseResult || shodanResult || crtshResult || testsslResult || dnstwistResult || safebrowsingResult ? (
-                <span className="flex items-center gap-1 whitespace-nowrap rounded border border-cyan-500/40 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide text-cyan-400">
-                  <Fingerprint className="h-3 w-3" />
-                  {[vtResult, abuseResult, shodanResult, crtshResult, testsslResult, dnstwistResult, safebrowsingResult].filter(Boolean).length} fuente(s) activa(s)
-                </span>
-              ) : undefined
-            }
-          >
-            {!vtResult && !abuseResult && !shodanResult && !crtshResult && !testsslResult && !dnstwistResult && !safebrowsingResult ? (
-              <div className="space-y-3 py-12 text-center">
-                <Fingerprint className="mx-auto h-10 w-10 text-muted-foreground/30" />
-                <p className="font-medium text-muted-foreground">{t('threatIntelEmpty')}</p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {/* Resumen de superficie por grupo — visual rápido antes del detalle */}
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  <FootprintGroupChip groupKey="dominios" active={[crtshResult, dnstwistResult].filter(Boolean).length} total={2} />
-                  <FootprintGroupChip groupKey="infraestructura" active={shodanResult ? 1 : 0} total={1} />
-                  <FootprintGroupChip groupKey="reputacion" active={[vtResult, abuseResult, safebrowsingResult].filter(Boolean).length} total={3} />
-                  <FootprintGroupChip groupKey="tlsSsl" active={testsslResult ? 1 : 0} total={1} />
-                </div>
-
-                {/* Cada herramienta del grupo es su propio bloque, leyendo
-                    currentScan.threat_intel.<herramienta>. Para sumar Shodan,
-                    crt.sh, etc. se agrega un bloque más acá, igual a estos. */}
-                <div>
-                  <h4 className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
-                    VirusTotal
-                  </h4>
-                  <p className="mb-2 text-[11px] text-muted-foreground">Reputación del dominio/IP contra 68+ motores antivirus.</p>
-                  <VirusTotalPanel data={vtResult} />
-                </div>
-                <div>
-                  <h4 className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
-                    AbuseIPDB
-                  </h4>
-                  <p className="mb-2 text-[11px] text-muted-foreground">Reportes de abuso conocidos para la IP del objetivo.</p>
-                  <AbuseIPDBPanel data={abuseResult} />
-                </div>
-                <div>
-                  <h4 className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
-                    Shodan
-                  </h4>
-                  <p className="mb-2 text-[11px] text-muted-foreground">Puertos expuestos, tecnologías y CVEs conocidos por firma de banner.</p>
-                  <ShodanPanel data={shodanResult} />
-                </div>
-                <div>
-                  <h4 className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
-                    crt.sh
-                  </h4>
-                  <p className="mb-2 text-[11px] text-muted-foreground">Subdominios descubiertos vía certificados SSL/TLS emitidos públicamente.</p>
-                  <CrtShPanel data={crtshResult} />
-                </div>
-                <div>
-                  <h4 className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
-                    TestSSL
-                  </h4>
-                  <p className="mb-2 text-[11px] text-muted-foreground">Vulnerabilidades TLS con nombre propio (Heartbleed, POODLE...) y estado del certificado.</p>
-                  <TestSSLPanel data={testsslResult} />
-                </div>
-                <div>
-                  <h4 className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
-                    dnstwist
-                  </h4>
-                  <p className="mb-2 text-[11px] text-muted-foreground">Dominios parecidos (typosquatting/phishing) que ya están registrados.</p>
-                  <DnstwistPanel data={dnstwistResult} />
-                </div>
-                <div>
-                  <h4 className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
-                    Google Safe Browsing
-                  </h4>
-                  <p className="mb-2 text-[11px] text-muted-foreground">Si Google ya tiene este sitio marcado como malware o phishing.</p>
-                  <SafeBrowsingPanel data={safebrowsingResult} />
-                </div>
-              </div>
-            )}
-          </CyberPanel>
-        </TabsContent>
-
         <TabsContent value="technologies">
           <CyberPanel title={t('technologies')} subtitle={t('technologiesDesc')}>
             {currentScan.technologies.length === 0 ? (

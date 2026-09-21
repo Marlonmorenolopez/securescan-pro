@@ -27,10 +27,16 @@
     "dashboard": "Dashboard",
     "collapseSidebar": "Collapse",
     "openNav": "Open navigation",
-    "searchPlaceholder": "Search tools, sections…"
+    "searchPlaceholder": "Search tools, sections…",
+    "mainNavigation": "Main navigation",
+    "closeNav": "Close navigation",
+    "expandSidebar": "Expand",
+    "searchLabel": "Search tools and sections",
+    "clearSearch": "Clear search",
+    "notifications": "Notifications"
   },
   "scanner": {
-    "title": "Start Security Analysis",
+    "title": "Start Pentesting analysis",
     "tools": "tools",
     "estimatedTime": "Estimated time",
     "legalTitle": "Legal & Ethical Notice",
@@ -70,7 +76,64 @@
       "medium": "~10 minutes",
       "slow": "~25 minutes",
       "deep": "~35 minutes"
-    }
+    },
+    "heroTitle": "Pentesting",
+    "heroPipeline": "Automated pipeline: Wappalyzer → Nmap → Patator → Metasploit → ffuf → Gobuster → ZAP Spider → ZAP → Nuclei → SQLMap / Injection Scanner → Searchsploit",
+    "toolStateTitle": "Tool Status",
+    "labs": "Labs",
+    "globalRisk": "Overall Risk",
+    "noFindings": "No findings detected",
+    "startingPipeline": "Starting scan pipeline...",
+    "emptyState": "Enter a target URL to start the analysis.",
+    "footerBrand": "SecureScan Pro v5.0 · Academic Project SENA",
+    "footerLegal": "For ethical, authorized use in test environments only",
+    "footprintNotIncluded": "This scan didn't include Digital Footprint. Turn it on in Advanced Configuration or from the Digital Footprint module.",
+    "formats": "Formats:",
+    "optIn": "opt-in",
+    "alsoRuns": "Also runs: {tools}",
+    "footprintToggleTitle": "Digital Footprint",
+    "footprintToggleBadge": "runs in parallel",
+    "footprintToggleHint": "Collects external signals (domains, infrastructure, reputation, TLS/SSL) during this same scan.",
+    "footprintToggleLink": "Choose sources in Digital Footprint",
+    "kpi": {
+      "critical": "Critical",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low",
+      "completed": "Completed",
+      "totalFindings": "Total Findings"
+    },
+    "riskLevel": {
+      "COMPROMETIDO": "Compromised",
+      "EXPUESTO": "Exposed",
+      "VULNERABLE": "Vulnerable",
+      "PROTEGIDO": "Protected",
+      "CRITICAL": "Compromised",
+      "HIGH": "Exposed",
+      "MEDIUM": "Vulnerable",
+      "LOW": "Vulnerable",
+      "MINIMAL": "Protected"
+    },
+    "errorPage": {
+      "title": "Scanner Error",
+      "unexpected": "An unexpected error occurred.",
+      "checklist": "Verify these are running:",
+      "retry": "Retry"
+    },
+    "toolDesc": {
+      "wappalyzer": "Web technology fingerprinting",
+      "nmap": "Port and active service scanning",
+      "gobuster": "Directory and path enumeration",
+      "ffuf": "Fast fuzzing of endpoints and API routes",
+      "zap": "DAST — full Spider and Active Scan",
+      "nuclei": "CVE scanner with up-to-date YAML templates",
+      "sqlmap": "Automated injection detection (10 techniques, with SQLMap as fallback)",
+      "searchsploit": "Local ExploitDB exploit search",
+      "metasploit": "MSF auxiliary modules (requires msfrpcd)",
+      "patator": "HTTP brute force — auto-detects login form"
+    },
+    "footprintOnlyNotice": "The latest scan ({target}) was launched with Digital Footprint only, so it has no Pentesting results.",
+    "footprintOnlyAction": "View in Digital Footprint"
   },
   "progress": {
     "scanning": "Scanning...",
@@ -174,7 +237,18 @@
     "noPatatorDetail": "Enable Patator in the scan configuration to test brute force on login forms.",
     "ffufTitle": "ffuf Endpoints",
     "noFfuf": "No ffuf results",
-    "noFfufDetail": "Enable ffuf in the scan configuration to discover hidden routes and endpoints."
+    "noFfufDetail": "Enable ffuf in the scan configuration to discover hidden routes and endpoints.",
+    "pentestingTitle": "Pentesting Results",
+    "urgentAttention": "{count} require urgent attention",
+    "footprintLinkTitle": "This scan also collected Digital Footprint",
+    "footprintLinkDetail": "{withData} of {total} sources have real data. Results aren't mixed here — check them in their own module.",
+    "footprintLinkAction": "View Digital Footprint",
+    "tabSummary": "Summary",
+    "tabSummaryUnit": "total findings",
+    "summarySeverityTitle": "Vulnerabilities by severity",
+    "summarySeveritySubtitle": "Real distribution for this scan",
+    "summaryToolTitle": "Findings by tool",
+    "summaryToolSubtitle": "Real count for this scan"
   },
   "report": {
     "title": "Download report",
@@ -382,7 +456,46 @@
     "stackBackend": "Backend",
     "fileStructureTitle": "File Structure",
     "goToScanner": "Go to Scanner",
-    "configureLab": "Configure Lab"
+    "configureLab": "Configure Lab",
+    "zapSpiderDesc": "OWASP ZAP's spider: crawls the application and discovers URLs, paths and forms. In SecureScan it runs before the active scan as part of the ZAP full scan, and its URLs are listed in the Pentesting results.",
+    "zapSpiderFeature1": "Discovers URLs and paths by crawling the application",
+    "zapSpiderFeature2": "Runs before the active scan inside the ZAP full scan",
+    "zapSpiderFeature3": "Discovered URLs are shown in the ZAP Spider tab",
+    "injectionScannerDesc": "SecureScan Pro's own module that detects 10 injection types with active payloads. It runs in the SQLMap step; if the module isn't available, the backend falls back to SQLMap.",
+    "injectionScannerFeature1": "10 techniques: SQLi, NoSQLi, XPath, XXE, XSS, command injection, path traversal (LFI), SSRF, SSTI and LDAP",
+    "injectionScannerFeature2": "SQLi as error-based, UNION, boolean-blind, time-blind, auth bypass, stacked and second-order",
+    "injectionScannerFeature3": "Built for Juice Shop, DVWA and WebGoat; basic detection on forms of other targets",
+    "injectionScannerFeature4": "Can use the session cookie obtained by Patator",
+    "crtshDesc": "Discovers subdomains from public Certificate Transparency logs by querying crt.sh. No API key required. It may list old subdomains that no longer resolve.",
+    "crtshFeature1": "Unique subdomains and number of certificates found",
+    "crtshFeature2": "Public service, no API key",
+    "crtshFeature3": "If the target is an IP, it tries a reverse DNS (PTR) lookup to get a domain",
+    "dnstwistDesc": "Detects typosquatting and phishing domains similar to the target using the real dnstwist library (14 techniques, including homoglyphs and bitsquatting) and resolves which ones are registered. It caps the number of variants to keep runtime reasonable.",
+    "dnstwistFeature1": "Lists similar domains that are already registered, with their IP",
+    "dnstwistFeature2": "Reports how many variants were checked",
+    "dnstwistFeature3": "If the target is an IP, it first tries a reverse DNS lookup to find a hostname",
+    "shodanDesc": "External exposure via Shodan InternetDB (free, no API key): open ports, hostnames, CPEs, tags and CVEs associated with the IP. It only works with IPs; a domain target is resolved via DNS.",
+    "shodanFeature1": "Open ports and known hostnames of the IP",
+    "shodanFeature2": "CVEs inferred from the banner version: may be false positives if the service is patched",
+    "shodanFeature3": "Tags such as cdn, vpn, tor or compromised",
+    "shodanFeature4": "No API key required; InternetDB data isn't real-time",
+    "virustotalDesc": "Queries the report VirusTotal already has for the domain or IP (API v3); it does not scan the target. Requires the VIRUSTOTAL_API_KEY variable on the server: without it the result is marked as no real data.",
+    "virustotalFeature1": "Engine verdicts: malicious, suspicious, harmless and undetected",
+    "virustotalFeature2": "List of engines that flagged the target",
+    "virustotalFeature3": "Link to the full report on VirusTotal",
+    "abuseipdbDesc": "IP reputation on AbuseIPDB (API v2). It only works with IPs: a domain is resolved via DNS and the resulting IP is reported. Requires the ABUSEIPDB_API_KEY variable on the server.",
+    "abuseipdbFeature1": "Abuse confidence score (0–100) and number of reports",
+    "abuseipdbFeature2": "Country, ISP and usage type of the IP",
+    "abuseipdbFeature3": "Date of the last report and a link to the AbuseIPDB detail",
+    "safebrowsingDesc": "Checks whether Google Safe Browsing already flags the URL as malware, social engineering (phishing) or unwanted software. Requires the GOOGLE_SAFE_BROWSING_API_KEY variable on the server.",
+    "safebrowsingFeature1": "Tells whether the URL is flagged as a threat",
+    "safebrowsingFeature2": "Lists the detected threat types",
+    "safebrowsingFeature3": "Uses the v4 threatMatches:find API",
+    "testsslDesc": "Analyzes the target's TLS/SSL configuration with testssl.sh: offered protocols, known vulnerabilities and certificate data. It connects directly to the target's port.",
+    "testsslFeature1": "Offered protocols (SSLv3, TLS 1.0–1.3) with their severity",
+    "testsslFeature2": "Known TLS vulnerabilities (Heartbleed, ROBOT, etc.)",
+    "testsslFeature3": "Certificate data: subject, expiry, key size and signature algorithm",
+    "testsslFeature4": "If the port doesn't speak TLS or the analysis times out, it is reported as an error"
   },
   "lab": {
     "pageTitle": "Practice Lab",
@@ -530,7 +643,9 @@
     "sevLow": "Low or above",
     "sevMedium": "Medium or above",
     "sevHigh": "High or above",
-    "sevCritical": "Critical only"
+    "sevCritical": "Critical only",
+    "breadcrumb": "Breadcrumb",
+    "breadcrumbSettings": "Settings"
   },
   "navCatalog": {
     "sections": {
@@ -689,6 +804,380 @@
       "completed": "Completed",
       "error": "Error",
       "skipped": "Skipped"
+    }
+  },
+  "toolCard": {
+    "status": {
+      "idle": "Idle",
+      "running": "Running",
+      "completed": "Completed",
+      "error": "Error",
+      "skipped": "Skipped"
+    },
+    "result": "Result"
+  },
+  "module": {
+    "security": "Security",
+    "breadcrumb": "Breadcrumb",
+    "switchLabel": "Switch module"
+  },
+  "settingsPage": {
+    "title": "Settings",
+    "description": "Interface preferences and the state of the server configuration. Notifications have their own screen.",
+    "interface": {
+      "title": "Interface",
+      "subtitle": "Preferences stored in this browser",
+      "language": "Language",
+      "languageHint": "Switch between Spanish and English",
+      "languageName": {
+        "es": "Español",
+        "en": "English"
+      },
+      "theme": "Theme",
+      "themeHint": "Light, dark or the system's",
+      "themeOption": {
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
+      }
+    },
+    "server": {
+      "title": "Server",
+      "subtitle": "State and configuration reported by the backend (read-only)",
+      "refresh": "Refresh",
+      "readOnlyNote": "These values are defined by the server through environment variables. They are shown for reference only and can't be changed from here.",
+      "loading": "Loading server configuration…",
+      "unreachableTitle": "Couldn't reach the server",
+      "unreachableDetail": "Check that the backend is running and try again.",
+      "status": "Status",
+      "storage": "Scan storage",
+      "storageHint": "Where the backend stores scans",
+      "storageRedis": "Redis",
+      "storageFallback": "Local memory (fallback)",
+      "zap": "OWASP ZAP",
+      "zapHint": "Connection to the ZAP daemon",
+      "configured": "Configured",
+      "notConfigured": "Not configured",
+      "version": "Backend version",
+      "labRestriction": "Lab restriction",
+      "labRestrictionHint": "When active, the backend only accepts the allowed targets",
+      "enabled": "Active",
+      "disabled": "Inactive",
+      "unknown": "No information",
+      "allowedTargets": "Allowed targets",
+      "allowedTargetsHint": "Labs accepted by the backend",
+      "none": "None",
+      "reportFormats": "Report formats",
+      "metasploit": "Metasploit",
+      "metasploitHint": "Execution mode reported by the backend",
+      "metasploitLive": "Live",
+      "metasploitSimulation": "Simulation",
+      "availableTools": "Tools registered in the backend",
+      "availableToolsHint": "Includes Pentesting, Digital Footprint, OSINT and Code Security",
+      "empty": "The server returned no configuration information."
+    },
+    "related": {
+      "title": "Other screens",
+      "subtitle": "Settings that live on their own screen",
+      "notifications": {
+        "title": "Notifications",
+        "detail": "Email and webhook when a scan finishes."
+      },
+      "schedules": {
+        "title": "Scheduled scans",
+        "detail": "Manage recurring scans."
+      },
+      "docs": {
+        "title": "Documentation",
+        "detail": "Guides and tool reference."
+      }
+    }
+  },
+  "footprint": {
+    "title": "Digital Footprint",
+    "errorTitle": "Error",
+    "close": "Close",
+    "starting": "Starting Digital Footprint analysis…",
+    "collecting": "Collecting data from external sources…",
+    "partial": "Analysis in progress: showing the results received so far.",
+    "footerBrand": "SecureScan Pro v5.0 · Academic Project SENA",
+    "footerLegal": "For ethical, authorized use only",
+    "coverage": "{withData}/{total} sources with data",
+    "coverageHint": "Sources that returned real data out of those that apply to this view",
+    "executionNote": "This source doesn't run individually: it runs in the Digital Footprint phase of the scan, in parallel with the Pentesting pipeline when both are active.",
+    "form": {
+      "title": "Analyze external surface",
+      "subtitle": "Launches only the Digital Footprint phase: no Pentesting tool is run.",
+      "targetLabel": "Target domain or IP",
+      "targetPlaceholder": "example.com or 203.0.113.10",
+      "targetRequired": "Enter a domain, an IP or a URL.",
+      "sourcesLabel": "Sources",
+      "selectAll": "All",
+      "clearAll": "None",
+      "needsApiKey": "Requires an API key on the server",
+      "noSourcesSelected": "Select at least one source.",
+      "submit": "Analyze digital footprint",
+      "submitting": "Analyzing…",
+      "noteScope": "Uses the same backend scan with the Pentesting tools turned off and only the chosen sources.",
+      "noteApiKeys": "VirusTotal, AbuseIPDB and Google Safe Browsing need their API key configured on the server; without it they return “no real data”.",
+      "notePublicTargets": "External data only exists for public domains or IPs. With the local labs, sources usually answer “no real data”, and the server may restrict the allowed targets (see Settings)."
+    },
+    "recent": {
+      "title": "Recent analyses"
+    },
+    "empty": {
+      "title": "No data available",
+      "detail": "Enter a domain or IP and choose the sources to see its digital footprint."
+    },
+    "notIncluded": {
+      "title": "This scan didn't include Digital Footprint",
+      "detail": "It ran with Digital Footprint collection turned off. Launch a scan from here to get it."
+    },
+    "noResults": {
+      "title": "No data available",
+      "detail": "No results were found for this analysis."
+    },
+    "status": {
+      "target": "Target",
+      "footprintPhase": "Digital Footprint phase",
+      "originShared": "Collected together with a Pentesting scan of the same target.",
+      "originFootprintOnly": "Digital Footprint-only scan.",
+      "viewPentesting": "View Pentesting",
+      "scan": {
+        "pending": "Pending",
+        "running": "Running",
+        "completed": "Completed",
+        "error": "Error",
+        "cancelled": "Cancelled"
+      },
+      "phase": {
+        "idle": "waiting",
+        "running": "running",
+        "completed": "completed",
+        "error": "failed",
+        "skipped": "skipped"
+      }
+    },
+    "state": {
+      "noValue": "no data",
+      "data": {
+        "title": "With data",
+        "detail": "The source returned real data.",
+        "short": "With data"
+      },
+      "noData": {
+        "title": "No real data",
+        "detail": "The source returned no real information (for example, the API key is missing, the host is internal or the tool isn't available). It does not mean “0 results”.",
+        "short": "No real data"
+      },
+      "error": {
+        "title": "Failed",
+        "detail": "The source was queried but the request failed.",
+        "short": "Failed"
+      },
+      "notRun": {
+        "title": "Not run",
+        "detail": "This source isn't part of this scan or hasn't returned results yet.",
+        "short": "Not run"
+      }
+    },
+    "surface": {
+      "title": "Discovered surface",
+      "subdomains": "Subdomains",
+      "subdomainsHint": "Via Certificate Transparency",
+      "ips": "IPs",
+      "ipsHint": "Reported by Shodan / AbuseIPDB",
+      "ports": "Exposed ports",
+      "portsHint": "Seen from the internet",
+      "lookalikes": "Lookalike domains",
+      "lookalikesHint": "Already registered (typosquatting)",
+      "riskSignals": "Risk signals",
+      "riskSignalsHint": "Sum of signals from sources with data. Not a security score.",
+      "riskSignalsNone": "No source has returned real data yet."
+    },
+    "domain": {
+      "title": "Domain Intelligence",
+      "subtitle": "Subdomains and domains similar to the target",
+      "subdomains": "Subdomains (crt.sh)",
+      "noSubdomains": "crt.sh has no subdomains on record for this domain",
+      "subdomainsSummary": "{subdomains, plural, one {# subdomain} other {# subdomains}} across {certificates, plural, one {# certificate} other {# certificates}}",
+      "moreInDetail": "+{count} more in the per-source detail",
+      "lookalikes": "Lookalike domains (dnstwist)",
+      "noLookalikes": "No registered lookalike domains were found",
+      "candidatesChecked": "Variants checked: {count}",
+      "lookalikesSummary": "{registered} registered out of {checked} variants checked"
+    },
+    "infra": {
+      "title": "Infrastructure Intelligence",
+      "subtitle": "How the IP looks from the internet",
+      "addresses": "Addresses and hostnames",
+      "moreHostnames": "+{count} more hostnames in the per-source detail",
+      "ports": "Open ports",
+      "noPorts": "Shodan has no open ports on record",
+      "cves": "Associated CVEs",
+      "noCves": "No associated CVEs",
+      "cvesCaveat": "Inferred from the banner version: may be false positives if the service is patched.",
+      "tags": "Tags",
+      "networkContext": "Network context (AbuseIPDB)",
+      "country": "Country",
+      "isp": "ISP",
+      "usageType": "Usage type"
+    },
+    "reputation": {
+      "title": "Reputation Intelligence",
+      "subtitle": "What the reputation sources say",
+      "vtFlagged": "{count, plural, one {# engine flags it} other {# engines flag it}}",
+      "vtClean": "Not flagged",
+      "vtBreakdown": "{malicious} malicious · {suspicious} suspicious · {harmless} harmless · {undetected} undetected",
+      "abuseScore": "Score {score}/100",
+      "abuseScoreLabel": "Abuse confidence score",
+      "abuseReports": "{reports, plural, one {# report} other {# reports}} from {users, plural, one {# user} other {# users}}",
+      "sbFlagged": "Flagged as a threat",
+      "sbClean": "No threats",
+      "sbCleanHint": "Google Safe Browsing does not flag this URL."
+    },
+    "tls": {
+      "title": "TLS Intelligence",
+      "subtitle": "Protocols, warnings and certificate",
+      "protocols": "Protocols",
+      "noProtocols": "testssl.sh reported no protocols",
+      "warningsBySeverity": "Warnings by severity",
+      "warningsCaveat": "Only findings with a warning severity are counted; OK and informational lines aren't added up.",
+      "certificate": "Certificate",
+      "noCertificate": "testssl.sh reported no certificate data",
+      "cert": {
+        "cert_commonName": "Subject",
+        "cert_expirationStatus": "Expiration",
+        "cert_notAfter": "Expires",
+        "cert_keySize": "Key size",
+        "cert_signatureAlgorithm": "Signature algorithm",
+        "cert_chain_of_trust": "Chain of trust"
+      }
+    },
+    "sources": {
+      "title": "Source coverage",
+      "subtitle": "The 7 Digital Footprint sources and their status in this scan",
+      "role": {
+        "crtsh": "Subdomains via Certificate Transparency",
+        "dnstwist": "Typosquatting and phishing",
+        "shodan": "Ports, hostnames and CVEs of the IP",
+        "virustotal": "Domain / IP reputation",
+        "abuseipdb": "Abuse reports about the IP",
+        "safebrowsing": "Malware and phishing per Google",
+        "testssl": "TLS protocols, vulnerabilities and certificate"
+      }
+    },
+    "result": {
+      "crtsh": "{count, plural, one {# subdomain} other {# subdomains}}",
+      "dnstwist": "{count, plural, one {# lookalike} other {# lookalikes}}",
+      "shodan": "{ports} ports · {cves} CVE",
+      "virustotal": "{count, plural, one {# flag} other {# flags}}",
+      "abuseipdb": "Score {score}",
+      "safebrowsingFlagged": "Threat",
+      "safebrowsingClean": "No threats",
+      "testssl": "{count, plural, one {# warning} other {# warnings}}"
+    },
+    "detail": {
+      "title": "Per-source detail",
+      "subtitle": "Full results of each source, grouped by category"
+    }
+  },
+  "intel": {
+    "noRealData": "No real data",
+    "host": "host",
+    "domain": "domain",
+    "yes": "Yes",
+    "no": "No",
+    "reverseDns": "discovered via reverse DNS from",
+    "vt": {
+      "empty": "VirusTotal has no results yet",
+      "enginesFlagged": "{count, plural, one {# engine flagging} other {# engines flagging}}",
+      "clean": "Clean",
+      "malicious": "malicious",
+      "suspicious": "suspicious",
+      "undetected": "undetected",
+      "harmless": "harmless",
+      "enginesTitle": "Engines that flagged the host",
+      "fullReport": "View full report on VirusTotal"
+    },
+    "abuse": {
+      "empty": "AbuseIPDB has no results yet",
+      "confidenceBadge": "{score}% abuse confidence",
+      "noRelevant": "No relevant reports",
+      "confidence": "abuse confidence",
+      "totalReports": "total reports",
+      "distinctUsers": "distinct users",
+      "whitelisted": "whitelisted",
+      "country": "Country",
+      "usage": "Usage",
+      "reportedSummary": "This IP was reported {reports, plural, one {# time} other {# times}} by {users, plural, one {# distinct user} other {# distinct users}} on AbuseIPDB.",
+      "lastReport": "Last report: {date}.",
+      "fullReport": "View full report on AbuseIPDB"
+    },
+    "sb": {
+      "empty": "Safe Browsing has no results yet",
+      "flaggedBadge": "Flagged by Google Safe Browsing",
+      "notFlagged": "Not flagged",
+      "browsersBlocking": "Chrome and Firefox are probably blocking this site for visitors",
+      "notFlaggedDetail": "Google doesn't have this site flagged as malware, phishing or unwanted software at scan time.",
+      "transparencyReport": "Check Google's Transparency Report"
+    },
+    "shodan": {
+      "empty": "Shodan has no results yet",
+      "cveBadge": "{count, plural, one {# known CVE} other {# known CVEs}}",
+      "riskTags": "Risk tags detected",
+      "portsBadge": "{count, plural, one {# exposed port} other {# exposed ports}}",
+      "openPorts": "open ports",
+      "cves": "known CVEs",
+      "hostnames": "hostnames",
+      "tags": "tags",
+      "portsTitle": "Open ports",
+      "tagsTitle": "Tags",
+      "cvesTitle": "CVEs by banner signature",
+      "bannerCaveat": "Based on the version reported in the service banner — it may be patched and still show the old version. Confirm before reporting it as a finding.",
+      "fullHost": "View full host on Shodan"
+    },
+    "crt": {
+      "empty": "crt.sh has no results yet",
+      "badge": "{count, plural, one {# subdomain discovered} other {# subdomains discovered}}",
+      "none": "No subdomains in Certificate Transparency",
+      "uniqueSubdomains": "unique subdomains",
+      "certificates": "certificates found",
+      "subdomainsTitle": "Subdomains",
+      "seeMore": "See {count} more",
+      "fullSearch": "View full search on crt.sh"
+    },
+    "dns": {
+      "empty": "dnstwist has no results yet",
+      "foundBadge": "{count, plural, one {# lookalike domain registered} other {# lookalike domains registered}}",
+      "none": "No registered lookalike domains",
+      "variantsChecked": "variants checked",
+      "registeredToday": "registered today",
+      "title": "Lookalike domains already registered",
+      "note": "A domain being registered doesn't mean it's malicious — it may be yours, a competitor's, or unused. Worth reviewing if you don't recognize it."
+    },
+    "tls": {
+      "empty": "testssl.sh has no results yet",
+      "noTls": "No TLS on this port",
+      "noTlsDefault": "The target didn't respond to a TLS handshake on this port.",
+      "vulnBadge": "{count, plural, one {# vulnerability finding} other {# vulnerability findings}}",
+      "noVulns": "No named vulnerabilities detected",
+      "checks": "{count, plural, one {# check} other {# checks}}",
+      "vulnsTitle": "Vulnerabilities ({found} of {total} with findings)",
+      "noneApply": "None of the named vulnerabilities (Heartbleed, POODLE, FREAK, DROWN...) apply to this server.",
+      "showChecks": "Show the {count} checks with no finding",
+      "certTitle": "Certificate",
+      "showFields": "Show {count} more certificate fields",
+      "cert": {
+        "cert_commonName": "Subject",
+        "cert_chain_of_trust": "Chain of trust",
+        "cert_expirationStatus": "Expiration",
+        "cert_notAfter": "Expires",
+        "cert_subjectAltName": "SAN",
+        "cert_keySize": "Key size",
+        "cert_signatureAlgorithm": "Signature algorithm",
+        "cert_revocation": "Revocation (CRL/OCSP)"
+      }
     }
   }
 }

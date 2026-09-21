@@ -59,7 +59,14 @@ export interface ScanResult {
   sqli_results: any[]          // Resultados de SQLMap
   brute_force_results: any[]   // Resultados de Patator
   ffuf_endpoints: any[]        // Resultados de ffuf
-  threat_intel?: Record<string, any>   // Huella Digital — VirusTotal, y próximamente más
+  threat_intel?: Record<string, any>   // Huella Digital (7 fuentes) — ver lib/scan-extractors.ts
+  /**
+   * Opciones con las que se lanzó el análisis. El backend las devuelve dentro
+   * del estado del scan (scan_data['options']); mientras llega el primer
+   * poll se rellenan con las que envió el frontend. Permite saber qué módulo
+   * (Pentesting y/o Huella Digital) participó en el análisis.
+   */
+  options?: { tools?: Record<string, unknown> }
   score: SecurityScore
 }
 
@@ -112,6 +119,7 @@ const AUTH_HEADER: Record<string, string> = API_TOKEN ? { 'X-API-Token': API_TOK
 
 // 🆕 ACTUALIZADO: Steps con ZAP Spider y ZAP (Active) separados
 const defaultSteps: ScanStep[] = [
+  { name: 'Huella Digital', status: 'pending', progress: 0 },
   { name: 'Wappalyzer',   status: 'pending', progress: 0 },
   { name: 'Nmap',         status: 'pending', progress: 0 },
   { name: 'Patator',      status: 'pending', progress: 0 },
@@ -159,6 +167,32 @@ export function ScanProvider({ children }: { children: ReactNode }) {
       clearTimeout(pollingIntervalRef.current)
     }
 
+    // Herramientas que se envían al backend. Los 10 flags de Pentesting ya se
+    // enviaban; `threat_intel` (switch maestro de Huella Digital) y
+    // `threat_intel_tools` (fuentes elegidas) SÍ los lee el backend
+    // (run_scan → tools.get('threat_intel', True) / tools.get('threat_intel_tools'))
+    // pero antes se descartaban aquí y la selección de la UI no tenía efecto.
+    // Solo se envían si el caller los definió: si no, el backend conserva su
+    // comportamiento por defecto (las 7 fuentes).
+    const requestedTools: Record<string, unknown> = {
+      wappalyzer:   options?.tools?.wappalyzer   ?? true,
+      nmap:         options?.tools?.nmap         ?? true,
+      gobuster:     options?.tools?.gobuster     ?? true,
+      zap:          options?.tools?.zap          ?? true,
+      searchsploit: options?.tools?.searchsploit ?? true,
+      metasploit:   options?.tools?.metasploit   ?? false,
+      nuclei:       options?.tools?.nuclei       ?? true,
+      sqlmap:       options?.tools?.sqlmap       ?? false,
+      patator:      options?.tools?.patator      ?? false,
+      ffuf:         options?.tools?.ffuf         ?? true,
+    }
+    if (options?.tools?.threat_intel !== undefined) {
+      requestedTools.threat_intel = options.tools.threat_intel
+    }
+    if (options?.tools?.threat_intel_tools !== undefined) {
+      requestedTools.threat_intel_tools = options.tools.threat_intel_tools
+    }
+
     // 🆕 ACTUALIZADO: Score completo con todas las propiedades requeridas
     const initialScan: ScanResult = {
       id: '',
@@ -178,6 +212,7 @@ export function ScanProvider({ children }: { children: ReactNode }) {
       brute_force_results: [],
       ffuf_endpoints: [],
       threat_intel: {},
+      options: { tools: requestedTools },
       score: {
         total: 0,
         grade: 'A' as Grade,
@@ -213,18 +248,7 @@ export function ScanProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({
           target,
           options: {
-            tools: {
-              wappalyzer:   options?.tools?.wappalyzer   ?? true,
-              nmap:         options?.tools?.nmap         ?? true,
-              gobuster:     options?.tools?.gobuster     ?? true,
-              zap:          options?.tools?.zap          ?? true,
-              searchsploit: options?.tools?.searchsploit ?? true,
-              metasploit:   options?.tools?.metasploit   ?? false,
-              nuclei:       options?.tools?.nuclei       ?? true,
-              sqlmap:       options?.tools?.sqlmap       ?? false,
-              patator:      options?.tools?.patator      ?? false,
-              ffuf:         options?.tools?.ffuf         ?? true,
-            },
+            tools: requestedTools,
             parallel:          options?.parallel ?? true,
             dry_run:           options?.dry_run  ?? false,
             circuit_breaker: {
@@ -249,7 +273,10 @@ export function ScanProvider({ children }: { children: ReactNode }) {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
+        // El backend devuelve `reason` (ej. objetivo no permitido, circuit
+        // breaker abierto, objetivo inalcanzable): se muestra junto al error.
+        const base = errorData.error || `HTTP ${response.status}: ${response.statusText}`
+        throw new Error(errorData.reason ? `${base} (${errorData.reason})` : base)
       }
 
       const data = await response.json()

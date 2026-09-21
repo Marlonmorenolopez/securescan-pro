@@ -6,10 +6,13 @@
 //   - app/dashboard/page.tsx              (tarjetas de sección)
 //
 // IMPORTANTE: esto es organización visual del FRONTEND. Cada `href` apunta
-// a una ruta que YA EXISTE en la app (ver app/*/page.tsx) — no se inventan
-// rutas ni funcionalidades nuevas. "Huella Digital" y "Pentesting" apuntan
-// ambas a /scanner porque, en el backend actual, ambas corren como parte
-// del mismo Web Scan orchestrator (ver TOOL_ORDER en components/scan-progress.tsx).
+// a una ruta que existe en la app (ver app/*/page.tsx) — no se inventan
+// funcionalidades nuevas. "Pentesting" (/scanner) y "Huella Digital"
+// (/footprint) son DOS módulos de interfaz independientes. En el backend
+// siguen ejecutándose dentro del mismo Web Scan orchestrator (el pipeline
+// de Pentesting y la fase paralela de Huella Digital), pero esa es una
+// decisión de ejecución: la separación es solo de presentación y no cambia
+// ningún contrato del backend.
 
 import type { LucideIcon } from 'lucide-react'
 import {
@@ -55,6 +58,13 @@ export interface NavLeaf {
   label: string
   href: string
   icon: LucideIcon
+  /**
+   * Si es true, el leaf solo se marca activo cuando la ruta coincide
+   * exactamente. Necesario cuando otra ruta cuelga de este href
+   * (ej. /settings vs /settings/notifications, /history vs /history/compare)
+   * para que dos elementos de la navegación no queden activos a la vez.
+   */
+  exact?: boolean
 }
 
 export interface NavGroup {
@@ -97,13 +107,15 @@ export const OSINT: NavSection = {
   ],
 }
 
-// Huella Digital corre como fase del mismo Web Scan (ver scan-progress.tsx:
-// TOOL_ORDER incluye 'Huella Digital' → VirusTotal, AbuseIPDB, crt.sh,
-// Safe Browsing, testssl, dnstwist), por eso comparte href con Pentesting.
+// Huella Digital: módulo propio con su experiencia en /footprint. Sus 7
+// fuentes (VirusTotal, AbuseIPDB, Shodan, crt.sh, testssl.sh, dnstwist,
+// Safe Browsing) corren en el backend como fase paralela del Web Scan
+// (ver scan-context.tsx → tools.threat_intel); la interfaz las presenta
+// aparte de las 12 herramientas de Pentesting.
 export const HUELLA_DIGITAL: NavSection = {
   id: 'huella-digital',
   label: 'Huella Digital',
-  href: '/scanner',
+  href: '/footprint',
   icon: Fingerprint,
   color: 'emerald',
   description: 'Analiza la exposición y huella en internet de tus activos.',
@@ -135,7 +147,7 @@ export const SECURITY_GROUP: NavGroup = {
   id: 'security',
   label: 'Security',
   color: 'cyan',
-  sections: [PENTESTING, OSINT, HUELLA_DIGITAL, CODE_SECURITY],
+  sections: [PENTESTING, HUELLA_DIGITAL, OSINT, CODE_SECURITY],
 }
 
 // ── LABORATORIOS ─────────────────────────────────────────────────────────────
@@ -176,7 +188,7 @@ export const ANALYSIS: NavSection = {
 }
 
 export const ANALYSIS_LEAVES: NavLeaf[] = [
-  { id: 'findings',  label: 'Findings',          href: '/history',          icon: TrendingUp },
+  { id: 'findings',  label: 'Findings',          href: '/history',          icon: TrendingUp, exact: true },
   { id: 'compare',   label: 'Comparar Análisis',  href: '/history/compare',  icon: GitCompare },
   { id: 'timeline',  label: 'Tendencias',         href: '/history/timeline', icon: BarChart3 },
 ]
@@ -191,10 +203,12 @@ export const ANALYSIS_GROUP: NavGroup = {
 // ── OPERACIONES ───────────────────────────────────────────────────────────────
 
 export const OPERATIONS_LEAVES: NavLeaf[] = [
-  { id: 'historial',    label: 'Historial',            href: '/history',                 icon: History },
+  { id: 'historial',    label: 'Historial',            href: '/history',                 icon: History, exact: true },
   { id: 'schedules',    label: 'Escaneos Programados',  href: '/schedules',               icon: CalendarClock },
+  // Configuración (/settings) y Notificaciones (/settings/notifications) son
+  // pantallas distintas: nunca deben compartir href.
   { id: 'notifications',label: 'Notificaciones',        href: '/settings/notifications',  icon: Bell },
-  { id: 'settings',     label: 'Configuración',         href: '/settings/notifications',  icon: Sliders },
+  { id: 'settings',     label: 'Configuración',         href: '/settings',                icon: Sliders, exact: true },
 ]
 
 export const OPERATIONS: NavSection = {
@@ -220,6 +234,6 @@ export const TOP_LEAVES: NavLeaf[] = [
 
 export const DOCS_LEAF: NavLeaf = { id: 'docs', label: 'Documentación', href: '/docs', icon: BookOpen }
 
-export const ALL_SECTIONS: NavSection[] = [PENTESTING, OSINT, HUELLA_DIGITAL, CODE_SECURITY, LABS, ANALYSIS, OPERATIONS]
+export const ALL_SECTIONS: NavSection[] = [PENTESTING, HUELLA_DIGITAL, OSINT, CODE_SECURITY, LABS, ANALYSIS, OPERATIONS]
 
 export const ALL_GROUPS: NavGroup[] = [SECURITY_GROUP, LABS_GROUP, ANALYSIS_GROUP]

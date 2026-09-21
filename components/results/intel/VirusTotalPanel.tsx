@@ -6,6 +6,7 @@
 // propio slice de currentScan.threat_intel y se agrega a results-dashboard.tsx.
 
 import { ShieldCheck, ShieldAlert, ExternalLink } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { CyberCard } from '@/components/cyber/CyberCard'
 import { CyberBadge } from '@/components/cyber/CyberBadge'
 import { cn } from '@/lib/utils'
@@ -30,11 +31,12 @@ interface VirusTotalPanelProps {
 }
 
 export function VirusTotalPanel({ data }: VirusTotalPanelProps) {
+  const t = useTranslations('intel')
   if (!data) {
     return (
       <div className="space-y-3 py-10 text-center">
         <ShieldCheck className="mx-auto h-10 w-10 text-muted-foreground/30" />
-        <p className="font-medium text-muted-foreground">VirusTotal aún no tiene resultados</p>
+        <p className="font-medium text-muted-foreground">{t('vt.empty')}</p>
       </div>
     )
   }
@@ -46,16 +48,16 @@ export function VirusTotalPanel({ data }: VirusTotalPanelProps) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         {flagged > 0 ? (
-          <CyberBadge type={data.malicious > 0 ? 'critical' : 'medium'} size="sm" label={`${flagged} motor(es) en alerta`} />
+          <CyberBadge type={data.malicious > 0 ? 'critical' : 'medium'} size="sm" label={t('vt.enginesFlagged', { count: flagged })} />
         ) : (
-          <CyberBadge type="completed" size="sm" label="Limpio" />
+          <CyberBadge type="completed" size="sm" label={t('vt.clean')} />
         )}
         {data.simulated && (
           <span className="rounded border border-yellow-500/40 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-yellow-400">
-            Simulación
+            {t('noRealData')}
           </span>
         )}
-        <span className="font-mono text-[11px] text-muted-foreground">host: {data.host}</span>
+        <span className="font-mono text-[11px] text-muted-foreground">{t('host')}: {data.host}</span>
       </div>
 
       {data.error && (
@@ -67,19 +69,19 @@ export function VirusTotalPanel({ data }: VirusTotalPanelProps) {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <CyberCard variant={data.malicious > 0 ? 'critical' : 'default'} padding="p-3">
           <div className="font-mono text-2xl font-bold leading-none text-red-400">{data.malicious}</div>
-          <div className="mt-1 font-mono text-[10px] text-muted-foreground">maliciosos</div>
+          <div className="mt-1 font-mono text-[10px] text-muted-foreground">{t('vt.malicious')}</div>
         </CyberCard>
         <CyberCard variant={data.suspicious > 0 ? 'medium' : 'default'} padding="p-3">
           <div className="font-mono text-2xl font-bold leading-none text-amber-400">{data.suspicious}</div>
-          <div className="mt-1 font-mono text-[10px] text-muted-foreground">sospechosos</div>
+          <div className="mt-1 font-mono text-[10px] text-muted-foreground">{t('vt.suspicious')}</div>
         </CyberCard>
         <CyberCard padding="p-3">
           <div className="font-mono text-2xl font-bold leading-none text-foreground">{data.undetected}</div>
-          <div className="mt-1 font-mono text-[10px] text-muted-foreground">sin detectar</div>
+          <div className="mt-1 font-mono text-[10px] text-muted-foreground">{t('vt.undetected')}</div>
         </CyberCard>
         <CyberCard variant="success" padding="p-3">
           <div className="font-mono text-2xl font-bold leading-none text-emerald-400">{data.harmless}</div>
-          <div className="mt-1 font-mono text-[10px] text-muted-foreground">limpios</div>
+          <div className="mt-1 font-mono text-[10px] text-muted-foreground">{t('vt.harmless')}</div>
         </CyberCard>
       </div>
 
@@ -96,7 +98,7 @@ export function VirusTotalPanel({ data }: VirusTotalPanelProps) {
       {data.engines_flagged.length > 0 && (
         <div className="space-y-2">
           <h4 className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
-            Motores que marcaron el host
+            {t('vt.enginesTitle')}
           </h4>
           <div className="space-y-1.5">
             {data.engines_flagged.map((e, idx) => (
@@ -129,7 +131,7 @@ export function VirusTotalPanel({ data }: VirusTotalPanelProps) {
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 font-mono text-xs text-[var(--cyber-accent)] hover:underline"
         >
-          Ver reporte completo en VirusTotal
+          {t('vt.fullReport')}
           <ExternalLink className="h-3 w-3" />
         </a>
       )}

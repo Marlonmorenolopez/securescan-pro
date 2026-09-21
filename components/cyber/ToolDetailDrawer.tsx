@@ -32,6 +32,11 @@ interface ToolDetailDrawerProps {
   status: ToolStatus
   resultLabel?: string
   target?: string
+  /** Sustituye la nota de ejecución por defecto (ej. las fuentes de Huella Digital
+   *  corren en la fase paralela del análisis, no en el pipeline de Pentesting). */
+  executionNote?: string
+  /** Sustituye el texto de estado genérico (ej. "Sin datos reales") */
+  statusLabel?: string
 }
 
 const STATUS_TEXT: Record<ToolStatus, string> = {
@@ -39,10 +44,11 @@ const STATUS_TEXT: Record<ToolStatus, string> = {
 }
 
 export function ToolDetailDrawer({
-  open, onClose, doc, name, color = 'cyan', status, resultLabel, target,
+  open, onClose, doc, name, color = 'cyan', status, resultLabel, target, executionNote, statusLabel,
 }: ToolDetailDrawerProps) {
   const t = useTranslations('toolDetail')
   const c = COLOR_VARS[color]
+  const statusText = statusLabel ?? t(`status.${STATUS_TEXT[status]}`)
 
   useEffect(() => {
     if (!open) return
@@ -80,7 +86,7 @@ export function ToolDetailDrawer({
             <div>
               <h2 className="font-mono text-sm font-bold text-foreground">{name}</h2>
               <span className="font-mono text-[10px] uppercase tracking-wider" style={{ color: c.fg }}>
-                {t(`status.${STATUS_TEXT[status]}`)}
+                {statusText}
               </span>
             </div>
           </div>
@@ -106,7 +112,7 @@ export function ToolDetailDrawer({
               <div className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">{t('statusLabel')}</div>
               <div className="flex items-center gap-1.5 font-mono text-xs text-foreground">
                 <Activity className="h-3 w-3" style={{ color: c.fg }} />
-                {t(`status.${STATUS_TEXT[status]}`)}
+                {statusText}
               </div>
             </div>
             {resultLabel && (
@@ -168,7 +174,7 @@ export function ToolDetailDrawer({
             className={cn('rounded-lg border p-3 text-xs leading-relaxed text-muted-foreground')}
             style={{ borderColor: `rgba(${c.rgb},0.2)`, background: `rgba(${c.rgb},0.04)` }}
           >
-            {t('executionNote')}
+            {executionNote ?? t('executionNote')}
           </div>
         </div>
       </div>

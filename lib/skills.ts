@@ -5,7 +5,7 @@
 //
 // Antes de este archivo, la misma información vivía repetida en 4 lugares
 // (lib/nav-config.tsx, lib/tool-docs.ts, components/tool-icons.tsx,
-// app/scanner/page.tsx → TOOL_META), cada uno con el nombre de la
+// app/scanner/page.tsx → TOOL_META, ya eliminado), cada uno con el nombre de la
 // herramienta como string suelto sin validar entre sí. Este archivo es
 // ahora el origen de verdad; los demás lo consumen (ver comentarios en
 // cada uno) en vez de repetir los datos.
@@ -16,10 +16,13 @@
 //     (`docsKey`), nunca el string literal, para no crear una segunda
 //     fuente de contenido traducible.
 //   - La extracción de resultados reales del backend (qué campo de
-//     `currentScan` corresponde a qué herramienta) — eso sigue en
-//     app/scanner/page.tsx (`extractToolStats`), porque es lógica de
+//     `currentScan` corresponde a qué herramienta, qué paso del pipeline
+//     reporta su estado) — eso vive en lib/scan-extractors.ts
+//     (`getPentestingToolStats`, `getFootprintModel`), porque es lógica de
 //     EJECUCIÓN acoplada al contrato real del backend, no metadata de
-//     catálogo. Registrar una Skill aquí NO la conecta al backend.
+//     catálogo. Las páginas /scanner (Pentesting) y /footprint (Huella
+//     Digital) derivan sus herramientas de este Registry a través de ese
+//     archivo. Registrar una Skill aquí NO la conecta al backend.
 //
 // REGISTRAR una Skill (agregarla a SKILLS) es distinto de INTEGRARLA
 // (que el backend realmente la ejecute). Ver docs/adding-a-skill.md.
@@ -97,7 +100,7 @@ export const CATEGORY_COLOR: Record<SkillCategory, CyberColor> = {
 export const CATEGORY_ROUTE: Record<SkillCategory, string> = {
   pentesting: '/scanner',
   osint: '/osint',
-  'huella-digital': '/scanner',
+  'huella-digital': '/footprint',
   'code-security': '/code-scan',
 }
 
@@ -134,6 +137,9 @@ export const SKILLS: Skill[] = [
       documentationUrl: 'https://www.zaproxy.org/docs/' },
     targetSupport: ['domain', 'url'] },
   { id: 'zap-spider', name: 'ZAP Spider', category: 'pentesting', subgroup: 'webSecurity', status: 'available', icon: ShieldCheck, svgIconKey: 'ZAP Spider',
+    docs: { descriptionKey: 'zapSpiderDesc', featureKeys: ['zapSpiderFeature1','zapSpiderFeature2','zapSpiderFeature3'],
+      usage: `# API de ZAP — iniciar el Spider\ncurl "http://localhost:8080/JSON/spider/action/scan/?url=https://target.com"\n\n# Estado del Spider\ncurl "http://localhost:8080/JSON/spider/view/status/?scanId=0"`,
+      documentationUrl: 'https://www.zaproxy.org/docs/desktop/start/features/spider/' },
     targetSupport: ['domain', 'url'] },
   { id: 'nuclei', name: 'Nuclei', category: 'pentesting', subgroup: 'webSecurity', status: 'available', icon: ShieldCheck, svgIconKey: 'Nuclei',
     docs: { descriptionKey: 'tool8Desc', featureKeys: ['tool8Feature1','tool8Feature2','tool8Feature3','tool8Feature4','tool8Feature5'],
@@ -141,6 +147,9 @@ export const SKILLS: Skill[] = [
       documentationUrl: 'https://docs.projectdiscovery.io/tools/nuclei' },
     targetSupport: ['domain', 'url'] },
   { id: 'injection-scanner', name: 'Injection Scanner', category: 'pentesting', subgroup: 'webSecurity', status: 'available', icon: ShieldCheck,
+    docs: { descriptionKey: 'injectionScannerDesc', featureKeys: ['injectionScannerFeature1','injectionScannerFeature2','injectionScannerFeature3','injectionScannerFeature4'],
+      usage: `# Módulo propio de SecureScan (server/modules/injection_scanner.py): no tiene CLI.\n# Se activa con la opción SQLMap del formulario de Pentesting.\n# Técnicas: SQLi · NoSQLi · XPath · XXE · XSS · CMDi · Path Traversal · SSRF · SSTI · LDAP`,
+      documentationUrl: 'https://github.com/Marlonmorenolopez/SecureScan' },
     targetSupport: ['domain', 'url'] },
   { id: 'patator', name: 'Patator', category: 'pentesting', subgroup: 'authentication', status: 'available', icon: KeyRound, svgIconKey: 'Patator',
     docs: { descriptionKey: 'tool3Desc', featureKeys: ['tool3Feature1','tool3Feature2','tool3Feature3','tool3Feature4','tool3Feature5'],
@@ -174,18 +183,39 @@ export const SKILLS: Skill[] = [
 
   // ── Huella Digital ──────────────────────────────────────────────────────
   { id: 'crtsh', name: 'crt.sh', category: 'huella-digital', subgroup: 'dominios', status: 'available', icon: Globe2,
+    docs: { descriptionKey: 'crtshDesc', featureKeys: ['crtshFeature1','crtshFeature2','crtshFeature3'],
+      usage: `# Subdominios en logs de Certificate Transparency\ncurl "https://crt.sh/?q=%25.example.com&output=json"`,
+      documentationUrl: 'https://crt.sh/' },
     targetSupport: ['domain'] },
   { id: 'dnstwist', name: 'dnstwist', category: 'huella-digital', subgroup: 'dominios', status: 'available', icon: Globe2,
+    docs: { descriptionKey: 'dnstwistDesc', featureKeys: ['dnstwistFeature1','dnstwistFeature2','dnstwistFeature3'],
+      usage: `# Variantes del dominio que ya están registradas\ndnstwist --registered example.com`,
+      documentationUrl: 'https://github.com/elceef/dnstwist' },
     targetSupport: ['domain'] },
   { id: 'shodan', name: 'Shodan', category: 'huella-digital', subgroup: 'infraestructura', status: 'available', icon: Network,
+    docs: { descriptionKey: 'shodanDesc', featureKeys: ['shodanFeature1','shodanFeature2','shodanFeature3','shodanFeature4'],
+      usage: `# Shodan InternetDB (gratis, sin API key, solo IPs)\ncurl https://internetdb.shodan.io/8.8.8.8`,
+      documentationUrl: 'https://internetdb.shodan.io/' },
     targetSupport: ['domain', 'ip'] },
   { id: 'virustotal', name: 'VirusTotal', category: 'huella-digital', subgroup: 'reputacion', status: 'available', icon: ShieldAlert,
+    docs: { descriptionKey: 'virustotalDesc', featureKeys: ['virustotalFeature1','virustotalFeature2','virustotalFeature3'],
+      usage: `# Reporte existente de un dominio (requiere VIRUSTOTAL_API_KEY)\ncurl -H "x-apikey: $VIRUSTOTAL_API_KEY" https://www.virustotal.com/api/v3/domains/example.com`,
+      documentationUrl: 'https://docs.virustotal.com/reference/overview' },
     targetSupport: ['domain', 'ip', 'url'] },
   { id: 'abuseipdb', name: 'AbuseIPDB', category: 'huella-digital', subgroup: 'reputacion', status: 'available', icon: ShieldAlert,
+    docs: { descriptionKey: 'abuseipdbDesc', featureKeys: ['abuseipdbFeature1','abuseipdbFeature2','abuseipdbFeature3'],
+      usage: `# Reputación de una IP (requiere ABUSEIPDB_API_KEY)\ncurl -G https://api.abuseipdb.com/api/v2/check \\\n  --data-urlencode "ipAddress=8.8.8.8" \\\n  -H "Key: $ABUSEIPDB_API_KEY" -H "Accept: application/json"`,
+      documentationUrl: 'https://docs.abuseipdb.com/' },
     targetSupport: ['ip'] },
   { id: 'safebrowsing', name: 'Google Safe Browsing', category: 'huella-digital', subgroup: 'reputacion', status: 'available', icon: ShieldAlert,
+    docs: { descriptionKey: 'safebrowsingDesc', featureKeys: ['safebrowsingFeature1','safebrowsingFeature2','safebrowsingFeature3'],
+      usage: `# threatMatches:find (requiere GOOGLE_SAFE_BROWSING_API_KEY)\n# POST https://safebrowsing.googleapis.com/v4/threatMatches:find?key=$GOOGLE_SAFE_BROWSING_API_KEY\n# threatEntryTypes: URL · platformTypes: ANY_PLATFORM\n# threatEntries: [{"url": "https://example.com/"}]`,
+      documentationUrl: 'https://developers.google.com/safe-browsing/v4' },
     targetSupport: ['domain', 'url'] },
   { id: 'testssl', name: 'testssl.sh', category: 'huella-digital', subgroup: 'tlsSsl', status: 'available', icon: Lock,
+    docs: { descriptionKey: 'testsslDesc', featureKeys: ['testsslFeature1','testsslFeature2','testsslFeature3','testsslFeature4'],
+      usage: `# Protocolos (-p), defaults del servidor/certificado (-S) y vulnerabilidades (-U)\ntestssl.sh -U -S -p example.com`,
+      documentationUrl: 'https://testssl.sh/' },
     targetSupport: ['domain'] },
 
   // ── Code Security ───────────────────────────────────────────────────────

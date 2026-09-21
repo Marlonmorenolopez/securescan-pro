@@ -32,6 +32,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge }    from '@/components/ui/badge'
 import { useScan, type ScanOptions } from '@/lib/scan-context'
 import { useTranslations } from 'next-intl'
+import Link from 'next/link'
+import { getSkillsByCategory, getSkillById } from '@/lib/skills'
 
 // labTargets movido dentro de ScanForm — ver B1-c
 
@@ -42,61 +44,43 @@ type ToolId =
 interface ToolConfig {
   id: ToolId
   name: string
-  description: string
   icon: React.ElementType
   estimatedTime: string
   optional?: boolean
-  labHint?: string
+  /**
+   * Otras Skills de Pentesting (ids del Registry) que este switch activa en el
+   * backend: el Registry lista 12 herramientas, pero el formulario expone 10
+   * switches porque ZAP Spider corre dentro del ZAP full scan e Injection
+   * Scanner corre en el paso de SQLMap (server/app.py → run_scan).
+   */
+  covers?: string[]
 }
 
+// Descripciones traducidas en messages/{es,en}.json → scanner.toolDesc.<id>
 const toolsConfig: ToolConfig[] = [
   // ── Reconocimiento ──────────────────────────────────────────────────
-  { id: 'wappalyzer',   name: 'Wappalyzer',    description: 'Fingerprinting de tecnologías web',              icon: WappalyzerIcon,   estimatedTime: '10s' },
-  { id: 'nmap',         name: 'Nmap',           description: 'Escaneo de puertos y servicios activos',         icon: NmapIcon,         estimatedTime: '30s' },
-  { id: 'gobuster',     name: 'Gobuster',       description: 'Enumeración de directorios y rutas',             icon: GobusterIcon,     estimatedTime: '2m' },
-  { id: 'ffuf',         name: 'ffuf',           description: 'Fuzzing rápido de endpoints y rutas API',        icon: FfufIcon,         estimatedTime: '2m' },
+  { id: 'wappalyzer',   name: 'Wappalyzer',    icon: WappalyzerIcon,   estimatedTime: '10s' },
+  { id: 'nmap',         name: 'Nmap',           icon: NmapIcon,         estimatedTime: '30s' },
+  { id: 'gobuster',     name: 'Gobuster',       icon: GobusterIcon,     estimatedTime: '2m' },
+  { id: 'ffuf',         name: 'ffuf',           icon: FfufIcon,         estimatedTime: '2m' },
   // ── Análisis de vulnerabilidades ────────────────────────────────────
-  { id: 'zap',          name: 'OWASP ZAP',      description: 'DAST — Spider y Active Scan completo',           icon: ZapToolIcon,      estimatedTime: '10m' },
-  { id: 'nuclei',       name: 'Nuclei',         description: 'Scanner CVE con plantillas YAML actualizadas',   icon: NucleiIcon,       estimatedTime: '5m' },
-  { id: 'sqlmap',       name: 'SQLMap',         description: 'Detección automática de SQL Injection',          icon: SqlmapIcon,       estimatedTime: '4m' },
+  { id: 'zap',          name: 'OWASP ZAP',      icon: ZapToolIcon,      estimatedTime: '10m', covers: ['zap-spider'] },
+  { id: 'nuclei',       name: 'Nuclei',         icon: NucleiIcon,       estimatedTime: '5m' },
+  { id: 'sqlmap',       name: 'SQLMap',         icon: SqlmapIcon,       estimatedTime: '4m', covers: ['injection-scanner'] },
   // ── Explotación y exploits ──────────────────────────────────────────
-  { id: 'searchsploit', name: 'Searchsploit',   description: 'Búsqueda local de exploits en ExploitDB',        icon: SearchsploitIcon, estimatedTime: '10s' },
-  { id: 'metasploit',   name: 'Metasploit',     description: 'Módulos auxiliares MSF (requiere msfrpcd)',      icon: MetasploitIcon,   estimatedTime: '5m', optional: true },
+  { id: 'searchsploit', name: 'Searchsploit',   icon: SearchsploitIcon, estimatedTime: '10s' },
+  { id: 'metasploit',   name: 'Metasploit',     icon: MetasploitIcon,   estimatedTime: '5m', optional: true },
   // ── Fuerza bruta ────────────────────────────────────────────────────
-  { id: 'patator',      name: 'Patator',        description: 'Brute force HTTP — auto-detecta formulario login', icon: PatatorIcon,    estimatedTime: '2m' },
+  { id: 'patator',      name: 'Patator',        icon: PatatorIcon,      estimatedTime: '2m' },
 ]
-
-// Huella Digital (Threat Intel) — corren en paralelo desde el inicio del
-// scan, no son "pasos" secuenciales como los de arriba. Requieren un
-// target público (dominio/IP de internet) para dar resultados reales;
-// contra un lab/IP interna simplemente no van a encontrar nada, lo cual
-// es esperado, no un error.
-type ThreatIntelId = 'virustotal' | 'abuseipdb' | 'shodan' | 'crtsh' | 'testssl' | 'dnstwist' | 'safebrowsing'
-
-interface ThreatIntelConfig {
-  id: ThreatIntelId
-  name: string
-  description: string
-  needsApiKey?: boolean
-}
-
-const threatIntelConfig: ThreatIntelConfig[] = [
-  { id: 'virustotal',   name: 'VirusTotal',       description: 'Reputación de IP/dominio/hash',            needsApiKey: true },
-  { id: 'abuseipdb',    name: 'AbuseIPDB',        description: 'Reportes de abuso conocidos sobre la IP',  needsApiKey: true },
-  { id: 'shodan',       name: 'Shodan',           description: 'Dispositivos y puertos expuestos' },
-  { id: 'crtsh',        name: 'crt.sh',           description: 'Subdominios vía certificate transparency' },
-  { id: 'safebrowsing', name: 'Safe Browsing',    description: 'Verifica si el sitio está marcado como malicioso' },
-  { id: 'testssl',      name: 'testssl.sh',       description: 'Vulnerabilidades TLS/SSL (Heartbleed, POODLE...)' },
-  { id: 'dnstwist',     name: 'dnstwist',         description: 'Dominios similares (typosquatting/phishing)' },
-]
-
-const ALL_THREAT_INTEL_IDS: ThreatIntelId[] = threatIntelConfig.map(t => t.id)
 
 // intensityProfiles movido dentro de ScanForm — ver B1-c (se añade DESPUÉS de labTargets)
 
 export function ScanForm() {
   const t = useTranslations('scanner')
   const { startScan, isScanning, error, clearError } = useScan()
+  // Nombres de las 12 herramientas de Pentesting, derivados del Skill Registry
+  const pentestingToolNames = getSkillsByCategory('pentesting').map(sk => sk.name).join(' · ')
 
   // labTargets usa t() para los campos traducibles
   const labTargets = [
@@ -159,8 +143,9 @@ export function ScanForm() {
       wappalyzer: true, nmap: true, gobuster: false, zap: false,
       searchsploit: false, metasploit: false,
       nuclei: false, sqlmap: false, patator: false, ffuf: false,
+      // Huella Digital (fase paralela del backend). Aquí solo se decide si
+      // se recopila; la selección de fuentes vive en el módulo /footprint.
       threat_intel: true,
-      threat_intel_tools: [...ALL_THREAT_INTEL_IDS],
     },
     parallel: true,
     intensity: 'normal',
@@ -194,10 +179,9 @@ export function ScanForm() {
         patator:      profile.tools.includes('patator'),
         ffuf:         profile.tools.includes('ffuf'),
         // Huella Digital es independiente del perfil de intensidad -- se
-        // conserva la selección del usuario en vez de resetearla al elegir
+        // conserva la elección del usuario en vez de resetearla al elegir
         // Ligero/Normal/Agresivo.
         threat_intel:       prev.tools?.threat_intel ?? true,
-        threat_intel_tools: prev.tools?.threat_intel_tools ?? [...ALL_THREAT_INTEL_IDS],
       },
     }))
   }
@@ -236,9 +220,8 @@ export function ScanForm() {
     setSelectedProfile('custom')
   }
 
-  // ── Huella Digital: switch maestro + selección individual ──────────────────
+  // ── Huella Digital: switch maestro (la selección de fuentes está en /footprint) ──
   const threatIntelEnabled = options.tools?.threat_intel ?? true
-  const threatIntelSelected = options.tools?.threat_intel_tools ?? ALL_THREAT_INTEL_IDS
 
   const handleThreatIntelMasterToggle = () => {
     setOptions(prev => ({
@@ -248,16 +231,8 @@ export function ScanForm() {
     setSelectedProfile('custom')
   }
 
-  const handleThreatIntelToolToggle = (id: ThreatIntelId) => {
-    setOptions(prev => {
-      const current = prev.tools?.threat_intel_tools ?? ALL_THREAT_INTEL_IDS
-      const next = current.includes(id) ? current.filter(x => x !== id) : [...current, id]
-      return { ...prev, tools: { ...prev.tools!, threat_intel_tools: next } }
-    })
-    setSelectedProfile('custom')
-  }
-
-  const activeToolsCount = Object.values(options.tools || {}).filter(Boolean).length
+  // Solo cuentan las herramientas de Pentesting (no el switch de Huella Digital)
+  const activeToolsCount = toolsConfig.filter(tool => options.tools?.[tool.id]).length
   const estimatedTime =
     activeToolsCount <= 2 ? t('estimatedTimes.fast') :
     activeToolsCount <= 5 ? t('estimatedTimes.medium') :
@@ -276,7 +251,7 @@ export function ScanForm() {
               </Badge>
             </CardTitle>
             <CardDescription className="mt-1">
-              Wappalyzer · Nmap · Gobuster · ZAP · Searchsploit · Nuclei · SQLMap · Patator · ffuf · Metasploit
+              {pentestingToolNames}
             </CardDescription>
           </div>
           <div className="text-right text-sm text-muted-foreground hidden sm:block">
@@ -340,7 +315,7 @@ export function ScanForm() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Formatos:{' '}
+              {t('formats')}{' '}
               <code className="bg-muted px-1 rounded">http://localhost:3001</code>,{' '}
               <code className="bg-muted px-1 rounded">juice-shop:3000</code>
             </p>
@@ -495,25 +470,27 @@ export function ScanForm() {
                           <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
                           <span className="font-medium text-sm">{tool.name}</span>
                           {tool.optional && (
-                            <Badge variant="outline" className="text-xs border-orange-500/50 text-orange-500">opt-in</Badge>
-                          )}
-                          {tool.labHint && (
-                            <Badge variant="secondary" className="text-xs">{tool.labHint}</Badge>
+                            <Badge variant="outline" className="text-xs border-orange-500/50 text-orange-500">{t('optIn')}</Badge>
                           )}
                         </label>
                         <p className="text-xs text-muted-foreground mt-0.5 ml-6">
-                          {tool.description} · {tool.estimatedTime}
+                          {t(`toolDesc.${tool.id}`)} · {tool.estimatedTime}
                         </p>
+                        {tool.covers && (
+                          <p className="text-[11px] text-muted-foreground/80 mt-0.5 ml-6">
+                            {t('alsoRuns', { tools: tool.covers.map(id => getSkillById(id)?.name ?? id).join(', ') })}
+                          </p>
+                        )}
                       </div>
                     </div>
                   )
                 })}
               </div>
 
-              {/* Huella Digital — switch maestro + selección individual.
-                  Requieren un target público (dominio/IP de internet); contra
-                  un lab o IP interna no van a encontrar nada (esperado). */}
-              <div className="mt-4 rounded-lg border border-cyan-500/20 bg-cyan-500/[0.03] p-3">
+              {/* Huella Digital — solo el switch maestro (`threat_intel`). Las 7 fuentes se
+                  eligen en el módulo Huella Digital (/footprint); los resultados de esta
+                  ejecución se muestran allí, separados de los de Pentesting. */}
+              <div className="mt-4 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--secondary))]/20 p-3">
                 <div className="flex items-start gap-3">
                   <Checkbox
                     id="tool-threat-intel-master"
@@ -522,43 +499,19 @@ export function ScanForm() {
                     disabled={isScanning}
                   />
                   <div className="flex-1 min-w-0">
-                    <label htmlFor="tool-threat-intel-master" className="flex items-center gap-2 cursor-pointer">
-                      <Fingerprint className="h-4 w-4 shrink-0 text-cyan-400" />
-                      <span className="font-medium text-sm">Huella Digital</span>
-                      <Badge variant="secondary" className="text-xs">corre en paralelo</Badge>
+                    <label htmlFor="tool-threat-intel-master" className="flex flex-wrap items-center gap-2 cursor-pointer">
+                      <Fingerprint className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                      <span className="font-medium text-sm">{t('footprintToggleTitle')}</span>
+                      <Badge variant="secondary" className="text-xs">{t('footprintToggleBadge')}</Badge>
                     </label>
                     <p className="text-xs text-muted-foreground mt-0.5 ml-6">
-                      Solo da resultados reales contra un target público (dominio/IP de internet).
+                      {t('footprintToggleHint')}{' '}
+                      <Link href="/footprint" className="text-[var(--cyber-accent)] underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cyber-accent)]">
+                        {t('footprintToggleLink')}
+                      </Link>
                     </p>
                   </div>
                 </div>
-
-                {threatIntelEnabled && (
-                  <div className="mt-3 ml-6 grid gap-2 sm:grid-cols-2">
-                    {threatIntelConfig.map(ti => {
-                      const checked = threatIntelSelected.includes(ti.id)
-                      return (
-                        <div key={ti.id} className="flex items-start gap-2">
-                          <Checkbox
-                            id={`ti-${ti.id}`}
-                            checked={checked}
-                            onCheckedChange={() => handleThreatIntelToolToggle(ti.id)}
-                            disabled={isScanning}
-                          />
-                          <label htmlFor={`ti-${ti.id}`} className="cursor-pointer">
-                            <span className="flex items-center gap-1.5 text-sm font-medium">
-                              {ti.name}
-                              {ti.needsApiKey && (
-                                <Badge variant="outline" className="text-[10px] border-amber-500/50 text-amber-500">requiere API key</Badge>
-                              )}
-                            </span>
-                            <p className="text-xs text-muted-foreground">{ti.description}</p>
-                          </label>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
               </div>
             </CollapsibleContent>
           </Collapsible>

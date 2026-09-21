@@ -14,8 +14,9 @@ import { useScan } from '@/lib/scan-context'
 import { useTranslations } from 'next-intl'
 import type { ScanStep } from '@/lib/api-client'
 
+// Pasos del pipeline de PENTESTING. El paso "Huella Digital" (fase paralela del
+// backend) se presenta en su propio módulo (/footprint), por eso no está aquí.
 const TOOL_ORDER = [
-  'Huella Digital',
   'Wappalyzer',
   'Nmap',
   'Patator',
@@ -31,7 +32,6 @@ const TOOL_ORDER = [
 ] as const
 
 const toolConfig: Record<string, { color: string; description: string }> = {
-  'Huella Digital': { color: 'bg-cyan-800',   description: 'VirusTotal, AbuseIPDB, crt.sh, Safe Browsing, testssl, dnstwist' },
   'Wappalyzer':   { color: 'bg-blue-700',    description: 'Perfilado de tecnologías web y stack' },
   'Nmap':         { color: 'bg-cyan-700',    description: 'Escaneo de puertos y servicios SYN' },
   'Patator':      { color: 'bg-lime-700',    description: 'Auditoría de autenticación y fuerza bruta' },
@@ -201,8 +201,8 @@ export function ScanProgress() {
           </div>
         </div>
 
-        {/* Visualizador Holográfico de Nodos del Pipeline (13 Pasos) */}
-        <ScanPipeline steps={orderedSteps} />
+        {/* Visualizador Holográfico de Nodos del Pipeline (12 pasos de Pentesting) */}
+        <ScanPipeline steps={orderedSteps} nodeIds={TOOL_ORDER} />
 
         {/* Terminal Holográfica de Telemetría en Vivo */}
         <div className="mt-6 pt-6 border-t border-[rgba(255,255,255,0.06)]">

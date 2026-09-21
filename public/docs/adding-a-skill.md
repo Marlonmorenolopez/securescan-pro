@@ -28,7 +28,7 @@ lib/skills.ts                 ← EL CATÁLOGO. Metadata de cada Skill.
   │
   ├── lib/tool-docs.ts         consume SKILLS (campo .docs) para construir
   │                            la vista de documentación de /docs y del
-  │                            ToolDetailDrawer en /scanner.
+  │                            ToolDetailDrawer en /scanner y /footprint.
   │
   └── components/tool-icons.tsx  catálogo APARTE de logos SVG custom,
                                   referenciado por Skill.svgIconKey.
@@ -40,11 +40,13 @@ Lo que **NO** vive en `lib/skills.ts` (y no debe moverse ahí):
 
 - El texto traducido (descripción, features) — vive en
   `messages/{es,en}.json`. El registro solo guarda la **clave** i18n.
-- La extracción de resultados reales del backend — sigue en
-  `app/scanner/page.tsx` (`extractToolStats`, `extractSeverityCounts`).
-  Esa lógica traduce campos reales de la respuesta del scan
-  (`currentScan.nuclei_findings`, etc.) y está acoplada al contrato del
-  backend, no es metadata de catálogo.
+- La extracción de resultados reales del backend — vive en
+  `lib/scan-extractors.ts` (`getPentestingToolStats`, `getFootprintModel`,
+  `extractSeverityCounts`). Esa lógica traduce campos reales de la respuesta
+  del scan (`currentScan.nuclei_findings`, `currentScan.threat_intel`, etc.) y
+  está acoplada al contrato del backend, no es metadata de catálogo. Las
+  páginas `/scanner` (Pentesting) y `/footprint` (Huella Digital) la consumen
+  y derivan sus herramientas del Registry: **no** mantienen listas propias.
 
 ## Pasos para registrar una Skill nueva
 
@@ -110,10 +112,15 @@ Esto es un paso **aparte y posterior**, y solo aplica cuando el backend
 realmente implemente la herramienta:
 
 1. Cambia `status: 'planned'` a `status: 'available'` en `lib/skills.ts`.
-2. Si es una herramienta de Pentesting que corre dentro del Web Scan,
-   agrégala a `TOOL_META` y a `extractToolStats()` en
-   `app/scanner/page.tsx`, mapeando su `id` al campo real que el backend
-   devuelva en `currentScan`.
+2. Si es una herramienta de **Pentesting** que corre dentro del Web Scan,
+   agrega su extractor en `PENTEST_EXTRACTORS` de `lib/scan-extractors.ts`
+   (paso del pipeline, flag de `options.tools` y campo real que el backend
+   devuelve en `currentScan`). `/scanner` la mostrará sola porque itera el
+   Registry. Si es una fuente de **Huella Digital**, agrega su clave en
+   `FOOTPRINT_KEYS` (la clave dentro de `currentScan.threat_intel`) y su
+   métrica en `getFootprintModel()`; `/footprint` la mostrará en la
+   cobertura de fuentes. En desarrollo, `assertExtractorCoverage()` avisa si
+   una Skill del Registry no tiene extractor.
 3. Si tiene logo propio, agrégalo a `components/tool-icons.tsx` y referencia
    su key en `svgIconKey`.
 

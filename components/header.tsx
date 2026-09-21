@@ -124,28 +124,40 @@ function QuickSearch() {
         value={query}
         onChange={(e) => { setQuery(e.target.value); setOpen(true) }}
         onFocus={() => setOpen(true)}
-        onKeyDown={(e) => { if (e.key === 'Enter' && results[0]) go(results[0].href) }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && results[0]) go(results[0].href)
+          if (e.key === 'Escape') setOpen(false)
+        }}
         placeholder={tNav('searchPlaceholder')}
+        role="combobox"
+        aria-autocomplete="list"
+        aria-label={tNav('searchLabel')}
+        aria-expanded={open && results.length > 0}
+        aria-controls="quick-search-results"
+        autoComplete="off"
         className="h-9 w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--secondary))]/50 pl-9 pr-8 font-mono text-xs text-foreground placeholder:text-muted-foreground focus:border-[rgba(var(--cyber-accent-rgb),0.45)] focus:outline-none"
       />
       {query && (
         <button
+          type="button"
           onClick={() => { setQuery(''); setOpen(false) }}
-          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          aria-label={tNav('clearSearch')}
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cyber-accent)]"
         >
-          <X className="h-3.5 w-3.5" />
+          <X aria-hidden="true" className="h-3.5 w-3.5" />
         </button>
       )}
 
       {open && results.length > 0 && (
-        <div className="absolute left-0 right-0 top-11 z-50 max-h-80 overflow-y-auto rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--popover))] p-1.5 shadow-2xl">
+        <div id="quick-search-results" className="absolute left-0 right-0 top-11 z-50 max-h-80 overflow-y-auto rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--popover))] p-1.5 shadow-2xl">
           {results.map((r, i) => {
             const c = COLOR_VARS[r.color]
             return (
               <button
                 key={`${r.href}-${r.label}-${i}`}
+                type="button"
                 onClick={() => go(r.href)}
-                className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-xs hover:bg-[rgba(var(--cyber-accent-rgb),0.08)]"
+                className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-xs hover:bg-[rgba(var(--cyber-accent-rgb),0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cyber-accent)]"
               >
                 <span className="flex flex-col">
                   <span className="font-medium text-foreground">{r.label}</span>
@@ -192,8 +204,8 @@ export function Header({}: HeaderProps) {
 
           <Button variant="ghost" size="icon" className="h-9 w-9" asChild>
             <Link href="/settings/notifications">
-              <Bell className="h-4 w-4" />
-              <span className="sr-only">{t('settings')}</span>
+              <Bell aria-hidden="true" className="h-4 w-4" />
+              <span className="sr-only">{t('notifications')}</span>
             </Link>
           </Button>
 

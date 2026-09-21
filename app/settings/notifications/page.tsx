@@ -6,6 +6,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import { Bell, Mail, Webhook, Save, Loader2, ShieldAlert } from 'lucide-react'
 import { Header } from '@/components/header'
@@ -72,6 +73,15 @@ export default function NotificationSettingsPage() {
       <Header />
       <main className="flex-1 py-10">
         <div className="container mx-auto max-w-2xl space-y-6 px-4 sm:px-6 lg:px-8">
+          {/* Migas: Notificaciones es una pantalla propia, hija de Configuración */}
+          <nav aria-label={t('breadcrumb')} className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
+            <Link href="/settings" className="rounded hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cyber-accent)]">
+              {t('breadcrumbSettings')}
+            </Link>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page" className="text-foreground">{t('title')}</span>
+          </nav>
+
           <div className="flex items-center gap-3">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[rgba(var(--cyber-accent-rgb),0.3)] bg-[rgba(var(--cyber-accent-rgb),0.10)]">
               <Bell className="h-5 w-5 text-[var(--cyber-accent)]" />

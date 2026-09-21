@@ -1,60 +1,44 @@
 'use client'
-// app/scanner/page.tsx — SecureScan Pro v5.0 · Dashboard SOC
+// app/scanner/page.tsx — SecureScan Pro v5.0 · Pentesting
 //
-// Semana 4: Transformación visual en Security Operations Center.
-// Toda la lógica (extractSeverityCounts, extractToolStats, useScan,
-// ScanProvider) se preserva intacta. Solo cambia la presentación:
-//   - KPI cards con CyberStat y contadores animados
-//   - ToolGrid con estado visual por herramienta
-//   - GlobalScore con gauge SVG y barras de severidad cyber
-//   - LabsBar con indicadores pulsantes
-//   - Skeletons mejorados
-//   - Fondo cyber-grid en el hero del scanner
+// Experiencia dedicada a PENTESTING: evaluación de seguridad, reconocimiento,
+// enumeración, web security, autenticación, SQL injection y explotación con
+// las 12 herramientas reales del Skill Registry (lib/skills.ts). El estado y
+// los resultados reales del análisis vienen de ScanProvider (ahora en
+// app/layout.tsx, compartido con /footprint) a través de
+// lib/scan-extractors.ts, que deriva las herramientas del Registry en vez de
+// duplicar la lista aquí. Los resultados de Huella Digital que ese mismo
+// análisis puede traer (threat_intel) NO se presentan en esta página — ver
+// /footprint.
 
 import { Suspense, useEffect, useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
+import Link from 'next/link'
 import { Header }           from '@/components/header'
 import { ScanForm }         from '@/components/scan-form'
 import { ScanProgress }     from '@/components/scan-progress'
 import { ResultsDashboard } from '@/components/results-dashboard'
-import { ScanProvider, useScan } from '@/lib/scan-context'
+import { useScan } from '@/lib/scan-context'
 import { CyberCard }   from '@/components/cyber/CyberCard'
-import { CyberBadge }  from '@/components/cyber/CyberBadge'
 import { RiskGauge }   from '@/components/cyber/RiskGauge'
-import { ToolTaxonomyStrip } from '@/components/cyber/ToolTaxonomyStrip'
 import { ToolCard } from '@/components/cyber/ToolCard'
 import { ToolDetailDrawer } from '@/components/cyber/ToolDetailDrawer'
-import { PENTESTING, HUELLA_DIGITAL } from '@/lib/nav-config'
-import { getToolDocs } from '@/lib/tool-docs'
+import { ModuleHeader } from '@/components/cyber/ModuleHeader'
+import { PENTESTING } from '@/lib/nav-config'
+import { useNavDescription } from '@/lib/nav-i18n'
+import { getToolDocs, getSkillSvgIcon } from '@/lib/tool-docs'
+import {
+  getPentestingToolStats, extractSeverityCounts, getScanScope,
+  type Severity, type PentestToolStat,
+} from '@/lib/scan-extractors'
 import { useTranslations } from 'next-intl'
 import type { SecurityScore } from '@/lib/api-client'
-import { staggerContainer, staggerItem, getVariants } from '@/lib/motion'
+import { staggerContainer, staggerItem } from '@/lib/motion'
 import {
-  WappalyzerIcon, NmapIcon, GobusterIcon, FfufIcon,
-  ZapIcon as ZapToolIcon, NucleiIcon, SqlmapIcon,
-  SearchsploitIcon, MetasploitIcon, PatatorIcon,
-} from '@/components/tool-icons'
-import {
-  Loader2, Shield, AlertTriangle,
-  Layers, Network, Key, Skull, Wind, Search,
-  Zap, Target, Database, FileText, ExternalLink,
-  CheckCircle2,
+  Loader2, Shield, AlertTriangle, ExternalLink, CheckCircle2, ArrowRight,
 } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { cn } from '@/lib/utils'
-
-// ─── Tipos ────────────────────────────────────────────────────────────────────
-type Severity = 'critical' | 'high' | 'medium' | 'low' | 'info' | 'informational'
-
-interface ToolStat {
-  id:     string
-  name:   string
-  icon:   React.ElementType
-  svgIcon?: React.FC<{ className?: string }>
-  color:  string
-  count:  number
-  status: 'idle' | 'running' | 'completed' | 'error' | 'skipped'
-}
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 const SEVERITY_CONFIG: Record<Severity, { label: string; color: string; bar: string; dot: string }> = {
@@ -66,82 +50,28 @@ const SEVERITY_CONFIG: Record<Severity, { label: string; color: string; bar: str
   informational: { label: 'Info',     color: 'text-slate-400',  bar: 'bg-slate-500',  dot: 'bg-slate-400'  },
 }
 
-const TOOL_META: Omit<ToolStat, 'count' | 'status'>[] = [
-  { id: 'wappalyzer',   name: 'Wappalyzer',  icon: Layers,   svgIcon: WappalyzerIcon,  color: 'text-blue-400'   },
-  { id: 'nmap',         name: 'Nmap',         icon: Network,  svgIcon: NmapIcon,        color: 'text-cyan-400'   },
-  { id: 'patator',      name: 'Patator',      icon: Key,      svgIcon: PatatorIcon,     color: 'text-lime-400'   },
-  { id: 'metasploit',   name: 'Metasploit',   icon: Skull,    svgIcon: MetasploitIcon,  color: 'text-violet-400' },
-  { id: 'ffuf',         name: 'ffuf',         icon: Wind,     svgIcon: FfufIcon,        color: 'text-sky-400'    },
-  { id: 'gobuster',     name: 'Gobuster',     icon: Search,   svgIcon: GobusterIcon,    color: 'text-teal-400'   },
-  { id: 'zap',          name: 'OWASP ZAP',    icon: Zap,      svgIcon: ZapToolIcon,     color: 'text-blue-400'   },
-  { id: 'nuclei',       name: 'Nuclei',       icon: Target,   svgIcon: NucleiIcon,      color: 'text-purple-400' },
-  { id: 'sqlmap',       name: 'SQLMap',       icon: Database, svgIcon: SqlmapIcon,      color: 'text-red-400'    },
-  { id: 'searchsploit', name: 'Searchsploit', icon: FileText, svgIcon: SearchsploitIcon,color: 'text-amber-400'  },
-]
-
 const LAB_APPS = [
   { name: 'Juice Shop', host: 'juice-shop:3000', url: 'http://localhost:3001', color: 'text-emerald-400', dot: 'bg-emerald-500' },
   { name: 'DVWA',       host: 'dvwa:80',          url: 'http://localhost:3002', color: 'text-orange-400', dot: 'bg-orange-500'  },
   { name: 'WebGoat',    host: 'webgoat:8080',     url: 'http://localhost:3003', color: 'text-blue-400',   dot: 'bg-blue-500'    },
 ]
 
-// ─── Helpers (sin cambios respecto a la versión anterior) ─────────────────────
-
-function extractSeverityCounts(scan: any): Record<Severity, number> {
-  const counts: Record<Severity, number> = { critical: 0, high: 0, medium: 0, low: 0, info: 0, informational: 0 }
-  const vulns: any[] = [
-    ...(scan?.vulnerabilities ?? scan?.results?.vulnerabilities ?? []),
-    ...(scan?.results?.zap_vulnerabilities ?? []),
-    ...(scan?.nuclei_findings ?? scan?.results?.nuclei_findings ?? []),
-    ...(scan?.sqli_results ?? scan?.results?.sqli_results ?? scan?.results?.sqlmap_results ?? []),
-    ...(scan?.metasploit ?? scan?.results?.metasploit ?? []),
-  ]
-  for (const v of vulns) {
-    const sev = (v?.severity ?? v?.risk ?? v?.level ?? '').toLowerCase() as Severity
-    if (sev in counts) counts[sev]++
-    else if (sev === 'informational') counts.info++
-  }
-  return counts
-}
-
-function extractToolStats(scan: any): ToolStat[] {
-  const steps: any[] = scan?.steps ?? []
-  const results = scan ?? {}
-  return TOOL_META.map(meta => {
-    const step   = steps.find((s: any) =>
-      s.tool === meta.id || s.id === meta.id || s.name?.toLowerCase() === meta.name.toLowerCase()
-    )
-    const status = step?.status ?? 'idle'
-    let count = 0
-    if (meta.id === 'zap')          count = results.vulnerabilities?.length ?? results.zap_vulnerabilities?.length ?? 0
-    if (meta.id === 'nuclei')       count = results.nuclei_findings?.length ?? 0
-    if (meta.id === 'sqlmap')       count = results.sqli_results?.length ?? results.sqlmap_results?.length ?? 0
-    if (meta.id === 'nmap')         count = results.ports?.length ?? 0
-    if (meta.id === 'gobuster')     count = results.directories?.length ?? 0
-    if (meta.id === 'ffuf')         count = results.ffuf_endpoints?.length ?? 0
-    if (meta.id === 'wappalyzer')   count = results.technologies?.length ?? 0
-    if (meta.id === 'searchsploit') count = results.exploits?.length ?? results.searchsploit_results?.length ?? 0
-    if (meta.id === 'patator')      count = results.brute_force_results?.filter((r: any) => r.success)?.length ?? 0
-    if (meta.id === 'metasploit')   count = results.metasploit?.length ?? results.msf_results?.length ?? 0
-    return { ...meta, count, status }
-  })
-}
-
 // ─── KPI Cards ────────────────────────────────────────────────────────────────
 function KpiCards({ counts, toolStats }: {
   counts:    Record<Severity, number>
-  toolStats: ToolStat[]
+  toolStats: PentestToolStat[]
 }) {
   const completed = toolStats.filter(t => t.status === 'completed').length
   const total     = toolStats.length
 
+  const t = useTranslations('scanner')
   const kpis = [
-    { label: 'Critical',   value: counts.critical,      color: 'text-red-400',    border: 'border-red-900/50',    bg: 'bg-red-500/5'    },
-    { label: 'High',       value: counts.high,          color: 'text-orange-400', border: 'border-orange-900/50', bg: 'bg-orange-500/5' },
-    { label: 'Medium',     value: counts.medium,        color: 'text-amber-400',  border: 'border-amber-900/50',  bg: 'bg-amber-500/5'  },
-    { label: 'Low',        value: counts.low,           color: 'text-blue-400',   border: 'border-blue-900/50',   bg: 'bg-blue-500/5'   },
-    { label: 'Completadas',value: completed,             color: 'text-emerald-400',border: 'border-emerald-900/50',bg: 'bg-emerald-500/5' },
-    { label: 'Total Hallazgos', value: Object.values(counts).reduce((a,b)=>a+b,0), color: 'text-[var(--cyber-accent)]', border: 'border-[rgba(var(--cyber-accent-rgb),0.20)]', bg: 'bg-[rgba(var(--cyber-accent-rgb),0.04)]' },
+    { label: t('kpi.critical'),   value: counts.critical,      color: 'text-red-400',    border: 'border-red-900/50',    bg: 'bg-red-500/5'    },
+    { label: t('kpi.high'),       value: counts.high,          color: 'text-orange-400', border: 'border-orange-900/50', bg: 'bg-orange-500/5' },
+    { label: t('kpi.medium'),     value: counts.medium,        color: 'text-amber-400',  border: 'border-amber-900/50',  bg: 'bg-amber-500/5'  },
+    { label: t('kpi.low'),        value: counts.low,           color: 'text-blue-400',   border: 'border-blue-900/50',   bg: 'bg-blue-500/5'   },
+    { label: t('kpi.completed'),  value: completed,             color: 'text-emerald-400',border: 'border-emerald-900/50',bg: 'bg-emerald-500/5' },
+    { label: t('kpi.totalFindings'), value: Object.values(counts).reduce((a,b)=>a+b,0), color: 'text-[var(--cyber-accent)]', border: 'border-[rgba(var(--cyber-accent-rgb),0.20)]', bg: 'bg-[rgba(var(--cyber-accent-rgb),0.04)]' },
   ]
 
   return (
@@ -197,9 +127,10 @@ function AnimatedKpiCard({ label, value, color, border, bg }: {
 
 // ─── Labs Bar ─────────────────────────────────────────────────────────────────
 function LabsBar() {
+  const t = useTranslations('scanner')
   return (
     <div className="flex flex-wrap items-center justify-center gap-2">
-      <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Labs →</span>
+      <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{t('labs')} →</span>
       {LAB_APPS.map(lab => (
         <a
           key={lab.name}
@@ -228,33 +159,37 @@ function LabsBar() {
 // fuente de verdad para todo el Scanner, sin heurísticas duplicadas en el
 // cliente que puedan no coincidir con el cálculo real.
 
-const RISK_LEVEL_STYLE: Record<string, { label: string; color: string; emoji: string }> = {
-  COMPROMETIDO: { label: 'Comprometido', color: 'text-red-400',     emoji: '☠️'  },
-  EXPUESTO:     { label: 'Expuesto',     color: 'text-orange-400',  emoji: '🚨' },
-  VULNERABLE:   { label: 'Vulnerable',   color: 'text-amber-400',   emoji: '⚠️'  },
-  PROTEGIDO:    { label: 'Protegido',    color: 'text-emerald-400', emoji: '🛡️'  },
+// Claves traducidas en messages/{es,en}.json → scanner.riskLevel.<clave>
+const RISK_LEVEL_STYLE: Record<string, { color: string }> = {
+  COMPROMETIDO: { color: 'text-red-400' },
+  EXPUESTO:     { color: 'text-orange-400' },
+  VULNERABLE:   { color: 'text-amber-400' },
+  PROTEGIDO:    { color: 'text-emerald-400' },
   // compatibilidad con valores anteriores
-  CRITICAL: { label: 'Comprometido', color: 'text-red-400',     emoji: '☠️'  },
-  HIGH:     { label: 'Expuesto',     color: 'text-orange-400',  emoji: '🚨' },
-  MEDIUM:   { label: 'Vulnerable',   color: 'text-amber-400',   emoji: '⚠️'  },
-  LOW:      { label: 'Vulnerable',   color: 'text-blue-400',    emoji: '⚠️'  },
-  MINIMAL:  { label: 'Protegido',    color: 'text-emerald-400', emoji: '🛡️'  },
+  CRITICAL: { color: 'text-red-400' },
+  HIGH:     { color: 'text-orange-400' },
+  MEDIUM:   { color: 'text-amber-400' },
+  LOW:      { color: 'text-blue-400' },
+  MINIMAL:  { color: 'text-emerald-400' },
 }
 
 function GlobalScore({ score, counts }: { score: SecurityScore; counts: Record<Severity, number> }) {
+  const t = useTranslations('scanner')
+  const tRisk = useTranslations('scanner.riskLevel')
   const total = Object.values(counts).reduce((a, b) => a + b, 0)
-  const risk  = RISK_LEVEL_STYLE[score.riskLevel] ?? RISK_LEVEL_STYLE.MINIMAL
+  const riskKey = score.riskLevel in RISK_LEVEL_STYLE ? score.riskLevel : 'MINIMAL'
+  const risk  = RISK_LEVEL_STYLE[riskKey]
 
   return (
     <CyberCard padding="p-5" glow>
       <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-        Riesgo Global
+        {t('globalRisk')}
       </p>
 
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className={cn('font-mono text-xs font-semibold', risk.color)}>
-            {risk.label}
+            {tRisk(riskKey)}
           </p>
         </div>
         <RiskGauge total={score.total} grade={score.grade} size={64} strokeWidth={6} />
@@ -286,7 +221,7 @@ function GlobalScore({ score, counts }: { score: SecurityScore; counts: Record<S
       {total === 0 && (
         <div className="mt-4 flex items-center justify-center gap-1.5 font-mono text-xs text-emerald-400">
           <CheckCircle2 className="h-3.5 w-3.5" />
-          Sin hallazgos detectados
+          {t('noFindings')}
         </div>
       )}
     </CyberCard>
@@ -294,11 +229,12 @@ function GlobalScore({ score, counts }: { score: SecurityScore; counts: Record<S
 }
 
 // ─── Tool Grid ────────────────────────────────────────────────────────────────
-function ToolGrid({ stats, onSelectTool }: { stats: ToolStat[]; onSelectTool: (id: string) => void }) {
+function ToolGrid({ stats, onSelectTool }: { stats: PentestToolStat[]; onSelectTool: (id: string) => void }) {
+  const t = useTranslations('scanner')
   return (
     <CyberCard padding="p-4">
       <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-        Estado de Herramientas
+        {t('toolStateTitle')}
       </p>
       <motion.div
         className="grid grid-cols-2 gap-2"
@@ -306,17 +242,17 @@ function ToolGrid({ stats, onSelectTool }: { stats: ToolStat[]; onSelectTool: (i
         initial="hidden"
         animate="visible"
       >
-        {stats.map(tool => (
-          <motion.div key={tool.id} layout variants={staggerItem}>
+        {stats.map(({ skill, status, count }) => (
+          <motion.div key={skill.id} layout variants={staggerItem}>
             <ToolCard
               compact
-              name={tool.name}
-              icon={tool.icon}
-              svgIcon={tool.svgIcon}
+              name={skill.name}
+              icon={skill.icon}
+              svgIcon={getSkillSvgIcon(skill.id)}
               color="cyan"
-              status={tool.status}
-              resultLabel={tool.count > 0 ? String(tool.count) : undefined}
-              onClick={() => onSelectTool(tool.id)}
+              status={status}
+              resultLabel={count > 0 ? String(count) : undefined}
+              onClick={() => onSelectTool(skill.id)}
             />
           </motion.div>
         ))}
@@ -351,6 +287,7 @@ function ScannerSkeleton() {
 
 // ─── Error ────────────────────────────────────────────────────────────────────
 function ScannerError({ error, reset }: { error: Error; reset: () => void }) {
+  const tError = useTranslations('scanner.errorPage')
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
@@ -358,13 +295,13 @@ function ScannerError({ error, reset }: { error: Error; reset: () => void }) {
         <div className="container mx-auto max-w-2xl space-y-6 px-4">
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Error en el Scanner</AlertTitle>
+            <AlertTitle>{tError('title')}</AlertTitle>
             <AlertDescription>
-              {error.message || 'Ha ocurrido un error inesperado.'}
+              {error.message || tError('unexpected')}
             </AlertDescription>
           </Alert>
           <CyberCard className="space-y-4">
-            <p className="font-mono text-sm font-semibold text-foreground">Verifica que estén activos:</p>
+            <p className="font-mono text-sm font-semibold text-foreground">{tError('checklist')}</p>
             <ul className="space-y-2">
               {[
                 ['Backend Flask',  'http://localhost:5000'],
@@ -382,7 +319,7 @@ function ScannerError({ error, reset }: { error: Error; reset: () => void }) {
               onClick={reset}
               className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
-              Reintentar
+              {tError('retry')}
             </button>
           </CyberCard>
         </div>
@@ -393,10 +330,17 @@ function ScannerError({ error, reset }: { error: Error; reset: () => void }) {
 
 // ─── Contenido principal SOC ──────────────────────────────────────────────────
 function ScannerContent() {
-  const { currentScan, error, clearError, isLoading } = useScan()
+  const { currentScan: latestScan, error, clearError, isLoading } = useScan()
+  // El estado del análisis es compartido con /footprint. Un análisis lanzado
+  // desde Huella Digital SIN herramientas de Pentesting no es un resultado de
+  // Pentesting: aquí no se presenta como tal (se avisa y se enlaza).
+  const currentScan = latestScan && getScanScope(latestScan).pentesting ? latestScan : null
+  const footprintOnlyScan = latestScan && !currentScan ? latestScan : null
   const [mounted, setMounted] = useState(false)
   const [selectedToolId, setSelectedToolId] = useState<string | null>(null)
   const tDocs = useTranslations()
+  const t = useTranslations('scanner')
+  const description = useNavDescription(PENTESTING)
   const toolDocs = useMemo(() => getToolDocs(tDocs), [tDocs])
 
   useEffect(() => { setMounted(true) }, [])
@@ -418,14 +362,12 @@ function ScannerContent() {
     [currentScan, isCompleted]
   )
 
-  const toolStats = useMemo(() =>
-    currentScan ? extractToolStats(currentScan) : TOOL_META.map(m => ({ ...m, count: 0, status: 'idle' as const })),
-    [currentScan]
-  )
+  const toolStats = useMemo(() => getPentestingToolStats(currentScan), [currentScan])
+  const scope = useMemo(() => getScanScope(currentScan), [currentScan])
 
   if (!mounted) return <ScannerSkeleton />
 
-  const selectedTool = toolStats.find(ts => ts.id === selectedToolId)
+  const selectedTool = toolStats.find(ts => ts.skill.id === selectedToolId)
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -434,40 +376,28 @@ function ScannerContent() {
       <main className="flex-1 py-10">
         <div className="container mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
 
-          {/* ── Hero del scanner ── */}
-          <div className="relative overflow-hidden rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-6 py-8 text-center">
-            <div className="cyber-grid-bg pointer-events-none absolute inset-0 opacity-50" />
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,rgba(var(--cyber-accent-rgb),0.08),transparent)]" />
-            <div className="relative space-y-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(var(--cyber-accent-rgb),0.25)] bg-[rgba(var(--cyber-accent-rgb),0.06)] px-4 py-1.5">
-                <Shield className="h-3.5 w-3.5 text-[var(--cyber-accent)]" />
-                <span className="font-mono text-xs tracking-widest text-[var(--cyber-accent)] uppercase">
-                  SecureScan Pro v5.0 · 10 Herramientas Activas
-                </span>
-              </div>
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                Análisis de Vulnerabilidades
-              </h1>
-              <p className="mx-auto max-w-xl text-sm text-muted-foreground">
-                Pipeline automatizado: Wappalyzer → Nmap → Patator → Metasploit →
-                ffuf → Gobuster → ZAP → Nuclei → SQLMap → Searchsploit
-              </p>
+          <ModuleHeader
+            section={PENTESTING}
+            title={t('heroTitle')}
+            description={description}
+          >
+            <p className="font-mono text-xs text-muted-foreground">
+              {t('heroPipeline')}
+            </p>
+            <div className="mt-3">
               <LabsBar />
             </div>
-          </div>
-
-          {/* ── Taxonomía de herramientas (Pentesting + Huella Digital) ── */}
-          <ToolTaxonomyStrip sections={[PENTESTING, HUELLA_DIGITAL]} className="justify-center" />
+          </ModuleHeader>
 
           {/* ── Error global ── */}
           {error && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
+              <AlertTitle>{t('errorTitle')}</AlertTitle>
               <AlertDescription className="flex items-center justify-between gap-4">
                 <span>{error}</span>
                 <button onClick={clearError} className="shrink-0 text-xs underline hover:no-underline">
-                  Cerrar
+                  {t('close')}
                 </button>
               </AlertDescription>
             </Alert>
@@ -483,11 +413,28 @@ function ScannerContent() {
             <ScanForm />
           </div>
 
+          {/* ── Análisis de solo Huella Digital (no es un resultado de Pentesting) ── */}
+          {footprintOnlyScan && (
+            <CyberCard variant="ghost" padding="p-4" className="mx-auto w-full max-w-3xl border-[rgba(var(--cyber-accent-rgb),0.20)]">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs text-muted-foreground">
+                  {t('footprintOnlyNotice', { target: footprintOnlyScan.target })}
+                </p>
+                <Link
+                  href="/footprint"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-[rgba(var(--cyber-accent-rgb),0.35)] px-3 py-1.5 font-mono text-xs font-semibold text-[var(--cyber-accent)] transition-colors hover:bg-[rgba(var(--cyber-accent-rgb),0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cyber-accent)]"
+                >
+                  {t('footprintOnlyAction')} <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            </CyberCard>
+          )}
+
           {/* ── Iniciando ── */}
-          {isLoading && !currentScan && (
+          {isLoading && !latestScan && (
             <div className="flex flex-col items-center justify-center gap-3 py-16 text-muted-foreground">
               <Loader2 className="h-8 w-8 animate-spin text-[var(--cyber-accent)]" />
-              <p className="font-mono text-sm">Iniciando pipeline de escaneo...</p>
+              <p className="font-mono text-sm">{t('startingPipeline')}</p>
             </div>
           )}
 
@@ -528,12 +475,19 @@ function ScannerContent() {
             </section>
           )}
 
+          {/* ── Huella Digital: aviso solo si este análisis no la incluyó ── */}
+          {isCompleted && !scope.footprint && (
+            <p className="text-center font-mono text-xs text-muted-foreground">
+              {t('footprintNotIncluded')}
+            </p>
+          )}
+
           {/* ── Estado vacío ── */}
-          {!currentScan && !isLoading && (
+          {!latestScan && !isLoading && (
             <div className="py-16 text-center">
               <Shield className="mx-auto mb-4 h-14 w-14 text-muted-foreground/20" />
               <p className="text-sm text-muted-foreground">
-                Introduce una URL objetivo para comenzar el análisis.
+                {t('emptyState')}
               </p>
               <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
                 {LAB_APPS.map(lab => (
@@ -552,8 +506,8 @@ function ScannerContent() {
 
       <footer className="mt-auto border-t border-[hsl(var(--border))] py-5">
         <div className="container mx-auto px-4 text-center font-mono text-xs text-muted-foreground">
-          <p>SecureScan Pro v5.0 · Proyecto Académico SENA</p>
-          <p className="mt-0.5 opacity-50">Solo para uso ético y autorizado en entornos de prueba</p>
+          <p>{t('footerBrand')}</p>
+          <p className="mt-0.5 opacity-50">{t('footerLegal')}</p>
         </div>
       </footer>
 
@@ -561,7 +515,7 @@ function ScannerContent() {
         open={!!selectedToolId}
         onClose={() => setSelectedToolId(null)}
         doc={toolDocs.find(d => d.id === selectedToolId)}
-        name={selectedTool?.name ?? selectedToolId ?? ''}
+        name={selectedTool?.skill.name ?? selectedToolId ?? ''}
         color="cyan"
         status={selectedTool?.status ?? 'idle'}
         resultLabel={selectedTool && selectedTool.count > 0 ? String(selectedTool.count) : undefined}
@@ -577,10 +531,8 @@ export default function ScannerPage() {
   const reset = () => { setError(null); window.location.reload() }
   if (error) return <ScannerError error={error} reset={reset} />
   return (
-    <ScanProvider>
-      <Suspense fallback={<ScannerSkeleton />}>
-        <ScannerContent />
-      </Suspense>
-    </ScanProvider>
+    <Suspense fallback={<ScannerSkeleton />}>
+      <ScannerContent />
+    </Suspense>
   )
 }

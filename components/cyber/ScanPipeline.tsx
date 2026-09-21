@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/ScanPipeline.tsx — SecureScan Pro v5.0 · 13-Step Holographic Scan Pipeline
+// components/cyber/ScanPipeline.tsx — SecureScan Pro v5.0 · Holographic Scan Pipeline (13 pasos del backend; /scanner muestra los 12 de Pentesting)
 
 import { useMemo } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
@@ -12,6 +12,12 @@ export interface ScanPipelineProps {
   steps?: ScanStep[]
   activeStepIndex?: number
   className?: string
+  /**
+   * Ids de PIPELINE_STEPS a mostrar. Si se omite se muestran los 13 pasos del
+   * backend. /scanner (Pentesting) pasa la lista sin "Huella Digital", que se
+   * presenta en su propio módulo (/footprint).
+   */
+  nodeIds?: readonly string[]
 }
 
 // Los 13 pasos REALES del backend en orden secuencial
@@ -40,12 +46,13 @@ function formatDuration(startTime?: number, endTime?: number): string | null {
   return `${s}s`
 }
 
-export function ScanPipeline({ steps = [], className }: ScanPipelineProps) {
+export function ScanPipeline({ steps = [], className, nodeIds }: ScanPipelineProps) {
   const prefersReduced = useReducedMotion() ?? false
 
   // Mapear el estado real de cada paso desde el array que envía el backend
   const pipelineData = useMemo(() => {
-    return PIPELINE_STEPS.map((meta, index) => {
+    const visible = nodeIds ? PIPELINE_STEPS.filter(m => nodeIds.includes(m.id)) : PIPELINE_STEPS
+    return visible.map((meta, index) => {
       const realStep = steps.find(
         (s) => s.name.toLowerCase() === meta.id.toLowerCase() ||
                s.name.toLowerCase() === meta.name.toLowerCase()
@@ -63,7 +70,7 @@ export function ScanPipeline({ steps = [], className }: ScanPipelineProps) {
         duration,
       }
     })
-  }, [steps])
+  }, [steps, nodeIds])
 
   const completedCount = pipelineData.filter((s) => s.status === 'completed').length
   const currentRunning = pipelineData.find((s) => s.status === 'running')
@@ -76,7 +83,7 @@ export function ScanPipeline({ steps = [], className }: ScanPipelineProps) {
           <span className="h-2 w-2 rounded-full bg-[var(--cyber-accent)] animate-pulse" />
           <span className="text-muted-foreground uppercase tracking-wider">PIPELINE EXECUTION:</span>
           <span className="font-bold text-[var(--cyber-accent)]">
-            {completedCount} / {PIPELINE_STEPS.length} NODES COMPLETE
+            {completedCount} / {pipelineData.length} NODES COMPLETE
           </span>
         </div>
 

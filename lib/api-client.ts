@@ -218,6 +218,8 @@ interface ScanHistoryResponse {
 interface ConfigResponse {
   version: string
   allowed_targets: string[]
+  /** true = el backend solo acepta los objetivos de allowed_targets (RESTRICT_TO_LAB) */
+  restrict_to_lab?: boolean
   available_tools: string[]
   report_formats: string[]
   metasploit?: {

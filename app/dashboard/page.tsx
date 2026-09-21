@@ -77,7 +77,7 @@ const OVERVIEW_STATS = [
   { section: LABS,           count: toolCount(LABS),           key: 'labsAvailable' as const },
 ]
 
-const CATEGORY_CARDS = [PENTESTING, OSINT, HUELLA_DIGITAL, CODE_SECURITY]
+const CATEGORY_CARDS = [PENTESTING, HUELLA_DIGITAL, OSINT, CODE_SECURITY]
 
 function StatChip({ section, count, statKey }: { section: NavSection; count: number; statKey: 'pentestingTools' | 'footprintTools' | 'codeSecurityTools' | 'labsAvailable' }) {
   const c = COLOR_VARS[section.color]

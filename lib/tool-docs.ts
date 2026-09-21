@@ -12,7 +12,7 @@
 
 import type { useTranslations } from 'next-intl'
 import type { LucideIcon } from 'lucide-react'
-import type { ComponentType } from 'react'
+import type { FC } from 'react'
 import { SKILLS } from '@/lib/skills'
 import { TOOL_ICONS } from '@/components/tool-icons'
 
@@ -46,7 +46,7 @@ export function getToolDocs(t: TFunc): ToolDoc[] {
 }
 
 /** Logo custom (SVG) de una Skill, si existe — mismo lookup que ya usaba /scanner. */
-export function getSkillSvgIcon(skillId: string): ComponentType<{ className?: string }> | undefined {
+export function getSkillSvgIcon(skillId: string): FC<{ className?: string }> | undefined {
   const skill = SKILLS.find(s => s.id === skillId)
   if (!skill?.svgIconKey) return undefined
   return TOOL_ICONS[skill.svgIconKey]

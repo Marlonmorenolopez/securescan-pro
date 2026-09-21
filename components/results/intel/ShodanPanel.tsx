@@ -4,6 +4,7 @@
 // VirusTotalPanel / AbuseIPDBPanel.
 
 import { Radar, ExternalLink, ShieldAlert } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { CyberCard } from '@/components/cyber/CyberCard'
 import { CyberBadge } from '@/components/cyber/CyberBadge'
 import { cn } from '@/lib/utils'
@@ -29,29 +30,30 @@ interface ShodanPanelProps {
 const RISKY_TAGS = new Set(['compromised', 'malware', 'honeypot', 'tor'])
 
 export function ShodanPanel({ data }: ShodanPanelProps) {
+  const t = useTranslations('intel')
   if (!data) {
     return (
       <div className="space-y-3 py-10 text-center">
         <Radar className="mx-auto h-10 w-10 text-muted-foreground/30" />
-        <p className="font-medium text-muted-foreground">Shodan aún no tiene resultados</p>
+        <p className="font-medium text-muted-foreground">{t('shodan.empty')}</p>
       </div>
     )
   }
 
   const hasVulns   = data.vulns.length > 0
-  const riskyTags  = data.tags.filter((t) => RISKY_TAGS.has(t.toLowerCase()))
+  const riskyTags  = data.tags.filter((tag) => RISKY_TAGS.has(tag.toLowerCase()))
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         {hasVulns || riskyTags.length > 0 ? (
-          <CyberBadge type={hasVulns ? 'critical' : 'medium'} size="sm" label={hasVulns ? `${data.vulns.length} CVE(s) conocidos` : 'Tags de riesgo detectados'} />
+          <CyberBadge type={hasVulns ? 'critical' : 'medium'} size="sm" label={hasVulns ? t('shodan.cveBadge', { count: data.vulns.length }) : t('shodan.riskTags')} />
         ) : (
-          <CyberBadge type="completed" size="sm" label={`${data.ports.length} puerto(s) expuesto(s)`} />
+          <CyberBadge type="completed" size="sm" label={t('shodan.portsBadge', { count: data.ports.length })} />
         )}
         {data.simulated && (
           <span className="rounded border border-yellow-500/40 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-yellow-400">
-            Simulación
+            {t('noRealData')}
           </span>
         )}
         <span className="font-mono text-[11px] text-muted-foreground">
@@ -68,25 +70,25 @@ export function ShodanPanel({ data }: ShodanPanelProps) {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <CyberCard padding="p-3">
           <div className="font-mono text-2xl font-bold leading-none text-foreground">{data.ports.length}</div>
-          <div className="mt-1 font-mono text-[10px] text-muted-foreground">puertos abiertos</div>
+          <div className="mt-1 font-mono text-[10px] text-muted-foreground">{t('shodan.openPorts')}</div>
         </CyberCard>
         <CyberCard variant={hasVulns ? 'critical' : 'default'} padding="p-3">
           <div className={cn('font-mono text-2xl font-bold leading-none', hasVulns ? 'text-red-400' : 'text-foreground')}>{data.vulns.length}</div>
-          <div className="mt-1 font-mono text-[10px] text-muted-foreground">CVEs conocidos</div>
+          <div className="mt-1 font-mono text-[10px] text-muted-foreground">{t('shodan.cves')}</div>
         </CyberCard>
         <CyberCard padding="p-3">
           <div className="font-mono text-2xl font-bold leading-none text-foreground">{data.hostnames.length}</div>
-          <div className="mt-1 font-mono text-[10px] text-muted-foreground">hostnames</div>
+          <div className="mt-1 font-mono text-[10px] text-muted-foreground">{t('shodan.hostnames')}</div>
         </CyberCard>
         <CyberCard variant={riskyTags.length > 0 ? 'medium' : 'default'} padding="p-3">
           <div className="font-mono text-2xl font-bold leading-none text-foreground">{data.tags.length}</div>
-          <div className="mt-1 font-mono text-[10px] text-muted-foreground">tags</div>
+          <div className="mt-1 font-mono text-[10px] text-muted-foreground">{t('shodan.tags')}</div>
         </CyberCard>
       </div>
 
       {data.ports.length > 0 && (
         <div>
-          <h4 className="mb-1.5 font-mono text-xs uppercase tracking-wide text-muted-foreground">Puertos abiertos</h4>
+          <h4 className="mb-1.5 font-mono text-xs uppercase tracking-wide text-muted-foreground">{t('shodan.portsTitle')}</h4>
           <div className="flex flex-wrap gap-1.5">
             {data.ports.map((port) => (
               <span key={port} className="rounded bg-[hsl(var(--muted))]/50 px-2 py-0.5 font-mono text-[11px] text-foreground">
@@ -99,7 +101,7 @@ export function ShodanPanel({ data }: ShodanPanelProps) {
 
       {data.tags.length > 0 && (
         <div>
-          <h4 className="mb-1.5 font-mono text-xs uppercase tracking-wide text-muted-foreground">Tags</h4>
+          <h4 className="mb-1.5 font-mono text-xs uppercase tracking-wide text-muted-foreground">{t('shodan.tagsTitle')}</h4>
           <div className="flex flex-wrap gap-1.5">
             {data.tags.map((tag) => (
               <span
@@ -120,7 +122,7 @@ export function ShodanPanel({ data }: ShodanPanelProps) {
 
       {hasVulns && (
         <div className="space-y-2">
-          <h4 className="font-mono text-xs uppercase tracking-wide text-muted-foreground">CVEs por firma de banner</h4>
+          <h4 className="font-mono text-xs uppercase tracking-wide text-muted-foreground">{t('shodan.cvesTitle')}</h4>
           <div className="space-y-1.5">
             {data.vulns.map((cve) => (
               <div key={cve} className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/[0.05] px-3 py-2 text-sm">
@@ -137,7 +139,7 @@ export function ShodanPanel({ data }: ShodanPanelProps) {
             ))}
           </div>
           <p className="text-[11px] text-muted-foreground">
-            Basado en la versión reportada en el banner del servicio — puede estar parchado y seguir mostrando la versión vieja. Confirma antes de reportarlo como hallazgo.
+            {t('shodan.bannerCaveat')}
           </p>
         </div>
       )}
@@ -149,7 +151,7 @@ export function ShodanPanel({ data }: ShodanPanelProps) {
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 font-mono text-xs text-[var(--cyber-accent)] hover:underline"
         >
-          Ver host completo en Shodan
+          {t('shodan.fullHost')}
           <ExternalLink className="h-3 w-3" />
         </a>
       )}

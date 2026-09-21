@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { PageTransition } from '@/components/page-transition'
 import { ParticlesProvider } from '@/components/particles-provider'
 import { Sidebar } from '@/components/cyber/Sidebar'
+import { ScanProvider } from '@/lib/scan-context'
 import './globals.css'
 
 // FIX: eliminadas Inter y JetBrains_Mono de next/font/google
@@ -70,12 +71,18 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             <ParticlesProvider>
-              <div className="lg:flex">
-                <Sidebar />
-                <div className="min-w-0 flex-1">
-                  <PageTransition>{children}</PageTransition>
+              {/* ScanProvider a nivel de layout: /scanner (Pentesting) y /footprint
+                  (Huella Digital) comparten el MISMO análisis real en curso, sin
+                  duplicar estado ni tocar el backend. El polling sobrevive a la
+                  navegación entre ambos módulos. */}
+              <ScanProvider>
+                <div className="lg:flex">
+                  <Sidebar />
+                  <div className="min-w-0 flex-1">
+                    <PageTransition>{children}</PageTransition>
+                  </div>
                 </div>
-              </div>
+              </ScanProvider>
             </ParticlesProvider>
             <Toaster position="bottom-right" />
           </ThemeProvider>

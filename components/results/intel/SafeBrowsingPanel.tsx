@@ -4,6 +4,7 @@
 // bloquear sitios maliciosos. Mismo patrón que los otros 6 paneles.
 
 import { ShieldBan, ShieldCheck, ExternalLink } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { CyberBadge } from '@/components/cyber/CyberBadge'
 
 export interface SafeBrowsingResult {
@@ -21,11 +22,12 @@ interface SafeBrowsingPanelProps {
 }
 
 export function SafeBrowsingPanel({ data }: SafeBrowsingPanelProps) {
+  const t = useTranslations('intel')
   if (!data) {
     return (
       <div className="space-y-3 py-10 text-center">
         <ShieldCheck className="mx-auto h-10 w-10 text-muted-foreground/30" />
-        <p className="font-medium text-muted-foreground">Safe Browsing aún no tiene resultados</p>
+        <p className="font-medium text-muted-foreground">{t('sb.empty')}</p>
       </div>
     )
   }
@@ -34,13 +36,13 @@ export function SafeBrowsingPanel({ data }: SafeBrowsingPanelProps) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         {data.flagged ? (
-          <CyberBadge type="critical" size="sm" label="Marcado por Google Safe Browsing" />
+          <CyberBadge type="critical" size="sm" label={t('sb.flaggedBadge')} />
         ) : (
-          <CyberBadge type="completed" size="sm" label="No marcado" />
+          <CyberBadge type="completed" size="sm" label={t('sb.notFlagged')} />
         )}
         {data.simulated && (
           <span className="rounded border border-yellow-500/40 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-yellow-400">
-            Simulación
+            {t('noRealData')}
           </span>
         )}
         <span className="font-mono text-[11px] text-muted-foreground">{data.url}</span>
@@ -57,12 +59,12 @@ export function SafeBrowsingPanel({ data }: SafeBrowsingPanelProps) {
           <ShieldBan className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
           <div>
             <p className="text-sm font-medium text-red-400">
-              Chrome y Firefox probablemente estén bloqueando este sitio para los visitantes
+              {t('sb.browsersBlocking')}
             </p>
             <div className="mt-2 flex flex-wrap gap-1.5">
-              {data.threats.map((t) => (
-                <span key={t} className="rounded bg-red-500/10 px-2 py-0.5 font-mono text-[10px] text-red-400 border border-red-500/30">
-                  {t}
+              {data.threats.map((threat) => (
+                <span key={threat} className="rounded bg-red-500/10 px-2 py-0.5 font-mono text-[10px] text-red-400 border border-red-500/30">
+                  {threat}
                 </span>
               ))}
             </div>
@@ -72,7 +74,7 @@ export function SafeBrowsingPanel({ data }: SafeBrowsingPanelProps) {
         <div className="flex items-start gap-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20 px-3 py-3">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
           <p className="text-xs text-muted-foreground">
-            Google no tiene este sitio marcado como malware, phishing, o software no deseado al momento del escaneo.
+            {t('sb.notFlaggedDetail')}
           </p>
         </div>
       )}
@@ -83,7 +85,7 @@ export function SafeBrowsingPanel({ data }: SafeBrowsingPanelProps) {
         rel="noopener noreferrer"
         className="inline-flex items-center gap-1.5 font-mono text-xs text-[var(--cyber-accent)] hover:underline"
       >
-        Consultar en el Transparency Report de Google
+        {t('sb.transparencyReport')}
         <ExternalLink className="h-3 w-3" />
       </a>
     </div>

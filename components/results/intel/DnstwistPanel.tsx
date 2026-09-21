@@ -4,6 +4,7 @@
 // anteriores 5 paneles del grupo "Huella Digital".
 
 import { Copy, ExternalLink, ShieldAlert } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { CyberCard } from '@/components/cyber/CyberCard'
 import { CyberBadge } from '@/components/cyber/CyberBadge'
 
@@ -29,11 +30,12 @@ interface DnstwistPanelProps {
 }
 
 export function DnstwistPanel({ data }: DnstwistPanelProps) {
+  const t = useTranslations('intel')
   if (!data) {
     return (
       <div className="space-y-3 py-10 text-center">
         <Copy className="mx-auto h-10 w-10 text-muted-foreground/30" />
-        <p className="font-medium text-muted-foreground">dnstwist aún no tiene resultados</p>
+        <p className="font-medium text-muted-foreground">{t('dns.empty')}</p>
       </div>
     )
   }
@@ -44,21 +46,21 @@ export function DnstwistPanel({ data }: DnstwistPanelProps) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         {found > 0 ? (
-          <CyberBadge type="medium" size="sm" label={`${found} dominio(s) parecido(s) registrado(s)`} />
+          <CyberBadge type="medium" size="sm" label={t('dns.foundBadge', { count: found })} />
         ) : (
-          <CyberBadge type="completed" size="sm" label="Sin dominios parecidos registrados" />
+          <CyberBadge type="completed" size="sm" label={t('dns.none')} />
         )}
         {data.simulated && (
           <span className="rounded border border-yellow-500/40 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-yellow-400">
-            Simulación
+            {t('noRealData')}
           </span>
         )}
-        <span className="font-mono text-[11px] text-muted-foreground">dominio: {data.domain}</span>
+        <span className="font-mono text-[11px] text-muted-foreground">{t('domain')}: {data.domain}</span>
       </div>
 
       {data.resolved_from_ip && (
         <p className="text-[11px] text-muted-foreground">
-          ↳ descubierto vía DNS reverso desde <span className="text-foreground">{data.resolved_from_ip}</span>
+          ↳ {t('reverseDns')} <span className="text-foreground">{data.resolved_from_ip}</span>
         </p>
       )}
 
@@ -71,18 +73,18 @@ export function DnstwistPanel({ data }: DnstwistPanelProps) {
       <div className="grid grid-cols-2 gap-3">
         <CyberCard padding="p-3">
           <div className="font-mono text-2xl font-bold leading-none text-foreground">{data.candidates_checked}</div>
-          <div className="mt-1 font-mono text-[10px] text-muted-foreground">variantes probadas</div>
+          <div className="mt-1 font-mono text-[10px] text-muted-foreground">{t('dns.variantsChecked')}</div>
         </CyberCard>
         <CyberCard variant={found > 0 ? 'medium' : 'default'} padding="p-3">
           <div className="font-mono text-2xl font-bold leading-none text-foreground">{found}</div>
-          <div className="mt-1 font-mono text-[10px] text-muted-foreground">registradas hoy</div>
+          <div className="mt-1 font-mono text-[10px] text-muted-foreground">{t('dns.registeredToday')}</div>
         </CyberCard>
       </div>
 
       {found > 0 && (
         <div className="space-y-2">
           <h4 className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
-            Dominios parecidos ya registrados
+            {t('dns.title')}
           </h4>
           <div className="space-y-1.5">
             {data.registered_variants.map((v) => (
@@ -96,7 +98,7 @@ export function DnstwistPanel({ data }: DnstwistPanelProps) {
             ))}
           </div>
           <p className="text-[11px] text-muted-foreground">
-            Que un dominio esté registrado no significa que sea malicioso — puede ser tuyo, de un competidor, o estar sin usar. Vale la pena revisarlo si no lo reconoces.
+            {t('dns.note')}
           </p>
         </div>
       )}

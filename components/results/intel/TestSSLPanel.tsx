@@ -6,6 +6,7 @@
 
 import { useState } from 'react'
 import { Lock, ChevronDown, ShieldAlert, ExternalLink } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { CyberCard } from '@/components/cyber/CyberCard'
 import { CyberBadge } from '@/components/cyber/CyberBadge'
 import { cn } from '@/lib/utils'
@@ -45,15 +46,10 @@ const SEVERITY_BADGE: Record<string, 'critical' | 'high' | 'medium' | 'low' | 'i
   INFO: 'info', DEBUG: 'info',
 }
 
-const CERT_FIELD_LABELS: Record<string, string> = {
-  cert_commonName: 'Subject',
-  cert_chain_of_trust: 'Cadena de confianza',
-  cert_expirationStatus: 'Vencimiento',
-  cert_notAfter: 'Vence',
-  cert_subjectAltName: 'SAN',
-  cert_keySize: 'Tamaño de llave',
-  cert_signatureAlgorithm: 'Algoritmo de firma',
-  cert_revocation: 'Revocación (CRL/OCSP)',
+// Solo se usan las claves: las etiquetas visibles están en messages → intel.tls.cert.<id>
+const CERT_FIELD_LABELS: Record<string, true> = {
+  cert_commonName: true, cert_chain_of_trust: true, cert_expirationStatus: true, cert_notAfter: true,
+  cert_subjectAltName: true, cert_keySize: true, cert_signatureAlgorithm: true, cert_revocation: true,
 }
 
 function findingBadge(severity: string) {
@@ -63,12 +59,13 @@ function findingBadge(severity: string) {
 export function TestSSLPanel({ data }: TestSSLPanelProps) {
   const [showAllVulns, setShowAllVulns] = useState(false)
   const [showAllCert, setShowAllCert] = useState(false)
+  const t = useTranslations('intel')
 
   if (!data) {
     return (
       <div className="space-y-3 py-10 text-center">
         <Lock className="mx-auto h-10 w-10 text-muted-foreground/30" />
-        <p className="font-medium text-muted-foreground">TestSSL aún no tiene resultados</p>
+        <p className="font-medium text-muted-foreground">{t('tls.empty')}</p>
       </div>
     )
   }
@@ -77,10 +74,10 @@ export function TestSSLPanel({ data }: TestSSLPanelProps) {
     return (
       <div className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
-          <CyberBadge type="info" size="sm" label="Sin TLS en este puerto" />
+          <CyberBadge type="info" size="sm" label={t('tls.noTls')} />
           <span className="font-mono text-[11px] text-muted-foreground">{data.host}:{data.port}</span>
         </div>
-        <p className="text-xs text-muted-foreground">{data.error || 'El objetivo no respondió a un handshake TLS en este puerto.'}</p>
+        <p className="text-xs text-muted-foreground">{data.error || t('tls.noTlsDefault')}</p>
       </div>
     )
   }
@@ -100,12 +97,12 @@ export function TestSSLPanel({ data }: TestSSLPanelProps) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         {worstSeverity ? (
-          <CyberBadge type={worstSeverity} size="sm" label={`${realVulns.length} hallazgo(s) de vulnerabilidad`} />
+          <CyberBadge type={worstSeverity} size="sm" label={t('tls.vulnBadge', { count: realVulns.length })} />
         ) : (
-          <CyberBadge type="completed" size="sm" label="Sin vulnerabilidades con nombre detectadas" />
+          <CyberBadge type="completed" size="sm" label={t('tls.noVulns')} />
         )}
         <span className="font-mono text-[11px] text-muted-foreground">
-          {data.host}:{data.port} · {data.vulnerabilities.length} chequeos · {data.scan_time}s
+          {data.host}:{data.port} · {t('tls.checks', { count: data.vulnerabilities.length })} · {data.scan_time}s
         </span>
       </div>
 
@@ -122,7 +119,7 @@ export function TestSSLPanel({ data }: TestSSLPanelProps) {
               'mt-0.5 font-mono text-xs font-semibold',
               p.finding.includes('not offered') ? 'text-muted-foreground' : 'text-emerald-400',
             )}>
-              {p.finding.includes('not offered') ? 'No' : 'Sí'}
+              {p.finding.includes('not offered') ? t('no') : t('yes')}
             </div>
           </CyberCard>
         ))}
@@ -131,10 +128,10 @@ export function TestSSLPanel({ data }: TestSSLPanelProps) {
       {/* Vulnerabilidades con nombre propio */}
       <div>
         <h4 className="mb-1.5 font-mono text-xs uppercase tracking-wide text-muted-foreground">
-          Vulnerabilidades ({realVulns.length} de {data.vulnerabilities.length} con hallazgo)
+          {t('tls.vulnsTitle', { found: realVulns.length, total: data.vulnerabilities.length })}
         </h4>
         {vulnsToShow.length === 0 ? (
-          <p className="text-xs text-muted-foreground">Ninguna de las vulnerabilidades con nombre propio (Heartbleed, POODLE, FREAK, DROWN...) aplica a este servidor.</p>
+          <p className="text-xs text-muted-foreground">{t('tls.noneApply')}</p>
         ) : (
           <div className="space-y-1.5">
             {vulnsToShow.map((v) => (
@@ -166,8 +163,8 @@ export function TestSSLPanel({ data }: TestSSLPanelProps) {
           </div>
         )}
         {!showAllVulns && data.vulnerabilities.length > realVulns.length && (
-          <button onClick={() => setShowAllVulns(true)} className="mt-1.5 flex items-center gap-1 font-mono text-xs text-[var(--cyber-accent)] hover:underline">
-            <ChevronDown className="h-3 w-3" /> Ver los {data.vulnerabilities.length - realVulns.length} chequeos sin hallazgo
+          <button type="button" onClick={() => setShowAllVulns(true)} className="mt-1.5 flex items-center gap-1 font-mono text-xs text-[var(--cyber-accent)] hover:underline">
+            <ChevronDown className="h-3 w-3" /> {t('tls.showChecks', { count: data.vulnerabilities.length - realVulns.length })}
           </button>
         )}
       </div>
@@ -175,11 +172,11 @@ export function TestSSLPanel({ data }: TestSSLPanelProps) {
       {/* Certificado */}
       {certFindings.length > 0 && (
         <div>
-          <h4 className="mb-1.5 font-mono text-xs uppercase tracking-wide text-muted-foreground">Certificado</h4>
+          <h4 className="mb-1.5 font-mono text-xs uppercase tracking-wide text-muted-foreground">{t('tls.certTitle')}</h4>
           <div className="space-y-1 rounded-lg border border-[hsl(var(--border))] p-2">
             {certToShow.map((f) => (
               <div key={f.id} className="flex justify-between gap-2 px-2 py-1 font-mono text-xs">
-                <span className="text-muted-foreground">{CERT_FIELD_LABELS[f.id] ?? f.id}:</span>
+                <span className="text-muted-foreground">{f.id in CERT_FIELD_LABELS ? t(`tls.cert.${f.id}`) : f.id}:</span>
                 <span className={cn('truncate text-right', ['HIGH', 'CRITICAL', 'FATAL'].includes(f.severity) ? 'text-red-400' : 'text-foreground')}>
                   {f.finding.length > 60 ? f.finding.slice(0, 60) + '…' : f.finding}
                 </span>
@@ -187,8 +184,8 @@ export function TestSSLPanel({ data }: TestSSLPanelProps) {
             ))}
           </div>
           {!showAllCert && certFindings.length > keyCertFindings.length && (
-            <button onClick={() => setShowAllCert(true)} className="mt-1.5 flex items-center gap-1 font-mono text-xs text-[var(--cyber-accent)] hover:underline">
-              <ChevronDown className="h-3 w-3" /> Ver los {certFindings.length - keyCertFindings.length} campos más del certificado
+            <button type="button" onClick={() => setShowAllCert(true)} className="mt-1.5 flex items-center gap-1 font-mono text-xs text-[var(--cyber-accent)] hover:underline">
+              <ChevronDown className="h-3 w-3" /> {t('tls.showFields', { count: certFindings.length - keyCertFindings.length })}
             </button>
           )}
         </div>
