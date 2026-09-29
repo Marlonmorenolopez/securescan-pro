@@ -53,6 +53,19 @@ def run_harvester_task(self, job_id: str, domain: str):
     securescan_app.run_harvester_scan(job_id, domain)
 
 
+@celery_app.task(name='tasks.run_skill_task', bind=True, max_retries=0)
+def run_skill_task(self, job_id: str, skill_id: str, subject: str, options: dict, dependencies: dict):
+    """
+    Fase 1 — ejecución individual de Skills (server/skill_executor.py).
+    Misma envoltura delgada que las tareas de arriba: llama directamente a
+    run_skill_job (server/app.py), que a su vez usa SkillExecutor + el
+    runner EXISTENTE (orchestrator.run_nmap, etc.) — no reimplementa nada.
+    """
+    import app as securescan_app
+    logger.info("[celery] run_skill_task job=%s skill=%s", job_id, skill_id)
+    securescan_app.run_skill_job(job_id, skill_id, subject, options, dependencies)
+
+
 @celery_app.task(name='tasks.check_scheduled_scans')
 def check_scheduled_scans():
     """

@@ -44,6 +44,11 @@ _TASK_NAMES = {
     'code_scan':   'tasks.run_code_scan_task',
     'sherlock':    'tasks.run_sherlock_task',
     'harvester':   'tasks.run_harvester_task',
+    # Fase 1 — ejecución individual de Skills (server/skill_executor.py).
+    # Una sola entrada genérica: el 'skill_id' concreto (nmap, y en fases
+    # futuras las demás 28) viaja como argumento de run_skill_job, no como
+    # un kind de job nuevo por Skill — no se crea un sistema de jobs paralelo.
+    'skill':       'tasks.run_skill_task',
 }
 
 

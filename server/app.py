@@ -50,6 +50,8 @@ from typing import Dict, List, Optional
 from urllib.parse import urlparse
 from utils.i18n_backend import get_t, locale_from_request
 import job_executor
+import skill_execution_registry
+import skill_executor as skill_executor_module
 import scheduler
 import osint_cache
 import notifications
@@ -504,6 +506,15 @@ def _persist_step_result(job_id: str, field: str, value) -> None:
     if fresh:
         fresh[field] = value
         save_scan(job_id, fresh)
+
+
+# ── SkillExecutor (Fase 1) ──────────────────────────────────────────────────
+# Instancia única de proceso, igual que `orchestrator`. Recibe `orchestrator`
+# (para resolver runner_attr → método real vía getattr, ver
+# skill_executor.py) y `get_scan` (para resolver dependencias del tipo
+# {'from_job': ...}, sección 5 del documento de Fase 0.1 — ningún runner de
+# esta fase la usa, pero el mecanismo queda listo).
+skill_executor_instance = skill_executor_module.SkillExecutor(orchestrator, get_scan_fn=get_scan)
 
 # ── run_scan ──────────────────────────────────────────────────────────────────
 def run_scan(job_id: str, target: str, options: dict):
@@ -1270,6 +1281,140 @@ def get_scan_status(scan_id: str):
     if not scan:
         return jsonify({'error': get_t(locale_from_request(request))('errors.scanNotFound')}), 404
     return jsonify(scan)
+
+
+# ── Skills — ejecución individual (Fase 1) ──────────────────────────────────
+#
+# Endpoint GENÉRICO: un único par de rutas para las 29 Skills (hoy solo
+# 'nmap' está registrada en skill_execution_registry.py). NO se crean rutas
+# por Skill (ej. /api/nmap/run) — ver documento de diseño Fase 0, sección G.
+#
+# Reutiliza exactamente la misma infraestructura que ya usa el resto del
+# archivo: job_id (uuid4), save_scan/get_scan, update_step,
+# _persist_step_result, job_executor.submit_job, is_allowed_target. No
+# introduce un segundo sistema de jobs ni de persistencia.
+
+
+def run_skill_job(job_id: str, skill_id: str, subject: str, options: dict, dependencies: dict) -> None:
+    """
+    Función de fondo de una ejecución individual de Skill — mismo patrón que
+    run_sherlock_scan/run_harvester_scan: update_step → llamar al runner real
+    (a través de SkillExecutor, que a su vez llama a orchestrator.run_nmap
+    sin reimplementarlo) → _persist_step_result → marcar 'completed'/'error'.
+
+    A propósito NO llama a normalize_findings/calculate_score_from_findings:
+    Nmap no genera Findings hoy (findings.py::_from_web no lee 'ports'), y
+    esta fase tiene prohibido modificar findings.py/scoring o inventar
+    resultados que la herramienta no produce. El resultado real de Nmap
+    (lista de puertos) se conserva tal cual, sin envolver.
+    """
+    update_step(job_id, skill_id, 'running')
+    try:
+        raw = skill_executor_instance.run(skill_id, subject, options, dependencies)
+        _persist_step_result(job_id, skill_id, raw)
+        update_step(job_id, skill_id, 'completed', 100)
+
+        final_scan = get_scan(job_id) or {}
+        final_scan['status']  = 'completed'
+        final_scan['endTime'] = datetime.utcnow().isoformat() + 'Z'
+        save_scan(job_id, final_scan)
+        logger.info("Skill run %s (%s) completado", job_id, skill_id)
+
+    except (skill_executor_module.SkillNotFoundError, skill_executor_module.SkillValidationError) as e:
+        # No debería ocurrir aquí (ya se valida en la ruta antes de encolar el
+        # job), pero se maneja igual por si el job corre vía Celery en otro
+        # proceso con un registry desalineado.
+        logger.error("Skill run %s (%s) inválida en background: %s", job_id, skill_id, e)
+        update_step(job_id, skill_id, 'error', 0)
+        failed = get_scan(job_id) or {}
+        failed['status']  = 'error'
+        failed['error']   = str(e)
+        failed['endTime'] = datetime.utcnow().isoformat() + 'Z'
+        save_scan(job_id, failed)
+
+    except Exception as e:
+        logger.error("Skill run %s (%s) failed: %s", job_id, skill_id, e)
+        update_step(job_id, skill_id, 'error', 0)
+        failed = get_scan(job_id) or {}
+        failed['status']  = 'error'
+        failed['error']   = str(e)
+        failed['endTime'] = datetime.utcnow().isoformat() + 'Z'
+        save_scan(job_id, failed)
+
+
+@app.route('/api/skills/<skill_id>/run', methods=['POST'])
+@require_token
+@limiter.limit("20 per hour")
+def start_skill_run(skill_id: str):
+    entry = skill_execution_registry.get_runner_entry(skill_id)
+    if entry is None or entry.status != 'available':
+        return jsonify({
+            'error':    f'Skill no disponible para ejecución individual: {skill_id}',
+            'skill_id': skill_id,
+        }), 404
+
+    data         = request.get_json(silent=True) or {}
+    subject      = str(data.get('subject') or '').strip()
+    options      = data.get('options') or {}
+    dependencies = data.get('dependencies') or {}
+
+    try:
+        skill_executor_instance.validate(entry, subject, options, dependencies)
+    except skill_executor_module.SkillValidationError as e:
+        return jsonify({
+            'error':    'Entrada inválida para la Skill',
+            'skill_id': skill_id,
+            'details':  e.errors,
+        }), 400
+
+    # La misma validación de target que ya usa /api/scan — no se relaja ni
+    # se duplica, se reutiliza is_allowed_target() tal cual.
+    if entry.schema.subject_kind == 'target_url':
+        is_allowed, reason = is_allowed_target(subject)
+        if not is_allowed:
+            return jsonify({
+                'error':           'Target not allowed',
+                'reason':          reason,
+                'allowed_targets': ALLOWED_LAB_TARGETS,
+            }), 403
+
+    job_id = str(uuid.uuid4())
+    scan_data = {
+        'id':        job_id,
+        'scan_type': f'skill-{skill_id}',
+        'skill_id':  skill_id,
+        'target':    subject,   # reutiliza el mismo campo que ya filtra /api/history
+        'status':    'running',
+        'startTime': datetime.utcnow().isoformat() + 'Z',
+        'endTime':   None,
+        'steps': [
+            {'name': skill_id, 'status': 'pending', 'progress': 0},
+        ],
+    }
+    save_scan(job_id, scan_data)
+
+    job_executor.submit_job('skill', run_skill_job, job_id, skill_id, subject, options, dependencies)
+
+    logger.info("Started individual skill run %s (%s) subject=%s", job_id, skill_id, subject[:80])
+    return jsonify({'jobId': job_id, 'job_id': job_id, 'skill_id': skill_id, 'status': 'running'})
+
+
+@app.route('/api/skills/<skill_id>/status/<job_id>', methods=['GET'])
+@limiter.exempt
+@require_token
+def get_skill_run_status(skill_id: str, job_id: str):
+    if not validate_scan_id(job_id):
+        return jsonify({'error': get_t(locale_from_request(request))('errors.invalidFormat')}), 400
+    scan = get_scan(job_id)
+    if not scan or scan.get('scan_type') != f'skill-{skill_id}':
+        return jsonify({'error': get_t(locale_from_request(request))('errors.scanNotFound')}), 404
+    return jsonify({
+        'job_id':   job_id,
+        'skill_id': skill_id,
+        'status':   scan.get('status'),
+        'result':   scan.get(skill_id),
+        'error':    scan.get('error'),
+    })
 
 
 @app.route('/api/code-scan', methods=['POST'])
