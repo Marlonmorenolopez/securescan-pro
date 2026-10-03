@@ -140,10 +140,15 @@ class SkillExecutor:
         envolver ni transformar. El manejo de errores de la propia
         herramienta ya vive dentro de cada run_<tool>() (timeouts,
         reintentos, dict con 'error') — este método no lo duplica.
+
+        `subject` se pasa SIEMPRE como kwarg nombrado (`schema.subject_kwarg`,
+        'target' por default), nunca posicional — ver el docstring de
+        SkillInputSchema.subject_kwarg en skill_execution_registry.py para
+        el caso real (search_exploits) que exige esto.
         """
         entry = self.get_entry(skill_id)
         self.validate(entry, subject, options, dependencies)
         resolved_deps = self.resolve_dependencies(entry, dependencies)
         kwargs = self.build_kwargs(entry, options, resolved_deps)
         runner = self.get_runner(entry)
-        return runner(subject, **kwargs)
+        return runner(**{entry.schema.subject_kwarg: subject}, **kwargs)

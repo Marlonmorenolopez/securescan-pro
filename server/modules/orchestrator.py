@@ -786,11 +786,19 @@ class SecurityOrchestrator:
             is_slow           = any(x in target for x in ['testfire', 'demo', 'juice'])
             effective_timeout = self.TIMEOUTS['gobuster'] * (2 if is_slow else 1)
             self.gobuster.timeout = effective_timeout
-            if cookie:
-                self.gobuster._headers = getattr(self.gobuster, '_headers', {}) or {}
-                self.gobuster._headers['Cookie'] = cookie
+            # FIX (Fase 2, Bloque 3 — Universal Skill Executor): el cookie se
+            # pasa como `custom_headers` de scan(), que GobusterScanner.scan()
+            # ya soporta (igual que ffuf). Antes se mutaba
+            # self.gobuster._headers, un atributo que scan() nunca lee (solo
+            # usa el kwarg `custom_headers` para construir los -H del
+            # comando) — el cookie de sesión no llegaba a Gobuster en ningún
+            # Web Scan. Mutar un atributo de la instancia COMPARTIDA
+            # `self.gobuster` tampoco es seguro si dos ejecuciones corren en
+            # paralelo (Web Scan + ejecución individual de la Skill) — pasar
+            # el cookie como argumento de la llamada evita ambos problemas.
+            gobuster_kwargs = {'custom_headers': {'Cookie': cookie}} if cookie else {}
             raw = self._run_with_retry(
-                self.gobuster.scan, args=(target,),
+                self.gobuster.scan, args=(target,), kwargs=gobuster_kwargs,
                 tool_name='gobuster', timeout=effective_timeout + 30,
                 default=[], retry_cfg={'max_retries': 0, 'backoff_factor': 1.0},
             )
