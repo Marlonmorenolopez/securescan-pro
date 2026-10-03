@@ -1,5 +1,5 @@
 """
-server/tests/test_skill_executor.py — SecureScan Pro v5.0 · Fase 1 + Fase 2 (Bloque 1)
+server/tests/test_skill_executor.py — SecureScan Pro v5.0 · Fase 1 + Fase 2 (Bloques 1-8)
 
 Pruebas ligeras del motor universal de ejecución individual de Skills
 (skill_execution_registry.py + skill_executor.py) y verificaciones estáticas
@@ -79,6 +79,53 @@ de los dos exigió cambios al Executor:
     - Parámetros opcionales         -> TestSkillExecutor.test_zap_valid_subject_with_explicit_policy_and_cookie
     - Compatibilidad con Web Scan   -> TestWebScanRegression.test_run_scan_still_calls_orchestrator_run_zap_full_directly
 
+Alcance Fase 2, Bloque 6 (SQLMap) -- mismo mecanismo que Nuclei/Gobuster/
+ZAP, sin casos especiales nuevos para el Executor. Único matiz: el Web Scan
+NO llama a run_sqlmap() directamente desde app.py::run_scan() -- lo hace
+indirectamente, vía orchestrator.run_injection_scan() (fallback cuando
+InjectionScanner no está instalado), así que la regresión se verifica en
+dos puntos en vez de uno:
+    - Registro                    -> TestSkillExecutionRegistry.test_registry_contains_sqlmap
+    - Validación de subject        -> TestSkillExecutor.test_sqlmap_missing_subject
+    - Ejecución vía runner real     -> TestSkillExecutor.test_sqlmap_valid_subject_without_options
+    - Parámetros opcionales         -> TestSkillExecutor.test_sqlmap_valid_subject_with_explicit_options
+    - Targets de laboratorio        -> TestSkillExecutor.test_sqlmap_other_internal_lab_targets_accepted
+    - Compatibilidad con Web Scan   -> TestWebScanRegression.test_run_scan_still_calls_orchestrator_run_injection_scan_directly
+                                       TestWebScanRegression.test_run_injection_scan_still_falls_back_to_run_sqlmap
+
+Alcance Fase 2, Bloque 7 (Injection Scanner) -- mismo mecanismo que SQLMap
+(target + options opcionales, sin dependencies). El Web Scan ya llama a
+orchestrator.run_injection_scan() directamente desde app.py::run_scan()
+(verificado en el Bloque 6 por
+TestWebScanRegression.test_run_scan_still_calls_orchestrator_run_injection_scan_directly,
+que sigue vigente sin cambios), así que no se agrega un test de regresión
+nuevo para ese punto de llamada -- ya existe y cubre exactamente lo mismo
+que cubriría uno nuevo:
+    - Registro                    -> TestSkillExecutionRegistry.test_registry_contains_injection_scanner
+    - Validación de subject        -> TestSkillExecutor.test_injection_scanner_missing_subject
+    - Ejecución vía runner real     -> TestSkillExecutor.test_injection_scanner_valid_subject_without_options
+    - Parámetros opcionales         -> TestSkillExecutor.test_injection_scanner_valid_subject_with_explicit_options
+    - No confusión con SQLMap       -> TestSkillExecutor.test_injection_scanner_result_not_confused_with_sqlmap
+    - Manejo de error del runner    -> TestSkillExecutor.test_injection_scanner_runner_error_propagates_as_returned
+    - Compatibilidad con Web Scan   -> (heredado del Bloque 6, ver arriba)
+
+Alcance Fase 2, Bloque 8 (ZAP Spider) -- CIERRA Pentesting (12/12). Único
+bloque donde el runner no existía realmente (stub deprecated): se agregó
+ZapScanner.spider_scan() + ZapScanner._get_spider_results() en
+zap_scanner.py (nuevo), y se reescribió el cuerpo de
+orchestrator.run_zap_spider() (ya no stub). El Registry y el Executor no
+necesitaron ningún caso especial nuevo -- mismo patrón target+options que
+el resto:
+    - Registro                      -> TestSkillExecutionRegistry.test_registry_contains_zap_spider
+    - Cierre de Pentesting 12/12     -> TestSkillExecutionRegistry.test_pentesting_category_fully_migrated_12_of_12
+    - Validación de subject          -> TestSkillExecutor.test_zap_spider_missing_subject
+    - Ejecución vía runner real       -> TestSkillExecutor.test_zap_spider_valid_subject_default_max_children
+    - Parámetro opcional              -> TestSkillExecutor.test_zap_spider_valid_subject_explicit_max_children
+    - No confusión con 'zap' (full)   -> TestSkillExecutor.test_zap_spider_result_not_confused_with_zap_full
+    - Manejo de error del runner      -> TestSkillExecutor.test_zap_spider_runner_error_propagates_as_returned
+    - Web Scan no llama a zap-spider  -> TestWebScanRegression.test_run_scan_still_does_not_call_run_zap_spider
+    - scan() (zap_full) sin cambios   -> TestWebScanRegression.test_zap_scan_still_calls_start_spider_without_max_children_override
+
 NOTA sobre H: este sandbox no tiene instaladas las dependencias completas
 del backend (redis, flask-cors, flask-limiter, celery, pymetasploit3 — ver
 server/requirements.txt), así que `import app` no es viable aquí sin
@@ -150,6 +197,36 @@ class FakeOrchestrator:
             'vulnerabilidades': [{'risk': 'medium', 'name': 'X-Frame-Options missing'}],
             'tool': 'zap_full', 'success': True,
         }
+
+    def run_zap_spider(self, target, max_children=50):
+        # Firma FIEL a orchestrator.py::run_zap_spider (Bloque 8 -- ya no es
+        # un stub deprecated). Resultado List[Dict] con tool='zap_spider',
+        # distinto de 'zap_full', para que el test de no-confusión tenga algo
+        # real que comprobar.
+        self.calls.append(('run_zap_spider', target, max_children))
+        return [
+            {'tool': 'zap_spider', 'target': target, 'url': f'{target}/admin',
+             'spider_id': '1', 'max_children': max_children, 'complete': True},
+            {'tool': 'zap_spider', 'target': target, 'url': f'{target}/login',
+             'spider_id': '1', 'max_children': max_children, 'complete': True},
+        ]
+
+    def run_sqlmap(self, target, params=None, cookie=None, data=None):
+        self.calls.append(('run_sqlmap', target, params, cookie, data))
+        return [{'tool': 'sqlmap', 'target': target, 'params': params,
+                 'cookie': cookie, 'data': data, 'severity': 'info'}]
+
+    def run_injection_scan(self, target, cookie=None, techniques=None):
+        # Firma FIEL a orchestrator.py::run_injection_scan -- este doble
+        # simula el modo "InjectionScanner disponible" (resultado con
+        # tool='injection_scanner'), nunca el modo fallback a SQLMap: ese
+        # fallback vive DENTRO del método real y ya está cubierto por un
+        # test estático separado (ver TestWebScanRegression), no por este
+        # doble en memoria.
+        self.calls.append(('run_injection_scan', target, cookie, techniques))
+        return [{'tool': 'injection_scanner', 'target': target, 'cookie': cookie,
+                 'techniques': techniques, 'injection_type': 'sql_error_based',
+                 'severity': 'high'}]
 
     def search_exploits(self, technologies, ports, target='', known_cves=None):
         # Firma FIEL a orchestrator.py::search_exploits -- target es el
@@ -270,19 +347,75 @@ class TestSkillExecutionRegistry(unittest.TestCase):
         self.assertEqual(fields['policy'].default, 'Default Policy')
         self.assertFalse(fields['policy'].required)
 
-    def test_only_block1_to_block5_skills_registered_in_phase_2(self):
-        # Ninguna de las Skills de bloques futuros debe estar registrada
-        # todavía. El orden importa poco; el conjunto sí.
+    def test_registry_contains_sqlmap(self):
+        # Fase 2, Bloque 6 -- mismo patrón que Nuclei/Gobuster/ZAP (target +
+        # options opcionales), sin casos especiales nuevos para el Executor.
+        entry = reg.get_runner_entry('sqlmap')
+        self.assertIsNotNone(entry)
+        self.assertEqual(entry.status, 'available')
+        self.assertEqual(entry.runner_attr, 'run_sqlmap')
+        self.assertEqual(entry.schema.subject_kwarg, 'target')
+        fields = {f.name: f for f in entry.schema.fields}
+        self.assertEqual(set(fields.keys()), {'params', 'cookie', 'data'})
+        for name in ('params', 'cookie', 'data'):
+            self.assertFalse(fields[name].required)
+            self.assertIsNone(fields[name].default)
+
+    def test_registry_contains_injection_scanner(self):
+        # Fase 2, Bloque 7 -- mismo mecanismo que SQLMap. ID exacto
+        # 'injection_scanner' (con guion bajo, no guion medio).
+        entry = reg.get_runner_entry('injection_scanner')
+        self.assertIsNotNone(entry)
+        self.assertEqual(entry.status, 'available')
+        self.assertEqual(entry.runner_attr, 'run_injection_scan')
+        self.assertEqual(entry.schema.subject_kwarg, 'target')
+        fields = {f.name: f for f in entry.schema.fields}
+        self.assertEqual(set(fields.keys()), {'cookie', 'techniques'})
+        self.assertFalse(fields['cookie'].required)
+        self.assertIsNone(fields['cookie'].default)
+        self.assertFalse(fields['techniques'].required)
+        self.assertEqual(fields['techniques'].type, 'list')
+        self.assertIsNone(fields['techniques'].default)
+
+    def test_registry_contains_zap_spider(self):
+        # Fase 2, Bloque 8 -- cierra Pentesting (12/12). ID exacto
+        # 'zap-spider' (con guion medio, igual que en lib/skills.ts).
+        entry = reg.get_runner_entry('zap-spider')
+        self.assertIsNotNone(entry)
+        self.assertEqual(entry.status, 'available')
+        self.assertEqual(entry.runner_attr, 'run_zap_spider')
+        self.assertEqual(entry.schema.subject_kwarg, 'target')
+        fields = {f.name: f for f in entry.schema.fields}
+        self.assertEqual(set(fields.keys()), {'max_children'})
+        self.assertFalse(fields['max_children'].required)
+        self.assertEqual(fields['max_children'].type, 'int')
+        self.assertEqual(fields['max_children'].default, 50)
+
+    def test_pentesting_category_fully_migrated_12_of_12(self):
+        # Las 12 Skills de Pentesting del catálogo frontend (lib/skills.ts)
+        # tienen ahora runner real y están todas en el Registry.
+        pentesting_ids = {
+            'nmap', 'wappalyzer', 'gobuster', 'ffuf', 'zap', 'zap-spider',
+            'nuclei', 'injection_scanner', 'patator', 'sqlmap',
+            'metasploit', 'searchsploit',
+        }
+        self.assertEqual(len(pentesting_ids), 12)
+        self.assertTrue(pentesting_ids.issubset(set(reg.SKILL_EXECUTION_REGISTRY.keys())))
+
+    def test_only_block1_to_block8_skills_registered_in_phase_2(self):
+        # Ninguna de las Skills de bloques futuros (Huella Digital, OSINT,
+        # Code Security) debe estar registrada todavía.
         self.assertEqual(
             set(reg.SKILL_EXECUTION_REGISTRY.keys()),
             {'nmap', 'wappalyzer', 'patator', 'ffuf', 'nuclei', 'gobuster',
-             'metasploit', 'searchsploit', 'zap'},
+             'metasploit', 'searchsploit', 'zap', 'sqlmap', 'injection_scanner',
+             'zap-spider'},
         )
 
     def test_unknown_skill_returns_none(self):
         self.assertIsNone(reg.get_runner_entry('amass'))
-        self.assertIsNone(reg.get_runner_entry('sqlmap'))   # aún no migrada (bloque futuro)
-        self.assertIsNone(reg.get_runner_entry('zap-spider'))  # sin runner real -- queda fuera indefinidamente
+        self.assertIsNone(reg.get_runner_entry('injection-scanner'))  # guion medio -- ID real usa guion bajo
+        self.assertIsNone(reg.get_runner_entry('virustotal'))  # Huella Digital -- aún no migrada (fuera de este bloque)
 
 
 class TestSkillExecutor(unittest.TestCase):
@@ -515,6 +648,138 @@ class TestSkillExecutor(unittest.TestCase):
         # decidir nada por su cuenta; el comportamiento final de la
         # heurística es responsabilidad exclusiva del runner real.
 
+    def test_sqlmap_missing_subject(self):
+        with self.assertRaises(sx.SkillValidationError) as ctx:
+            self.executor.run('sqlmap', '')
+        self.assertIn('subject es obligatorio', ctx.exception.errors)
+        self.assertEqual(self.orchestrator.calls, [])
+
+    def test_sqlmap_valid_subject_without_options(self):
+        # Target de laboratorio interno (dvwa:80) -- el Executor no agrega
+        # ninguna validación de formato de target más allá de "no vacío";
+        # el mismo string que ya acepta el Web Scan se pasa tal cual.
+        result = self.executor.run('sqlmap', 'dvwa:80')
+        self.assertEqual(
+            self.orchestrator.calls,
+            [('run_sqlmap', 'dvwa:80', None, None, None)],
+        )
+        # El resultado se preserva tal cual -- List[Dict], sin envolver.
+        self.assertIsInstance(result, list)
+        self.assertEqual(result[0]['tool'], 'sqlmap')
+
+    def test_sqlmap_valid_subject_with_explicit_options(self):
+        result = self.executor.run(
+            'sqlmap', 'dvwa:80',
+            options={'params': 'id', 'cookie': 'PHPSESSID=abc', 'data': 'id=1&Submit=Submit'},
+        )
+        self.assertEqual(
+            self.orchestrator.calls,
+            [('run_sqlmap', 'dvwa:80', 'id', 'PHPSESSID=abc', 'id=1&Submit=Submit')],
+        )
+        self.assertEqual(result[0]['params'], 'id')
+        self.assertEqual(result[0]['cookie'], 'PHPSESSID=abc')
+        self.assertEqual(result[0]['data'], 'id=1&Submit=Submit')
+
+    def test_sqlmap_other_internal_lab_targets_accepted(self):
+        # webgoat:8080 y juice-shop:3000 -- mismos targets que el Web Scan ya
+        # acepta hoy (ver _get_sqlmap_targets en orchestrator.py). El
+        # Executor no debe rechazarlos ni transformarlos.
+        for target in ('webgoat:8080', 'juice-shop:3000'):
+            self.orchestrator.calls.clear()
+            self.executor.run('sqlmap', target)
+            self.assertEqual(self.orchestrator.calls, [('run_sqlmap', target, None, None, None)])
+
+    def test_injection_scanner_missing_subject(self):
+        with self.assertRaises(sx.SkillValidationError) as ctx:
+            self.executor.run('injection_scanner', '')
+        self.assertIn('subject es obligatorio', ctx.exception.errors)
+        self.assertEqual(self.orchestrator.calls, [])
+
+    def test_injection_scanner_valid_subject_without_options(self):
+        result = self.executor.run('injection_scanner', 'dvwa:80')
+        self.assertEqual(
+            self.orchestrator.calls,
+            [('run_injection_scan', 'dvwa:80', None, None)],
+        )
+        self.assertIsInstance(result, list)
+        self.assertEqual(result[0]['tool'], 'injection_scanner')
+
+    def test_injection_scanner_valid_subject_with_explicit_options(self):
+        result = self.executor.run(
+            'injection_scanner', 'dvwa:80',
+            options={'cookie': 'PHPSESSID=abc', 'techniques': ['sql', 'xss']},
+        )
+        self.assertEqual(
+            self.orchestrator.calls,
+            [('run_injection_scan', 'dvwa:80', 'PHPSESSID=abc', ['sql', 'xss'])],
+        )
+        self.assertEqual(result[0]['cookie'], 'PHPSESSID=abc')
+        self.assertEqual(result[0]['techniques'], ['sql', 'xss'])
+
+    def test_injection_scanner_result_not_confused_with_sqlmap(self):
+        # El campo 'tool' de cada item distingue Injection Scanner de SQLMap
+        # -- viene del propio dato (InjectionFinding.tool='injection_scanner'
+        # por default en injection_scanner.py), no de ningún wrapping del
+        # Executor. Se corre ambas Skills contra el mismo target y se
+        # confirma que el 'tool' de cada resultado nunca se mezcla.
+        sqlmap_result = self.executor.run('sqlmap', 'dvwa:80')
+        injection_result = self.executor.run('injection_scanner', 'dvwa:80')
+        self.assertEqual(sqlmap_result[0]['tool'], 'sqlmap')
+        self.assertEqual(injection_result[0]['tool'], 'injection_scanner')
+        self.assertNotEqual(sqlmap_result[0]['tool'], injection_result[0]['tool'])
+
+    def test_injection_scanner_runner_error_propagates_as_returned(self):
+        # Un error del runner real ya viene como List[Dict] con 'error'
+        # (mismo patrón que SQLMap/Nuclei) -- el Executor no debe envolverlo
+        # ni transformarlo, solo devolver lo que el runner devuelve.
+        def failing_run_injection_scan(target, cookie=None, techniques=None):
+            return [{'error': 'Injection scan timeout', 'tool': 'injection_scanner'}]
+        self.orchestrator.run_injection_scan = failing_run_injection_scan
+        result = self.executor.run('injection_scanner', 'juice-shop:3000')
+        self.assertEqual(result, [{'error': 'Injection scan timeout', 'tool': 'injection_scanner'}])
+
+    def test_zap_spider_missing_subject(self):
+        with self.assertRaises(sx.SkillValidationError) as ctx:
+            self.executor.run('zap-spider', '')
+        self.assertIn('subject es obligatorio', ctx.exception.errors)
+        self.assertEqual(self.orchestrator.calls, [])
+
+    def test_zap_spider_valid_subject_default_max_children(self):
+        result = self.executor.run('zap-spider', 'dvwa:80')
+        self.assertEqual(
+            self.orchestrator.calls,
+            [('run_zap_spider', 'dvwa:80', 50)],
+        )
+        self.assertIsInstance(result, list)
+        self.assertEqual(result[0]['tool'], 'zap_spider')
+
+    def test_zap_spider_valid_subject_explicit_max_children(self):
+        result = self.executor.run(
+            'zap-spider', 'juice-shop:3000', options={'max_children': 200},
+        )
+        self.assertEqual(
+            self.orchestrator.calls,
+            [('run_zap_spider', 'juice-shop:3000', 200)],
+        )
+        self.assertEqual(result[0]['max_children'], 200)
+
+    def test_zap_spider_result_not_confused_with_zap_full(self):
+        # 'tool' distingue zap_spider de zap_full -- mismo criterio que ya
+        # se verificó entre sqlmap e injection_scanner.
+        spider_result = self.executor.run('zap-spider', 'dvwa:80')
+        full_result = self.executor.run('zap', 'dvwa:80')
+        self.assertEqual(spider_result[0]['tool'], 'zap_spider')
+        self.assertEqual(full_result['tool'], 'zap_full')
+        self.assertIsInstance(spider_result, list)
+        self.assertIsInstance(full_result, dict)  # zap_full preserva su Dict, sin envolver
+
+    def test_zap_spider_runner_error_propagates_as_returned(self):
+        def failing_run_zap_spider(target, max_children=50):
+            return [{'error': 'ZAP Spider timeout', 'tool': 'zap_spider', 'target': target}]
+        self.orchestrator.run_zap_spider = failing_run_zap_spider
+        result = self.executor.run('zap-spider', 'webgoat:8080')
+        self.assertEqual(result, [{'error': 'ZAP Spider timeout', 'tool': 'zap_spider', 'target': 'webgoat:8080'}])
+
     def test_planned_skill_is_not_executable(self):
         # G. Una Skill 'planned' no es ejecutable, igual que una inexistente.
         planned = dataclasses.replace(reg.get_runner_entry('nmap'), skill_id='amass-planned', status='planned')
@@ -683,6 +948,64 @@ class TestWebScanRegression(unittest.TestCase):
         self.assertIn('orchestrator.run_zap_full(', run_scan_body)
         self.assertNotIn('skill_executor', run_scan_body)
         self.assertNotIn('skill_execution_registry', run_scan_body)
+
+    def test_run_scan_still_calls_orchestrator_run_injection_scan_directly(self):
+        # Fase 2, Bloque 6: a diferencia de nmap/ffuf/nuclei/gobuster/
+        # metasploit/zap, el Web Scan NO llama a orchestrator.run_sqlmap()
+        # directamente desde run_scan() -- llama a
+        # orchestrator.run_injection_scan(), que internamente cae a
+        # self.run_sqlmap() solo como fallback si InjectionScanner no está
+        # instalado (ver test de abajo sobre orchestrator.py). Este test
+        # confirma que ese punto de llamada en app.py no cambió.
+        m = re.search(r"def run_scan\(.*?\n(?=def |\Z)", self.app_source, re.S)
+        self.assertIsNotNone(m, "no se encontró run_scan() en app.py")
+        run_scan_body = m.group(0)
+        self.assertIn('orchestrator.run_injection_scan(', run_scan_body)
+        self.assertNotIn('orchestrator.run_sqlmap(', run_scan_body)
+        self.assertNotIn('skill_executor', run_scan_body)
+        self.assertNotIn('skill_execution_registry', run_scan_body)
+
+    def test_run_injection_scan_still_falls_back_to_run_sqlmap(self):
+        # Fase 2, Bloque 6: dentro de orchestrator.py, run_injection_scan()
+        # sigue cayendo a self.run_sqlmap() (el MISMO método ahora también
+        # expuesto como Skill individual) cuando InjectionScanner no está
+        # disponible -- la migración no tocó esta ruta de fallback.
+        with open(os.path.join(SERVER_DIR, 'modules', 'orchestrator.py'), encoding='utf-8') as f:
+            orch_source = f.read()
+        m = re.search(r"\n    def run_injection_scan\(.*?\n(?=\n    def |\Z)", orch_source, re.S)
+        self.assertIsNotNone(m, "no se encontró run_injection_scan() en orchestrator.py")
+        run_injection_scan_body = m.group(0)
+        self.assertIn('self.run_sqlmap(', run_injection_scan_body)
+
+    def test_run_scan_still_does_not_call_run_zap_spider(self):
+        # Fase 2, Bloque 8: el paso "ZAP Spider" que ya existía en app.py
+        # (update_step(job_id, 'ZAP Spider', ...)) es solo una etiqueta de
+        # UI poblada con zap_result['urls_descubiertas'] de run_zap_full() --
+        # nunca llamó a run_zap_spider() y sigue sin hacerlo. Este bloque no
+        # tocó app.py en absoluto; este test lo confirma explícitamente.
+        m = re.search(r"def run_scan\(.*?\n(?=def |\Z)", self.app_source, re.S)
+        self.assertIsNotNone(m, "no se encontró run_scan() en app.py")
+        run_scan_body = m.group(0)
+        self.assertIn('orchestrator.run_zap_full(', run_scan_body)
+        self.assertNotIn('orchestrator.run_zap_spider(', run_scan_body)
+        self.assertNotIn('skill_executor', run_scan_body)
+        self.assertNotIn('skill_execution_registry', run_scan_body)
+
+    def test_zap_scan_still_calls_start_spider_without_max_children_override(self):
+        # Fase 2, Bloque 8: ZapScanner.scan() (usado por run_zap_full / la
+        # Skill 'zap') sigue llamando a self._start_spider(target) en su
+        # forma posicional original, SIN pasar max_children -- confirma que
+        # el nuevo parámetro opcional de _start_spider() no alteró el
+        # comportamiento de scan(), que debe seguir usando
+        # self.spider_max_children (fijado una sola vez en __init__) como
+        # siempre.
+        with open(os.path.join(SERVER_DIR, 'modules', 'zap_scanner.py'), encoding='utf-8') as f:
+            zap_source = f.read()
+        m = re.search(r"\n    def scan\(.*?\n(?=\n    def |\Z)", zap_source, re.S)
+        self.assertIsNotNone(m, "no se encontró ZapScanner.scan() en zap_scanner.py")
+        scan_body = m.group(0)
+        self.assertIn('self._start_spider(target)', scan_body)
+        self.assertNotIn('max_children=', scan_body)
 
     def test_run_gobuster_no_longer_mutates_shared_headers_attribute(self):
         # Fase 2, Bloque 3 -- regresión específica del bug corregido: el

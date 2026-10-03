@@ -784,14 +784,25 @@ class ZapScanner:
         logger.warning(f"ZAP no estuvo listo después de {max_wait}s")
         return False
 
-    def _start_spider(self, target: str) -> str:
-        """Inicia spider con profundidad configurable"""
+    def _start_spider(self, target: str, max_children: Optional[int] = None) -> str:
+        """
+        Inicia spider con profundidad configurable.
+
+        max_children: si se pasa, sobreescribe self.spider_max_children SOLO
+        para esta llamada (usado por spider_scan() para permitir un
+        max_children por ejecución sin mutar el estado compartido de la
+        instancia). Si es None (comportamiento previo, sin cambios), usa
+        self.spider_max_children.
+        """
         try:
+            effective_max_children = (
+                max_children if max_children is not None else self.spider_max_children
+            )
             params = {
                 'apikey': self.api_key,
                 'url': target,
                 'recurse': 'true',
-                'maxChildren': str(self.spider_max_children)
+                'maxChildren': str(effective_max_children)
             }
             
             if self._context_id:
@@ -806,7 +817,7 @@ class ZapScanner:
             
             result = response.json()
             scan_id = result.get('scan', '0')
-            logger.info(f"Spider iniciado | ID: {scan_id} | maxChildren: {self.spider_max_children}")
+            logger.info(f"Spider iniciado | ID: {scan_id} | maxChildren: {effective_max_children}")
             return scan_id
             
         except requests.exceptions.HTTPError as e:
@@ -871,6 +882,122 @@ class ZapScanner:
 
         logger.warning(f"Spider timeout después de {self.spider_timeout}s")
         return False
+
+    def _get_spider_results(self, spider_id: str) -> List[str]:
+        """
+        Recupera las URLs REALES descubiertas por un Spider ya iniciado
+        (completo o parcial) vía /JSON/spider/view/results/.
+
+        Este endpoint no se usaba en ningún lugar del proyecto: scan()
+        solo necesitaba iniciar el crawl antes del Active Scan y nunca leía
+        su resultado (las "urls_descubiertas" de run_zap_full() salen de
+        las alertas del Active Scan, no del Spider). Es la única pieza de
+        infraestructura ZAP que faltaba para un Spider standalone real.
+        """
+        if spider_id == '0':
+            return []
+        try:
+            response = self._session.get(
+                f'{self.api_url}/JSON/spider/view/results/',
+                params={'apikey': self.api_key, 'scanId': spider_id},
+                timeout=30
+            )
+            response.raise_for_status()
+            data = response.json()
+            return data.get('results', [])
+        except Exception as e:
+            logger.warning(f"Error recuperando resultados del spider {spider_id}: {e}")
+            return []
+
+    def spider_scan(self, target: str, max_children: Optional[int] = None) -> List[Dict[str, Any]]:
+        """
+        Ejecuta ÚNICAMENTE el Spider tradicional de ZAP (sin Active Scan) y
+        devuelve las URLs reales descubiertas por el crawler.
+
+        Reutiliza exactamente la misma infraestructura que scan() usa en su
+        Fase 1 (_wait_for_zap_ready, access_target, _start_spider,
+        _wait_for_spider), más _get_spider_results() -- la única pieza
+        nueva -- para leer el resultado real. No reimplementa nada: es el
+        mismo _session/api_key/api_url, el mismo spider_timeout.
+
+        No cae a _simulate_scan() en ningún caso: esa simulación genera
+        datos sintéticos (marcados con risk/vulnerabilidades de ejemplo)
+        pensados para la demo del Full Scan, y aquí está explícitamente
+        prohibido devolver datos sintéticos. Ante error se devuelve
+        List[Dict] con 'error', igual que run_sqlmap()/run_injection_scan().
+        """
+        start_time = time.time()
+        children = max_children if max_children is not None else self.spider_max_children
+        logger.info(f"Iniciando ZAP Spider standalone para {target} | maxChildren: {children}")
+
+        try:
+            if not self._wait_for_zap_ready(max_wait=60):
+                raise ZapScannerException(
+                    "ZAP no responde o no está accesible",
+                    ZapErrorType.NETWORK_ERROR
+                )
+
+            if not self.access_target(target, timeout=5):
+                logger.warning(f"Target {target} no parece accesible, intentando spider de todas formas...")
+
+            spider_id = self._start_spider(target, max_children=children)
+            if spider_id == "0":
+                logger.warning("Spider ID 0 — reintentando en 5s...")
+                time.sleep(5)
+                spider_id = self._start_spider(target, max_children=children)
+
+            if spider_id == "0":
+                raise ZapScannerException(
+                    "ZAP no pudo iniciar el Spider (scanId=0)",
+                    ZapErrorType.INTERNAL_ERROR
+                )
+
+            completed = self._wait_for_spider(spider_id)
+            if not completed:
+                logger.warning("Spider timeout o fallido, devolviendo resultados parciales")
+
+            urls = self._get_spider_results(spider_id)
+            elapsed = time.time() - start_time
+            logger.info(
+                f"ZAP Spider standalone completado en {elapsed:.1f}s | "
+                f"URLs descubiertas: {len(urls)} | completo: {completed}"
+            )
+
+            if not urls:
+                return [{
+                    'tool': 'zap_spider', 'target': target, 'url': target,
+                    'spider_id': spider_id, 'max_children': children,
+                    'complete': completed,
+                    'info': 'El Spider no descubrió URLs adicionales',
+                }]
+
+            return [
+                {
+                    'tool': 'zap_spider',
+                    'target': target,
+                    'url': u,
+                    'spider_id': spider_id,
+                    'max_children': children,
+                    'complete': completed,
+                }
+                for u in urls
+            ]
+
+        except ZapScannerException as e:
+            self._log_error_details(e)
+            return [{'error': e.message, 'tool': 'zap_spider', 'target': target}]
+
+        except requests.exceptions.Timeout as e:
+            logger.error(f"Timeout de conexión con ZAP (spider): {e}")
+            return [{'error': f'Timeout de conexión con ZAP: {e}', 'tool': 'zap_spider', 'target': target}]
+
+        except requests.exceptions.ConnectionError as e:
+            logger.error(f"Error de conexión con ZAP API (spider): {e}")
+            return [{'error': f'Error de conexión con ZAP API: {e}', 'tool': 'zap_spider', 'target': target}]
+
+        except Exception as e:
+            logger.error(f"Error inesperado en ZAP Spider: {e}")
+            return [{'error': str(e), 'tool': 'zap_spider', 'target': target}]
 
     def _run_ajax_spider(self, target: str, timeout: int = 120,
                          is_angular: bool = False) -> bool:

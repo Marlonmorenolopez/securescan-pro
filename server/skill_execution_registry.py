@@ -33,6 +33,19 @@ FASE 2 (Bloque 4): 'metasploit' y 'searchsploit' (primer caso real de
 aprobado explícitamente antes de aplicarlo — ver su docstring).
 FASE 2 (Bloque 5): 'zap' (primer caso real de resultado no-lista y de
 cliente HTTP a un demonio externo — ninguno exigió cambios al Executor).
+FASE 2 (Bloque 6): 'sqlmap' (mismo mecanismo que Nuclei/Gobuster/ZAP, sin
+casos especiales nuevos para el Executor).
+FASE 2 (Bloque 7): 'injection_scanner' (mismo mecanismo que SQLMap; el único
+matiz es documental -- run_injection_scan() conserva su fallback interno a
+SQLMap cuando el módulo InjectionScanner no está instalado, comportamiento
+preexistente que la Skill hereda sin cambios).
+FASE 2 (Bloque 8): 'zap-spider' -- CIERRA la categoría Pentesting (12/12).
+Único caso hasta ahora donde el runner no existía realmente (stub
+deprecated) y hubo que construirlo: se agregó ZapScanner.spider_scan() +
+ZapScanner._get_spider_results() en zap_scanner.py, reutilizando la misma
+instancia/sesión/apikey que 'zap', y se reemplazó el cuerpo de
+orchestrator.run_zap_spider() (ya NO es un stub). El Registry y el
+Executor en sí no necesitaron ningún caso especial nuevo.
 Todas con el mismo mecanismo — una entrada de diccionario más, sin tocar el
 Executor ni el ciclo de vida del job. Las Skills restantes se agregan en
 bloques posteriores, igual que estas.
@@ -52,7 +65,7 @@ class SkillInputField:
     name: str
     source: Literal['option', 'dependency']
     required: bool = False
-    type: Literal['string', 'list', 'dict'] = 'string'
+    type: Literal['string', 'list', 'dict', 'int'] = 'string'
     default: Any = None
 
 
@@ -177,6 +190,68 @@ class SkillRunnerEntry:
 #   `options.policy` en una ejecución individual contra uno de esos targets.
 #   `cookie` igual que en los casos anteriores. Sin estado compartido mutado
 #   (usa run_with_timeout con kwargs limpios, mismo patrón que ffuf/Nuclei).
+#
+# SQLMap (Fase 2, Bloque 6) — orchestrator.run_sqlmap(target, params=None,
+# cookie=None, data=None) -> List[Dict]:
+#   Mismo patrón que Nuclei/Gobuster/ZAP: `target` es el primer parámetro
+#   posicional real (subject_kwarg por default 'target' sirve sin cambios),
+#   y los tres kwargs opcionales (`params`, `cookie`, `data`) se pasan tal
+#   cual a scanner.scan() sin transformación. Se declaran como `option`, no
+#   `dependency`: ninguno proviene obligatoriamente de otra Skill en el
+#   código real — `cookie` es el mismo dato opcional de sesión que ya reciben
+#   ffuf/nuclei/gobuster/zap como `option`, y `params`/`data` los conoce
+#   directamente quien ejecuta la Skill (parámetro/endpoint a testear).
+#   `level`/`risk`/`threads` NO se exponen: no son argumentos de
+#   run_sqlmap(), se gestionan internamente vía variables de entorno
+#   (SQLMAP_LEVEL/SQLMAP_RISK/SQLMAP_THREADS), igual para Web Scan e
+#   individual — exponerlos violaría "sin campo sin consumidor real" (mismo
+#   criterio ya aplicado a dry_run/retry_cfg de Nuclei). Cada llamada crea
+#   una instancia nueva de SQLMapScanner como context manager (comportamiento
+#   preexistente del Web Scan, no introducido aquí) — sin estado compartido
+#   mutado. Resultado `List[Dict]` sin envolver, mismo patrón que nmap/ffuf/
+#   nuclei (a diferencia de ZAP, que devuelve Dict).
+#
+# Injection Scanner (Fase 2, Bloque 7) — orchestrator.run_injection_scan(
+# target, cookie=None, techniques=None) -> List[Dict]:
+#   Mismo patrón que SQLMap: `target` es el primer parámetro posicional real
+#   (subject_kwarg por default 'target' sirve sin cambios). `cookie` se
+#   declara `option`, idéntico criterio que en ffuf/nuclei/gobuster/zap/
+#   sqlmap (dato opcional de sesión, sin origen obligatorio en otra Skill).
+#   `techniques` se declara `option` de tipo `list` (no `dependency`): es una
+#   lista de nombres de técnica (sql, nosql, xpath, xxe, xss, command,
+#   path_traversal, ssrf, ssti, ldap) que quien ejecuta la Skill puede elegir
+#   directamente -- igual que `policy` en ZAP, nadie más la produce como
+#   salida. Default `None` = todas las técnicas (comportamiento real de
+#   InjectionScanner.scan() cuando no se pasa `techniques`).
+#   IMPORTANTE (comportamiento preexistente, no alterado): run_injection_scan
+#   tiene DOS modos reales, ya presentes antes de esta migración -- si
+#   `self.injection_scanner` no está disponible (módulo no instalado), cae
+#   enteramente a SQLMap vía _get_sqlmap_targets()/run_sqlmap(), IGNORANDO
+#   `techniques` en ese caso. La Skill individual hereda este mismo
+#   comportamiento tal cual, porque llama al mismo método real -- no se
+#   duplica ni se intenta "arreglar" aquí.
+#   El resultado sigue siendo `List[Dict]` con `tool: 'injection_scanner'`
+#   (o `tool: 'sqlmap'` en cada item si cae al fallback) -- InjectionFinding
+#   ya fija `tool="injection_scanner"` por default en injection_scanner.py,
+#   así que la distinción con SQLMap viene del propio dato, no de wrapping
+#   añadido por el Executor.
+# ZAP Spider (Fase 2, Bloque 8) — orchestrator.run_zap_spider(target,
+# max_children=50) -> List[Dict]:
+#   Deja de ser un stub deprecated. Reutiliza la MISMA instancia self.zap
+#   (ZapScanner) que ya usa 'zap' (ZAP Full Scan) -- mismo cliente/API,
+#   misma sesión, misma apikey, misma configuración Docker/env -- vía el
+#   nuevo método ZapScanner.spider_scan(), que ejecuta solo el crawling
+#   (sin Active Scan) y usa un endpoint de la API de ZAP
+#   (JSON/spider/view/results/) que no se usaba en ningún lugar del
+#   proyecto hasta este bloque -- la única pieza de infraestructura que
+#   faltaba, no una segunda integración ZAP.
+#   `target` es el primer parámetro posicional real (subject_kwarg por
+#   default 'target' sirve sin cambios). `max_children` se declara `option`
+#   de tipo `int` (nuevo valor de Literal en SkillInputField.type -- no
+#   cambia nada en skill_executor.py, que nunca ramifica por .type), con
+#   default 50 igual que la firma real del runner.
+#   Sigue siendo una Skill independiente de 'zap': no lo reemplaza, no
+#   cambia su comportamiento ni su runner_attr ('run_zap_full').
 SKILL_EXECUTION_REGISTRY: dict[str, SkillRunnerEntry] = {
     'nmap': SkillRunnerEntry(
         skill_id='nmap',
@@ -252,6 +327,33 @@ SKILL_EXECUTION_REGISTRY: dict[str, SkillRunnerEntry] = {
             SkillInputField('cookie', source='option', required=False, type='string', default=None),
         ]),
         runner_attr='run_zap_full',
+        status='available',
+    ),
+    'sqlmap': SkillRunnerEntry(
+        skill_id='sqlmap',
+        schema=SkillInputSchema(subject_kind='target_url', fields=[
+            SkillInputField('params', source='option', required=False, type='string', default=None),
+            SkillInputField('cookie', source='option', required=False, type='string', default=None),
+            SkillInputField('data',   source='option', required=False, type='string', default=None),
+        ]),
+        runner_attr='run_sqlmap',
+        status='available',
+    ),
+    'injection_scanner': SkillRunnerEntry(
+        skill_id='injection_scanner',
+        schema=SkillInputSchema(subject_kind='target_url', fields=[
+            SkillInputField('cookie',     source='option', required=False, type='string', default=None),
+            SkillInputField('techniques', source='option', required=False, type='list',   default=None),
+        ]),
+        runner_attr='run_injection_scan',
+        status='available',
+    ),
+    'zap-spider': SkillRunnerEntry(
+        skill_id='zap-spider',
+        schema=SkillInputSchema(subject_kind='target_url', fields=[
+            SkillInputField('max_children', source='option', required=False, type='int', default=50),
+        ]),
+        runner_attr='run_zap_spider',
         status='available',
     ),
 }

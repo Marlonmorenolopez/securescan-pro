@@ -839,8 +839,21 @@ class SecurityOrchestrator:
                     'tool': 'zap_full', 'success': False}
 
     def run_zap_spider(self, target: str, max_children: int = 50) -> List[Dict]:
-        logger.warning("run_zap_spider() deprecated — usar run_zap_full()")
-        return [{'url': target, 'tool': 'zap_spider', 'deprecated': True}]
+        """
+        ZAP Spider standalone (Fase 2, Bloque 8) -- ya NO es un stub.
+        Reutiliza la MISMA instancia self.zap (ZapScanner) que usa
+        run_zap_full(), mismo cliente/API/sesión/apikey/configuración
+        Docker -- solo invoca spider_scan(), que ejecuta únicamente el
+        crawling (sin Active Scan) y devuelve URLs reales descubiertas.
+        Independiente de run_zap_full(): no lo reemplaza ni cambia su
+        comportamiento.
+        """
+        return run_with_timeout(
+            self.zap.spider_scan, args=(target,),
+            kwargs={'max_children': max_children},
+            seconds=self.TIMEOUTS['zap'],
+            default=[{'error': 'ZAP Spider timeout', 'tool': 'zap_spider', 'target': target}],
+        )
 
     def run_zap_active(self, target: str, policy: str = 'Default Policy') -> List[Dict]:
         logger.warning("run_zap_active() deprecated — usar run_zap_full()")
