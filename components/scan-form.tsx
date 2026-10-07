@@ -5,7 +5,7 @@ import {
   Globe, Play, Settings2, AlertTriangle, ChevronDown,
   Layers, Network, Search, Zap, Database, Shield,
   FolderSearch, ShieldAlert, Bug, KeyRound,
-  Info, Check, X, Loader2, Fingerprint,
+  Info, Check, X, Loader2,
 } from 'lucide-react'
 import {
   JuiceShopIcon,
@@ -22,7 +22,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge }    from '@/components/ui/badge'
 import { useScan, type ScanOptions } from '@/lib/scan-context'
 import { useTranslations } from 'next-intl'
-import Link from 'next/link'
 import { getSkillsByCategory, getSkillById } from '@/lib/skills'
 import { getSkillSvgIcon } from '@/lib/tool-docs'
 
@@ -135,9 +134,6 @@ export function ScanForm() {
       wappalyzer: true, nmap: true, gobuster: false, zap: false,
       searchsploit: false, metasploit: false,
       nuclei: false, sqlmap: false, patator: false, ffuf: false,
-      // Huella Digital (fase paralela del backend). Aquí solo se decide si
-      // se recopila; la selección de fuentes vive en el módulo /footprint.
-      threat_intel: true,
     },
     parallel: true,
     intensity: 'normal',
@@ -170,10 +166,6 @@ export function ScanForm() {
         sqlmap:       profile.tools.includes('sqlmap'),
         patator:      profile.tools.includes('patator'),
         ffuf:         profile.tools.includes('ffuf'),
-        // Huella Digital es independiente del perfil de intensidad -- se
-        // conserva la elección del usuario en vez de resetearla al elegir
-        // Ligero/Normal/Agresivo.
-        threat_intel:       prev.tools?.threat_intel ?? true,
       },
     }))
   }
@@ -212,18 +204,6 @@ export function ScanForm() {
     setSelectedProfile('custom')
   }
 
-  // ── Huella Digital: switch maestro (la selección de fuentes está en /footprint) ──
-  const threatIntelEnabled = options.tools?.threat_intel ?? true
-
-  const handleThreatIntelMasterToggle = () => {
-    setOptions(prev => ({
-      ...prev,
-      tools: { ...prev.tools!, threat_intel: !threatIntelEnabled },
-    }))
-    setSelectedProfile('custom')
-  }
-
-  // Solo cuentan las herramientas de Pentesting (no el switch de Huella Digital)
   const activeToolsCount = toolsConfig.filter(tool => options.tools?.[tool.id]).length
   const estimatedTime =
     activeToolsCount <= 2 ? t('estimatedTimes.fast') :
@@ -478,33 +458,6 @@ export function ScanForm() {
                     </div>
                   )
                 })}
-              </div>
-
-              {/* Huella Digital — solo el switch maestro (`threat_intel`). Las 7 fuentes se
-                  eligen en el módulo Huella Digital (/footprint); los resultados de esta
-                  ejecución se muestran allí, separados de los de Pentesting. */}
-              <div className="mt-4 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--secondary))]/20 p-3">
-                <div className="flex items-start gap-3">
-                  <Checkbox
-                    id="tool-threat-intel-master"
-                    checked={threatIntelEnabled}
-                    onCheckedChange={handleThreatIntelMasterToggle}
-                    disabled={isScanning}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <label htmlFor="tool-threat-intel-master" className="flex flex-wrap items-center gap-2 cursor-pointer">
-                      <Fingerprint className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-                      <span className="font-medium text-sm">{t('footprintToggleTitle')}</span>
-                      <Badge variant="secondary" className="text-xs">{t('footprintToggleBadge')}</Badge>
-                    </label>
-                    <p className="text-xs text-muted-foreground mt-0.5 ml-6">
-                      {t('footprintToggleHint')}{' '}
-                      <Link href="/footprint" className="text-[var(--cyber-accent)] underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cyber-accent)]">
-                        {t('footprintToggleLink')}
-                      </Link>
-                    </p>
-                  </div>
-                </div>
               </div>
             </CollapsibleContent>
           </Collapsible>

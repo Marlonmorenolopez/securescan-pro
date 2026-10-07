@@ -22,7 +22,7 @@ from typing import Any, Dict, Optional
 
 import requests
 
-from modules.intel_common import extract_host, is_ip, is_internal
+from modules.huella_digital.intel_common import extract_host, is_ip, is_internal
 
 logger = logging.getLogger(__name__)
 

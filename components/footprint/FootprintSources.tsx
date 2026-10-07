@@ -57,7 +57,7 @@ function DetailPanel({ view }: { view: FootprintSourceView }) {
     case 'virustotal':   return <VirusTotalPanel data={d} />
     case 'abuseipdb':    return <AbuseIPDBPanel data={d} />
     case 'safebrowsing': return <SafeBrowsingPanel data={d} />
-    case 'testssl':      return <TestSSLPanel data={d} />
+    case 'testssl':      console.log('[FOOTPRINT TESTSSL] raw:', d); return <TestSSLPanel data={d} />
     default:             return null
   }
 }
@@ -74,6 +74,15 @@ function GroupTabTrigger({ groupKey }: { groupKey: string }) {
 }
 
 export function FootprintSources({ model, target }: { model: FootprintModel; target?: string }) {
+  console.log('[FOOTPRINT SOURCES] model:', model)
+  console.log(
+  '[FOOTPRINT SOURCES] IDs:',
+    model.sources.map(source => ({
+      id: source.skill.id,
+      state: source.state,
+      hasRaw: !!source.raw,
+    }))
+  )
   const t = useTranslations('footprint')
   const tSkills = useTranslations('skills')
   const tDocs = useTranslations()

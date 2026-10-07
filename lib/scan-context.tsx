@@ -104,6 +104,7 @@ interface ScanContextType {
   isLoading: boolean   // Alias para compatibilidad
   error: string | null
   startScan: (target: string, options?: ScanOptions) => Promise<void>
+  startFootprintScan: (target: string, enabledTools?: string[]) => Promise<void>
   cancelScan: () => void
   clearError: () => void
   clearHistory: () => void
@@ -352,6 +353,121 @@ export function ScanProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  // Huella Digital (Threat Intel) — independiente de Pentesting (Fase 1.5).
+  // A diferencia de startScan(), NO hace polling: POST /api/footprint es
+  // síncrono y la respuesta ya llega con status 'completed'.
+  const startFootprintScan = useCallback(async (target: string, enabledTools?: string[]) => {
+    setError(null)
+    setIsScanning(true)
+    if (pollingIntervalRef.current) {
+      clearTimeout(pollingIntervalRef.current)
+    }
+
+    const baseScore: SecurityScore = {
+      total: 0,
+      grade: 'A' as Grade,
+      gradeDescription: 'Initializing scan...',
+      breakdown: { critical: 0, high: 0, medium: 0, low: 0, info: 0 } as SeverityBreakdown,
+      percentages: { critical: 0, high: 0, medium: 0, low: 0, info: 0 } as SeverityBreakdown,
+      exploitImpact: {
+        totalExploits: 0,
+        correlatedExploits: 0,
+        penalty: 0
+      },
+      metrics: {
+        totalVulnerabilities: 0,
+        totalExploits: 0,
+        maxCvss: 0,
+        criticalCount: 0,
+        highCount: 0
+      },
+      recommendations: [],
+      riskLevel: 'PROTEGIDO' as RiskLevel
+    }
+
+    const initialScan: ScanResult = {
+      id: '',
+      target,
+      startTime: new Date().toISOString(),
+      status: 'running',
+      steps: [{ name: 'Huella Digital', status: 'running', progress: 0 }],
+      technologies: [],
+      ports: [],
+      directories: [],
+      vulnerabilities: [],
+      exploits: [],
+      metasploit: [],
+      nuclei_findings: [],
+      sqli_results: [],
+      brute_force_results: [],
+      ffuf_endpoints: [],
+      threat_intel: {},
+      score: baseScore,
+    }
+    setCurrentScan(initialScan)
+
+    try {
+      abortControllerRef.current = new AbortController()
+      const response = await fetch(`${API_BASE}/api/footprint`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...AUTH_HEADER,
+        },
+        body: JSON.stringify({
+          target,
+          options: enabledTools !== undefined ? { tools: enabledTools } : {},
+        }),
+        signal: abortControllerRef.current.signal,
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        const base = errorData.error || `HTTP ${response.status}: ${response.statusText}`
+        throw new Error(errorData.reason ? `${base} (${errorData.reason})` : base)
+      }
+
+      const data = await response.json()
+
+      console.log('[FOOTPRINT DEBUG] respuesta completa:', data)
+      console.log('[FOOTPRINT DEBUG] threat_intel:', data.threat_intel)
+      console.log('[FOOTPRINT DEBUG] testssl:', data.threat_intel?.testssl)
+
+      const completedScan: ScanResult = {
+        ...initialScan,
+        id: data.id ?? '',
+        target: data.target ?? target,
+        startTime: data.startTime ?? initialScan.startTime,
+        endTime: data.endTime,
+        status: 'completed',
+        steps: [{ name: 'Huella Digital', status: 'completed', progress: 100 }],
+        threat_intel: data.threat_intel ?? {},
+        options: data.options,
+      }
+
+      setCurrentScan(completedScan)
+      setScanHistory(prev => [completedScan, ...prev.filter(s => s.id !== completedScan.id)].slice(0, 50))
+      setIsScanning(false)
+      if (abortControllerRef.current) {
+        abortControllerRef.current = null
+      }
+      toast.success('Huella Digital completada', {
+        description: target,
+      })
+    } catch (err: any) {
+      if (err.name !== 'AbortError') {
+        setError(err.message || 'Error ejecutando Huella Digital.')
+        setIsScanning(false)
+        setCurrentScan(prev =>
+          prev ? { ...prev, status: 'error', error: err.message } : null
+        )
+        toast.error('No se pudo completar Huella Digital', {
+          description: err.message || 'Error de conexión con el backend',
+        })
+      }
+    }
+  }, [])
+
   const cancelScan = useCallback(() => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
@@ -429,6 +545,7 @@ export function ScanProvider({ children }: { children: ReactNode }) {
         isLoading: isScanning,
         error,
         startScan,
+        startFootprintScan,
         cancelScan,
         clearError,
         clearHistory,

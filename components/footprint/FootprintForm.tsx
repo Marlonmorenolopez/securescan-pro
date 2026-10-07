@@ -1,13 +1,11 @@
 'use client'
 // components/footprint/FootprintForm.tsx — SecureScan Pro v5.0
 //
-// Lanzador del módulo HUELLA DIGITAL. Usa el MISMO endpoint y contrato que ya
-// existen (scan-context → POST /api/scan) con un preset de opciones reales:
-//   · las 10 herramientas de Pentesting en `false`
-//   · `threat_intel: true` + `threat_intel_tools: [fuentes elegidas]`
-// El backend no cambia: son las mismas opciones que expone el formulario de
-// Pentesting, aquí presentadas como su propio flujo. Las fuentes vienen del
-// Skill Registry (categoría huella-digital), agrupadas por subgrupo.
+// Lanzador del módulo HUELLA DIGITAL. Independiente de Pentesting (Fase 1.5):
+// usa su propio endpoint, POST /api/footprint, vía startFootprintScan() de
+// scan-context -- ya no pasa por startScan()/POST /api/scan con un preset de
+// herramientas de Pentesting en `false`. Las fuentes vienen del Skill
+// Registry (categoría huella-digital), agrupadas por subgrupo.
 
 import { useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
@@ -23,12 +21,6 @@ import { cn } from '@/lib/utils'
 /** Fuentes que requieren API key en el servidor (ver docs de cada Skill). */
 const NEEDS_API_KEY = new Set(['virustotal', 'abuseipdb', 'safebrowsing'])
 
-/** Presets reales: ninguna herramienta de Pentesting se ejecuta. */
-const NO_PENTEST_TOOLS = {
-  wappalyzer: false, nmap: false, gobuster: false, zap: false, searchsploit: false,
-  metasploit: false, nuclei: false, sqlmap: false, patator: false, ffuf: false,
-} as const
-
 function GroupLabel({ groupKey }: { groupKey: string }) {
   const group = HUELLA_DIGITAL.groups.find(g => g.key === groupKey)!
   const label = useGroupLabel(HUELLA_DIGITAL, group)
@@ -42,7 +34,7 @@ function GroupLabel({ groupKey }: { groupKey: string }) {
 
 export function FootprintForm() {
   const t = useTranslations('footprint.form')
-  const { startScan, isScanning } = useScan()
+  const { startFootprintScan, isScanning } = useScan()
   const c = COLOR_VARS[HUELLA_DIGITAL.color]
 
   const skills = useMemo(() => getFootprintSkills(), [])
@@ -62,10 +54,7 @@ export function FootprintForm() {
     e.preventDefault()
     setTouched(true)
     if (!target.trim() || noneSelected || isScanning) return
-    await startScan(target.trim(), {
-      tools: { ...NO_PENTEST_TOOLS, threat_intel: true, threat_intel_tools: selected },
-      parallel: true,
-    })
+    await startFootprintScan(target.trim(), selected)
   }
 
   return (

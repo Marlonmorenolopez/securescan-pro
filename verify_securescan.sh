@@ -124,24 +124,24 @@ echo -e "${CYAN}Ejecutar desde la raíz del proyecto${NC}\n"
 header "P1 — inject_urls() en ZapScanner"
 # =============================================================================
 check_file_contains \
-  "server/modules/zap_scanner.py" \
+  "server/modules/pentesting/zap_scanner.py" \
   "def inject_urls" \
   "Método inject_urls() definido en ZapScanner"
 
 check_file_contains \
-  "server/modules/zap_scanner.py" \
+  "server/modules/pentesting/zap_scanner.py" \
   "core/action/accessUrl" \
   "inject_urls usa endpoint ZAP /core/action/accessUrl"
 
 check_file_contains \
-  "server/modules/zap_scanner.py" \
+  "server/modules/pentesting/zap_scanner.py" \
   "followRedirects" \
   "inject_urls pasa followRedirects=true"
 
 # Verificar que el método está ANTES de def scan()
-if [ -f "server/modules/zap_scanner.py" ]; then
-  LINE_INJECT=$(grep -n "def inject_urls" server/modules/zap_scanner.py | head -1 | cut -d: -f1)
-  LINE_SCAN=$(grep -n "def scan(" server/modules/zap_scanner.py | head -1 | cut -d: -f1)
+if [ -f "server/modules/pentesting/zap_scanner.py" ]; then
+  LINE_INJECT=$(grep -n "def inject_urls" server/modules/pentesting/zap_scanner.py | head -1 | cut -d: -f1)
+  LINE_SCAN=$(grep -n "def scan(" server/modules/pentesting/zap_scanner.py | head -1 | cut -d: -f1)
   if [ -n "$LINE_INJECT" ] && [ -n "$LINE_SCAN" ] && [ "$LINE_INJECT" -lt "$LINE_SCAN" ]; then
     pass "inject_urls() está definido ANTES de scan() (línea $LINE_INJECT vs $LINE_SCAN)"
   else
@@ -153,27 +153,27 @@ fi
 header "P1 — Command Injection DVWA: indicadores <pre> y www-data"
 # =============================================================================
 check_file_contains \
-  "server/modules/injection_scanner.py" \
+  "server/modules/pentesting/injection_scanner.py" \
   "www-data" \
   "Indicador www-data añadido a COMMAND_PATTERNS"
 
 check_file_contains \
-  "server/modules/injection_scanner.py" \
+  "server/modules/pentesting/injection_scanner.py" \
   "<pre>" \
   "Indicador <pre> añadido a COMMAND_PATTERNS"
 
 check_file_contains \
-  "server/modules/injection_scanner.py" \
+  "server/modules/pentesting/injection_scanner.py" \
   "gid=" \
   "Indicador gid= añadido a COMMAND_PATTERNS"
 
 check_file_contains \
-  "server/modules/injection_scanner.py" \
+  "server/modules/pentesting/injection_scanner.py" \
   "icmp_seq" \
   "Indicador icmp_seq añadido a COMMAND_PATTERNS"
 
 check_file_contains \
-  "server/modules/injection_scanner.py" \
+  "server/modules/pentesting/injection_scanner.py" \
   "command not found" \
   "Indicador 'command not found' añadido a COMMAND_PATTERNS"
 
@@ -209,22 +209,22 @@ check_file_contains \
   "Wordlist WebGoat contiene actuator/heapdump"
 
 check_file_contains \
-  "server/modules/gobuster.py" \
+  "server/modules/pentesting/gobuster.py" \
   "dvwa_wordlist.txt" \
   "gobuster.py referencia dvwa_wordlist.txt"
 
 check_file_contains \
-  "server/modules/gobuster.py" \
+  "server/modules/pentesting/gobuster.py" \
   "webgoat_wordlist.txt" \
   "gobuster.py referencia webgoat_wordlist.txt"
 
 check_file_contains \
-  "server/modules/gobuster.py" \
+  "server/modules/pentesting/gobuster.py" \
   "bak" \
   "Perfil Apache incluye extensión .bak"
 
 check_file_contains \
-  "server/modules/gobuster.py" \
+  "server/modules/pentesting/gobuster.py" \
   "mvc" \
   "Perfil Spring incluye extensión .mvc"
 
@@ -232,27 +232,27 @@ check_file_contains \
 header "P2 — Patator REST JSON para Juice Shop"
 # =============================================================================
 check_file_contains \
-  "server/modules/patator.py" \
+  "server/modules/pentesting/patator.py" \
   "is_juice_shop" \
   "Variable is_juice_shop definida en patator.py"
 
 check_file_contains \
-  "server/modules/patator.py" \
+  "server/modules/pentesting/patator.py" \
   "juice_users" \
   "Filtro juice_users (solo emails) implementado"
 
 check_file_contains \
-  "server/modules/patator.py" \
+  "server/modules/pentesting/patator.py" \
   "admin@juice-sh.op" \
   "Fallback admin@juice-sh.op presente"
 
 check_file_not_contains \
-  "server/modules/patator.py" \
+  "server/modules/pentesting/patator.py" \
   "parsed.port}/rest" \
   "Bug port None corregido (no hay f-string con parsed.port directamente)"
 
 check_file_contains \
-  "server/modules/patator.py" \
+  "server/modules/pentesting/patator.py" \
   "_port else" \
   "Construcción condicional de URL sin port None"
 
@@ -260,27 +260,27 @@ check_file_contains \
 header "P2 — Ajax Spider Angular (Juice Shop)"
 # =============================================================================
 check_file_contains \
-  "server/modules/zap_scanner.py" \
+  "server/modules/pentesting/zap_scanner.py" \
   "is_angular" \
   "Parámetro is_angular en _run_ajax_spider"
 
 check_file_contains \
-  "server/modules/zap_scanner.py" \
+  "server/modules/pentesting/zap_scanner.py" \
   "firefox-headless" \
   "Browser firefox-headless configurado para Angular"
 
 check_file_contains \
-  "server/modules/zap_scanner.py" \
+  "server/modules/pentesting/zap_scanner.py" \
   "setOptionBrowserId" \
   "Llamada a setOptionBrowserId antes de lanzar Ajax Spider"
 
 check_file_contains \
-  "server/modules/zap_scanner.py" \
+  "server/modules/pentesting/zap_scanner.py" \
   "240" \
   "Timeout 240s para Angular definido"
 
 check_file_contains \
-  "server/modules/zap_scanner.py" \
+  "server/modules/pentesting/zap_scanner.py" \
   "_is_angular" \
   "Detección automática is_angular en scan()"
 
@@ -352,17 +352,17 @@ check_file_contains \
   "Extracción de CVE desde template_id de Nuclei"
 
 check_file_contains \
-  "server/modules/orchestrator.py" \
+  "server/modules/pentesting/orchestrator.py" \
   "known_cves" \
   "Parámetro known_cves en search_exploits()"
 
 check_file_contains \
-  "server/modules/orchestrator.py" \
+  "server/modules/pentesting/orchestrator.py" \
   "valid_cves" \
   "Validación y límite de CVEs directos"
 
 check_file_contains \
-  "server/modules/orchestrator.py" \
+  "server/modules/pentesting/orchestrator.py" \
   "Optional\[List\[str\]\]" \
   "Tipo Optional[List[str]] en firma de search_exploits"
 
@@ -370,27 +370,27 @@ check_file_contains \
 header "P3 — Validación robusta sesión WebGoat"
 # =============================================================================
 check_file_contains \
-  "server/modules/orchestrator.py" \
+  "server/modules/pentesting/orchestrator.py" \
   "_WG_SESSION_MARKERS" \
   "Marcadores semánticos _WG_SESSION_MARKERS definidos"
 
 check_file_contains \
-  "server/modules/orchestrator.py" \
+  "server/modules/pentesting/orchestrator.py" \
   "start.mvc" \
   "Marcador 'start.mvc' incluido en validación WebGoat"
 
 check_file_not_contains \
-  "server/modules/orchestrator.py" \
+  "server/modules/pentesting/orchestrator.py" \
   "len(r_attack.text) > 3000" \
   "Heurística len() > 3000 eliminada (primera ocurrencia)"
 
 check_file_not_contains \
-  "server/modules/orchestrator.py" \
+  "server/modules/pentesting/orchestrator.py" \
   "len(r_login.text) > 3000" \
   "Heurística len() > 3000 eliminada (segunda ocurrencia)"
 
 # Verificar que aparece 2 veces el marcador (dos bloques de validación)
-MARKERS_COUNT=$(grep -c "_WG_SESSION_MARKERS" server/modules/orchestrator.py 2>/dev/null || echo "0")
+MARKERS_COUNT=$(grep -c "_WG_SESSION_MARKERS" server/modules/pentesting/orchestrator.py 2>/dev/null || echo "0")
 if [ "$MARKERS_COUNT" -ge 2 ]; then
   pass "_WG_SESSION_MARKERS aparece en las 2 validaciones de sesión WebGoat"
 else

@@ -19,12 +19,12 @@ de cargar reglas) y Dependency-Check (depende de su base NVD).
 import logging
 from typing import Any, Dict
 
-from modules.code_analysis.backdoor_scanner import BackdoorScanner
-from modules.code_analysis.gitleaks_scanner import GitleaksScanner
-from modules.code_analysis.trufflehog_scanner import TruffleHogScanner
-from modules.code_analysis.trivy_scanner import TrivyScanner
-from modules.code_analysis.dependency_check import DependencyCheckScanner
-from modules.code_analysis.semgrep_scanner import SemgrepScanner
+from modules.code_security.backdoor_scanner import BackdoorScanner
+from modules.code_security.gitleaks_scanner import GitleaksScanner
+from modules.code_security.trufflehog_scanner import TruffleHogScanner
+from modules.code_security.trivy_scanner import TrivyScanner
+from modules.code_security.dependency_check import DependencyCheckScanner
+from modules.code_security.semgrep_scanner import SemgrepScanner
 
 logger = logging.getLogger(__name__)
 

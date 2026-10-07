@@ -970,7 +970,7 @@ class TestWebScanRegression(unittest.TestCase):
         # sigue cayendo a self.run_sqlmap() (el MISMO método ahora también
         # expuesto como Skill individual) cuando InjectionScanner no está
         # disponible -- la migración no tocó esta ruta de fallback.
-        with open(os.path.join(SERVER_DIR, 'modules', 'orchestrator.py'), encoding='utf-8') as f:
+        with open(os.path.join(SERVER_DIR, 'modules', 'pentesting', 'orchestrator.py'), encoding='utf-8') as f:
             orch_source = f.read()
         m = re.search(r"\n    def run_injection_scan\(.*?\n(?=\n    def |\Z)", orch_source, re.S)
         self.assertIsNotNone(m, "no se encontró run_injection_scan() en orchestrator.py")
@@ -999,7 +999,7 @@ class TestWebScanRegression(unittest.TestCase):
         # comportamiento de scan(), que debe seguir usando
         # self.spider_max_children (fijado una sola vez en __init__) como
         # siempre.
-        with open(os.path.join(SERVER_DIR, 'modules', 'zap_scanner.py'), encoding='utf-8') as f:
+        with open(os.path.join(SERVER_DIR, 'modules', 'pentesting', 'zap_scanner.py'), encoding='utf-8') as f:
             zap_source = f.read()
         m = re.search(r"\n    def scan\(.*?\n(?=\n    def |\Z)", zap_source, re.S)
         self.assertIsNotNone(m, "no se encontró ZapScanner.scan() en zap_scanner.py")
@@ -1012,7 +1012,7 @@ class TestWebScanRegression(unittest.TestCase):
         # código real de run_gobuster() ya NO debe mutar self.gobuster._headers
         # (atributo que GobusterScanner.scan() nunca lee), y SÍ debe pasar el
         # cookie como `custom_headers` al llamar a .scan().
-        with open(os.path.join(SERVER_DIR, 'modules', 'orchestrator.py'), encoding='utf-8') as f:
+        with open(os.path.join(SERVER_DIR, 'modules', 'pentesting', 'orchestrator.py'), encoding='utf-8') as f:
             orch_source = f.read()
         m = re.search(r"\n    def run_gobuster\(.*?\n(?=\n    def |\Z)", orch_source, re.S)
         self.assertIsNotNone(m, "no se encontró run_gobuster() en orchestrator.py")
@@ -1027,11 +1027,25 @@ class TestWebScanRegression(unittest.TestCase):
         # H. Las funciones de persistencia existentes no fueron editadas por
         # esta fase. Fingerprint tomado del código fuente real (ver Fase 1):
         # si alguna cambia, este test debe fallar y hay que revisar por qué.
+        #
+        # NOTA (Fase 1 + Fase 1.5, migración consolidada): el fingerprint de
+        # '_persist_step_result' cambió aunque su propio cuerpo no se tocó.
+        # La regex de este test captura hasta el próximo "def "/"@app.route"/
+        # "class " de nivel superior PRECEDIDO por línea en blanco -- como
+        # entre '_persist_step_result' y 'run_scan' no hay línea en blanco
+        # (solo un comentario "# ── run_scan ──"), la captura sigue de largo
+        # e incluye run_scan() completo y varias funciones/rutas más, hasta
+        # la primera que sí tiene línea en blanco antes (get_config). Esto ya
+        # ocurría antes de esta fase (quirk conocido de la regex, no se tocó);
+        # lo que cambió es el CONTENIDO dentro de ese rango: run_scan() perdió
+        # el hilo/join de Huella Digital (Fase 1.5) y se agregó la nueva ruta
+        # POST /api/footprint. Hash recalculado sobre el código real ya
+        # migrado.
         expected_hashes = {
             'save_scan':             '0eab4cdab31c04817600bf6441581c52ed6e4e13873478d3ba0908c42e2b42f2',
             'get_scan':              'f266753712ad2b109648d9eb0ed010b760fdcfaf722b0f54dc49423a2c510caa',
             'update_step':           'eaa4e87d44d69a7616e45e769215c16d31f4bf82c9bd841f8e9977234330a46e',
-            '_persist_step_result':  '24942e3ca31dd6ad529434626fbeadf09323af0f877d503f7f79bc5963cf52e2',
+            '_persist_step_result':  '249e3a34cd0e5c967f25213c4a01baa7a70561c46d49561269e0d02d06eacf80',
         }
         for fn_name, expected in expected_hashes.items():
             self._assert_function_source_unchanged(fn_name, expected)

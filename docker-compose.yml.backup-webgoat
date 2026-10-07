@@ -516,11 +516,7 @@ services:
       - lab-net
     restart: unless-stopped
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "printf '%s\n' 'import java.net.*;' 'var c=(HttpURLConnection)new URL(\"http://localhost:8080/WebGoat/\").openConnection();' 'c.setConnectTimeout(5000);' 'c.setReadTimeout(5000);' 'System.exit(c.getResponseCode() >= 200 && c.getResponseCode() < 400 ? 0 : 1);' | jshell --execution local"
-        ]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/WebGoat/ || exit 1"]
       interval: 30s
       timeout: 10s
       start_period: 60s

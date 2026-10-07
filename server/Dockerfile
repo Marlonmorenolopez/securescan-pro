@@ -52,6 +52,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     bsdmainutils \
     # dig/host -- testssl.sh también los requiere ("Neither dig, host, drill nor nslookup is present")
     dnsutils \
+    # ps -- requerido por testssl.sh real (Grupo 1, Huella Digital)
+    procps \
     && rm -rf /var/lib/apt/lists/*
 
 # ── Go 1.22 (manual — golang-go de bookworm es 1.19, incompatible) ──
@@ -62,8 +64,8 @@ ENV PATH="/usr/local/go/bin:${GOPATH}/bin:/usr/local/bin:${PATH}"
 
 # ── SQLMap ───────────────────────────────────────────────
 RUN git clone --depth 1 https://github.com/sqlmapproject/sqlmap.git /opt/sqlmap \
- && ln -s /opt/sqlmap/sqlmap.py /usr/local/bin/sqlmap \
- && ln -s /opt/sqlmap/sqlmapapi.py /usr/local/bin/sqlmapapi.py
+    && ln -s /opt/sqlmap/sqlmap.py /usr/local/bin/sqlmap \
+    && ln -s /opt/sqlmap/sqlmapapi.py /usr/local/bin/sqlmapapi.py
 
 # ── Semgrep (Grupo 3, análisis de código -- SAST real) ────
 # El registro de reglas de semgrep.dev puede estar bloqueado en redes con
@@ -75,10 +77,10 @@ RUN git clone --depth 1 https://github.com/sqlmapproject/sqlmap.git /opt/sqlmap 
 # de carpetas por separado (confirmado: pasar de 91 --config a 1 bajó
 # el tiempo de carga de reglas de forma notoria).
 RUN pip install --no-cache-dir --break-system-packages semgrep \
- && git clone --depth 1 https://github.com/semgrep/semgrep-rules.git /tmp/semgrep-rules \
- && mkdir -p /opt/semgrep-rules \
- && python3 -c "import glob, shutil, os; langs = ['php','python','javascript','typescript','java','go','ruby','csharp','dockerfile']; [shutil.copy(f, f'/opt/semgrep-rules/{lang}__{os.path.basename(f)}') for lang in langs for f in glob.glob(f'/tmp/semgrep-rules/{lang}/**/security/*.y*ml', recursive=True)]" \
- && rm -rf /tmp/semgrep-rules
+    && git clone --depth 1 https://github.com/semgrep/semgrep-rules.git /tmp/semgrep-rules \
+    && mkdir -p /opt/semgrep-rules \
+    && python3 -c "import glob, shutil, os; langs = ['php','python','javascript','typescript','java','go','ruby','csharp','dockerfile']; [shutil.copy(f, f'/opt/semgrep-rules/{lang}__{os.path.basename(f)}') for lang in langs for f in glob.glob(f'/tmp/semgrep-rules/{lang}/**/security/*.y*ml', recursive=True)]" \
+    && rm -rf /tmp/semgrep-rules
 
 # ── testssl.sh real (Grupo 1, Huella Digital) ─────────────
 # Reemplaza al equivalente ligero en Python -- este SÍ prueba las
@@ -86,7 +88,7 @@ RUN pip install --no-cache-dir --break-system-packages semgrep \
 # El repo trae binarios de OpenSSL propios para protocolos legados que
 # el OpenSSL del sistema ya no soporta -- no hace falta ningún paso extra.
 RUN git clone --depth 1 https://github.com/testssl/testssl.sh.git /opt/testssl.sh \
- && ln -s /opt/testssl.sh/testssl.sh /usr/local/bin/testssl.sh
+    && ln -s /opt/testssl.sh/testssl.sh /usr/local/bin/testssl.sh
 
 # ── Trivy (Grupo 3, análisis de código -- dependencias + imágenes Docker) ──
 # ANCLADO a v0.72.0 a propósito, NO "latest": Trivy sufrió dos incidentes
@@ -98,8 +100,8 @@ RUN git clone --depth 1 https://github.com/testssl/testssl.sh.git /opt/testssl.s
 # bloqueado en redes con egress restringido).
 RUN curl -fsSL -o /tmp/trivy.tar.gz \
     https://github.com/aquasecurity/trivy/releases/download/v0.72.0/trivy_0.72.0_Linux-64bit.tar.gz \
- && tar xzf /tmp/trivy.tar.gz -C /usr/local/bin trivy \
- && rm /tmp/trivy.tar.gz
+    && tar xzf /tmp/trivy.tar.gz -C /usr/local/bin trivy \
+    && rm /tmp/trivy.tar.gz
 
 # Pre-descargar la base de datos de vulnerabilidades de Trivy EN EL BUILD --
 # sin esto, cada contenedor nuevo necesita bajarla en runtime desde
@@ -113,9 +115,9 @@ RUN trivy fs --download-db-only --cache-dir /opt/trivy-cache || true
 # https://dependency-check.github.io/DependencyCheck/current.txt
 RUN curl -fsSL -o /tmp/dependency-check.zip \
     https://github.com/dependency-check/DependencyCheck/releases/download/v12.2.2/dependency-check-12.2.2-release.zip \
- && unzip -q /tmp/dependency-check.zip -d /opt \
- && rm /tmp/dependency-check.zip \
- && ln -s /opt/dependency-check/bin/dependency-check.sh /usr/local/bin/dependency-check.sh
+    && unzip -q /tmp/dependency-check.zip -d /opt \
+    && rm /tmp/dependency-check.zip \
+    && ln -s /opt/dependency-check/bin/dependency-check.sh /usr/local/bin/dependency-check.sh
 
 # Intentar pre-poblar la base NVD en el build -- CONFIRMADO probando el
 # binario real: sin esta base, Dependency-Check ni siquiera arranca
@@ -125,9 +127,9 @@ RUN curl -fsSL -o /tmp/dependency-check.zip \
 # NVD_API_KEY configurada) -- por eso "|| true": si no hay key a mano en
 # el build, el contenedor igual arranca y sincroniza en el primer uso real.
 RUN if [ -n "$NVD_API_KEY" ]; then \
-      dependency-check.sh --updateonly --disableVersionCheck --nvdApiKey "$NVD_API_KEY" || true; \
+    dependency-check.sh --updateonly --disableVersionCheck --nvdApiKey "$NVD_API_KEY" || true; \
     else \
-      dependency-check.sh --updateonly --disableVersionCheck || true; \
+    dependency-check.sh --updateonly --disableVersionCheck || true; \
     fi
 
 # ── Herramientas Go ───────────────────────────────────────
@@ -142,14 +144,14 @@ RUN if [ -n "$NVD_API_KEY" ]; then \
 # declarándose bajo "zricethezav" -- usar la ruta nueva de GitHub aquí
 # rompe la resolución de Go con un conflicto de "module declares path".
 RUN go install github.com/OJ/gobuster/v3@v3.6.0 \
- && go install github.com/ffuf/ffuf/v2@v2.1.0 \
- && go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@v3.2.4 \
- && go install github.com/zricethezav/gitleaks/v8@latest \
- && go clean -modcache || true \
- && cp /go/bin/gobuster    /usr/local/bin/ \
- && cp /go/bin/ffuf        /usr/local/bin/ \
- && cp /go/bin/nuclei      /usr/local/bin/ \
- && cp /go/bin/gitleaks    /usr/local/bin/
+    && go install github.com/ffuf/ffuf/v2@v2.1.0 \
+    && go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@v3.2.4 \
+    && go install github.com/zricethezav/gitleaks/v8@latest \
+    && go clean -modcache || true \
+    && cp /go/bin/gobuster    /usr/local/bin/ \
+    && cp /go/bin/ffuf        /usr/local/bin/ \
+    && cp /go/bin/nuclei      /usr/local/bin/ \
+    && cp /go/bin/gitleaks    /usr/local/bin/
 
 # ── TruffleHog (binario oficial precompilado, Grupo 3) ────
 # FIX: "go install .../trufflehog/v3@latest" falla siempre -- el go.mod
@@ -160,24 +162,24 @@ RUN go install github.com/OJ/gobuster/v3@v3.6.0 \
 # mala versión. Se resuelve igual que Trivy: bajando el binario oficial
 # ya compilado desde GitHub Releases en vez de compilarlo con "go install".
 RUN TRUFFLEHOG_VERSION=$(curl -fsSL https://api.github.com/repos/trufflesecurity/trufflehog/releases/latest | grep -oP '"tag_name":\s*"v\K[^"]+') \
- && curl -fsSL -o /tmp/trufflehog.tar.gz \
+    && curl -fsSL -o /tmp/trufflehog.tar.gz \
     "https://github.com/trufflesecurity/trufflehog/releases/latest/download/trufflehog_${TRUFFLEHOG_VERSION}_linux_amd64.tar.gz" \
- && tar xzf /tmp/trufflehog.tar.gz -C /usr/local/bin trufflehog \
- && rm /tmp/trufflehog.tar.gz
+    && tar xzf /tmp/trufflehog.tar.gz -C /usr/local/bin trufflehog \
+    && rm /tmp/trufflehog.tar.gz
 
 # ── Wappalyzer ───────────────────────────────────────────
 RUN pip install --no-cache-dir python-Wappalyzer requests beautifulsoup4
 
 # ── Wordlists (SecLists) ──────────────────────────────────
 RUN git clone --depth 1 https://github.com/danielmiessler/SecLists.git /opt/SecLists \
- && mkdir -p /usr/share/wordlists \
- && ln -s /opt/SecLists /usr/share/wordlists/seclists \
- && mkdir -p /usr/share/wordlists/dirb \
- && ln -s /opt/SecLists/Discovery/Web-Content/common.txt /usr/share/wordlists/dirb/common.txt
+    && mkdir -p /usr/share/wordlists \
+    && ln -s /opt/SecLists /usr/share/wordlists/seclists \
+    && mkdir -p /usr/share/wordlists/dirb \
+    && ln -s /opt/SecLists/Discovery/Web-Content/common.txt /usr/share/wordlists/dirb/common.txt
 
 # ── Searchsploit ─────────────────────────────────────────
 RUN git clone --depth 1 https://gitlab.com/exploit-database/exploitdb.git /opt/exploitdb \
- && ln -sf /opt/exploitdb/searchsploit /usr/local/bin/searchsploit
+    && ln -sf /opt/exploitdb/searchsploit /usr/local/bin/searchsploit
 
 # ── theHarvester real (Grupo 2, OSINT) ─────────────────────
 # Requiere Python 3.12+ y la imagen base es 3.11 -- se instala en un
@@ -198,19 +200,19 @@ ENV UV_PYTHON_INSTALL_DIR=/opt/uv-python
 # requisito mínimo a Python>=3.14 -- 3.12 ya no es suficiente para
 # resolver sus dependencias ("No solution found... depends on Python>=3.14").
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
- && /root/.local/bin/uv python install 3.14 \
- && git clone --depth 1 https://github.com/laramies/theHarvester.git /opt/theHarvester \
- && /root/.local/bin/uv venv --python 3.14 /opt/theHarvester-venv \
- && /root/.local/bin/uv pip install --python /opt/theHarvester-venv/bin/python /opt/theHarvester \
- && ln -s /opt/theHarvester-venv/bin/theHarvester /usr/local/bin/theHarvester \
- && chmod -R a+rX /opt/theHarvester-venv /opt/theHarvester /opt/uv-python \
- # FIX: "a+rX" solo agrega +x a lo que YA era ejecutable para alguien.
- # El script generado por "uv pip install" no siempre nace así, lo que
- # producía [Errno 13] Permission denied al invocar theHarvester como
- # usuario no-root. chmod +x explícito, sin condiciones, sobre todo
- # /bin del venv (incluye el propio theHarvester y el intérprete python
- # del que depende su shebang).
- && chmod +x /opt/theHarvester-venv/bin/*
+    && /root/.local/bin/uv python install 3.14 \
+    && git clone --depth 1 https://github.com/laramies/theHarvester.git /opt/theHarvester \
+    && /root/.local/bin/uv venv --python 3.14 /opt/theHarvester-venv \
+    && /root/.local/bin/uv pip install --python /opt/theHarvester-venv/bin/python /opt/theHarvester \
+    && ln -s /opt/theHarvester-venv/bin/theHarvester /usr/local/bin/theHarvester \
+    && chmod -R a+rX /opt/theHarvester-venv /opt/theHarvester /opt/uv-python \
+    # FIX: "a+rX" solo agrega +x a lo que YA era ejecutable para alguien.
+    # El script generado por "uv pip install" no siempre nace así, lo que
+    # producía [Errno 13] Permission denied al invocar theHarvester como
+    # usuario no-root. chmod +x explícito, sin condiciones, sobre todo
+    # /bin del venv (incluye el propio theHarvester y el intérprete python
+    # del que depende su shebang).
+    && chmod +x /opt/theHarvester-venv/bin/*
 
 # ── Usuario ──────────────────────────────────────────────
 RUN groupadd -r scanner && useradd -r -g scanner -d /home/scanner -m -s /bin/bash scanner
@@ -241,7 +243,7 @@ RUN git clone --depth 1 https://github.com/projectdiscovery/nuclei-templates \
 # Permisos para nuclei config y templates
 RUN mkdir -p /home/scanner/.config/nuclei \
     && echo "nuclei-templates-directory: /home/scanner/nuclei-templates" \
-       > /home/scanner/.config/nuclei/config.yaml \
+    > /home/scanner/.config/nuclei/config.yaml \
     && chown -R scanner:scanner /home/scanner/.config \
     && chown -R scanner:scanner /home/scanner/nuclei-templates \
     && chmod -R 755 /home/scanner/.config

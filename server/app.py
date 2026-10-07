@@ -68,51 +68,62 @@ from flask_limiter.util import get_remote_address
 import redis
 
 try:
-    from modules.orchestrator import SecurityOrchestrator
+    from modules.pentesting.orchestrator import SecurityOrchestrator
 except ImportError as e:
     print(f"DEBUG: Error importando directamente: {e}")
     import importlib.util
     import sys
-    spec   = importlib.util.spec_from_file_location("orchestrator", "/app/modules/orchestrator.py")
+    spec   = importlib.util.spec_from_file_location("orchestrator", "/app/modules/pentesting/orchestrator.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     SecurityOrchestrator = module.SecurityOrchestrator
     print("DEBUG: SecurityOrchestrator cargado vía fallback manual")
+
+try:
+    from modules.huella_digital.orchestrator import HuellaDigitalOrchestrator
+except ImportError as e:
+    print(f"DEBUG: Error importando HuellaDigitalOrchestrator directamente: {e}")
+    import importlib.util as _ilu3
+    _hdspec = _ilu3.spec_from_file_location("huella_digital_orchestrator", "/app/modules/huella_digital/orchestrator.py")
+    _hdmod  = _ilu3.module_from_spec(_hdspec)
+    _hdspec.loader.exec_module(_hdmod)
+    HuellaDigitalOrchestrator = _hdmod.HuellaDigitalOrchestrator
+    print("DEBUG: HuellaDigitalOrchestrator cargado vía fallback manual")
 
 from utils.scoring  import calculate_security_score, calculate_score_from_findings, calculate_grade, get_risk_level
 import findings as findings_module
 from utils.reporter import generate_report
 
 try:
-    from modules.circuit_breaker import CircuitBreaker
+    from modules.common.circuit_breaker import CircuitBreaker
 except ImportError:
     import importlib.util as _ilu2
-    _cbspec = _ilu2.spec_from_file_location("circuit_breaker", "/app/modules/circuit_breaker.py")
+    _cbspec = _ilu2.spec_from_file_location("circuit_breaker", "/app/modules/common/circuit_breaker.py")
     _cbmod  = _ilu2.module_from_spec(_cbspec)
     _cbspec.loader.exec_module(_cbmod)
     CircuitBreaker = _cbmod.CircuitBreaker
 
 try:
-    from modules.code_analysis.orchestrator import CodeScanOrchestrator
-    from modules.code_analysis.source_fetcher import clone_repo, extract_zip_safe, validate_repo_url
-    from modules.code_analysis.trivy_scanner import validate_image_ref
+    from modules.code_security.orchestrator import CodeScanOrchestrator
+    from modules.code_security.source_fetcher import clone_repo, extract_zip_safe, validate_repo_url
+    from modules.code_security.trivy_scanner import validate_image_ref
     from modules.osint.breach_checker import BreachChecker
     from modules.osint.username_search import UsernameSearchScanner
     from modules.osint.sherlock_runner import SherlockRunner
     from modules.osint.theharvester_runner import TheHarvesterRunner
 except ImportError as e:
-    print(f"DEBUG: Error importando code_analysis directamente: {e}")
+    print(f"DEBUG: Error importando code_security directamente: {e}")
     import importlib.util as _ilu
     def _load(name, path):
         spec = _ilu.spec_from_file_location(name, path)
         mod  = _ilu.module_from_spec(spec)
         spec.loader.exec_module(mod)
         return mod
-    _fetcher = _load("source_fetcher", "/app/modules/code_analysis/source_fetcher.py")
+    _fetcher = _load("source_fetcher", "/app/modules/code_security/source_fetcher.py")
     clone_repo, extract_zip_safe, validate_repo_url = _fetcher.clone_repo, _fetcher.extract_zip_safe, _fetcher.validate_repo_url
-    _trivymod = _load("trivy_scanner", "/app/modules/code_analysis/trivy_scanner.py")
+    _trivymod = _load("trivy_scanner", "/app/modules/code_security/trivy_scanner.py")
     validate_image_ref = _trivymod.validate_image_ref
-    _codeorch = _load("code_orchestrator", "/app/modules/code_analysis/orchestrator.py")
+    _codeorch = _load("code_orchestrator", "/app/modules/code_security/orchestrator.py")
     CodeScanOrchestrator = _codeorch.CodeScanOrchestrator
     _breach = _load("breach_checker", "/app/modules/osint/breach_checker.py")
     BreachChecker = _breach.BreachChecker
@@ -203,7 +214,7 @@ FORBIDDEN_PATTERNS = [
 
 # ── Circuit Breaker ───────────────────────────────────────────────────────────
 # Antes: dict de Python en memoria (se perdía en cada reinicio del server).
-# Ahora: respaldado en Redis vía modules.circuit_breaker.CircuitBreaker, para
+# Ahora: respaldado en Redis vía modules.common.circuit_breaker.CircuitBreaker, para
 # que el estado sobreviva reinicios y se comparta entre réplicas.
 web_circuit_breaker = CircuitBreaker(redis_client, key_prefix='web-target', failure_threshold=3, recovery_timeout=60)
 
@@ -300,8 +311,10 @@ orchestrator = SecurityOrchestrator(
     msf_host=MSF_HOST,
     msf_port=MSF_PORT,
     msf_password=MSF_PASSWORD,
-    redis_client=redis_client,
 )
+
+# ── Orchestrator de Huella Digital (Threat Intel) — independiente de Pentesting ─
+huella_digital_orchestrator = HuellaDigitalOrchestrator(redis_client=redis_client)
 
 # ── Orchestrator de Análisis de Código (Grupo 3) ────────────────────────────────
 code_orchestrator = CodeScanOrchestrator(
@@ -540,28 +553,6 @@ def run_scan(job_id: str, target: str, options: dict):
         # Normalizar: 'zap' del frontend activa el full scan unificado
         if tools.get('zap'):
             tools['zap_full'] = True
-
-        # ── Huella Digital (Threat Intel) — arranca en paralelo desde ya ───────
-        # No depende de session_cookie, CVEs ni nada del resto del pipeline,
-        # así que no tiene que esperar su turno como las demás fases.
-        threat_intel_thread = None
-        if tools.get('threat_intel', True):
-            update_step(job_id, 'Huella Digital', 'running')
-
-            def _run_threat_intel():
-                try:
-                    enabled = tools.get('threat_intel_tools')  # None = todas (compat. con llamadas viejas)
-                    result = orchestrator.run_threat_intel(target, enabled_tools=enabled)
-                    _persist_step_result(job_id, 'threat_intel', result)
-                    update_step(job_id, 'Huella Digital', 'completed', 100)
-                except Exception as e:
-                    logger.error("Huella Digital failed: %s", e)
-                    update_step(job_id, 'Huella Digital', 'error', 0)
-
-            threat_intel_thread = threading.Thread(target=_run_threat_intel, daemon=True)
-            threat_intel_thread.start()
-        else:
-            update_step(job_id, 'Huella Digital', 'completed', 100)
 
         # Pre-inicializar variables
         technologies:        list = []
@@ -871,13 +862,6 @@ def run_scan(job_id: str, target: str, options: dict):
         except Exception as e:
             logger.error("Scoring failed: %s", e)
             update_step(job_id, 'Scoring', 'error', 0)
-
-        # ── Esperar Huella Digital si todavía no terminó ────────────────────────
-        if threat_intel_thread is not None:
-            threat_intel_thread.join(timeout=orchestrator.TIMEOUTS['virustotal'] + 15)
-            if threat_intel_thread.is_alive():
-                logger.warning("Huella Digital no terminó a tiempo para %s", target[:80])
-                update_step(job_id, 'Huella Digital', 'error', 0)
 
         # ── Finalizar ─────────────────────────────────────────────────────────
         final_scan            = get_scan(job_id) or {}
@@ -1220,8 +1204,6 @@ def _launch_scan_job(
         'endTime':   None,
         'created_by': created_by,
         'steps': [
-            # Corre en paralelo desde el inicio — no depende de las demás fases
-            {'name': 'Huella Digital', 'status': 'pending', 'progress': 0},
             {'name': 'Wappalyzer',   'status': 'pending', 'progress': 0},
             {'name': 'Nmap',         'status': 'pending', 'progress': 0},
             {'name': 'Patator',      'status': 'pending', 'progress': 0},
@@ -1246,7 +1228,6 @@ def _launch_scan_job(
         'sqli_results':        [],
         'brute_force_results': [],
         'ffuf_endpoints':      [],
-        'threat_intel':        {},
         'score': {
             'total': 0, 'grade': 'A',
             'breakdown': {'critical': 0, 'high': 0, 'medium': 0, 'low': 0, 'info': 0},
@@ -1281,6 +1262,86 @@ def get_scan_status(scan_id: str):
     if not scan:
         return jsonify({'error': get_t(locale_from_request(request))('errors.scanNotFound')}), 404
     return jsonify(scan)
+
+
+@app.route('/api/footprint', methods=['POST'])
+@require_token
+@limiter.limit("20 per hour")
+def start_footprint_scan():
+    """
+    Huella Digital (Threat Intel) — independiente de Pentesting.
+
+    A diferencia de /api/scan (asíncrono, con polling vía
+    /api/scan/<id>/status), este endpoint es SÍNCRONO: las 7 fuentes de
+    Huella Digital corren en paralelo dentro de
+    HuellaDigitalOrchestrator.run_threat_intel() (no se reimplementa esa
+    lógica aquí) y la respuesta ya viene con status 'completed'.
+    """
+    data = request.get_json(silent=True)
+    if not data:
+        _t = get_t(locale_from_request(request))
+        return jsonify({'error': _t('errors.invalidJson')}), 400
+
+    target = data.get('target', '').strip()
+    if not target:
+        _t = get_t(locale_from_request(request))
+        return jsonify({'error': _t('errors.targetRequired')}), 400
+
+    options = data.get('options', {}) or {}
+
+    tools = options.get('tools')
+    if tools is None and 'tools' in data:
+        tools = data['tools']
+    if isinstance(tools, dict):
+        enabled_tools = [name for name, enabled in tools.items() if enabled]
+    elif isinstance(tools, list):
+        enabled_tools = tools
+    else:
+        enabled_tools = None
+
+    tv_config = options.get('target_validation', {}) or {}
+    if 'checkDns'          in tv_config: tv_config['check_dns']          = tv_config.pop('checkDns')
+    if 'checkReachability' in tv_config: tv_config['check_reachability'] = tv_config.pop('checkReachability')
+
+    dry_run = bool(options.get('dry_run', False))
+    if not dry_run and (tv_config.get('check_dns', True) or tv_config.get('check_reachability', True)):
+        ok, reason_tv = _validate_target_reachability(target, tv_config)
+        if not ok:
+            return jsonify({
+                'error':  get_t(locale_from_request(request))('errors.targetUnreachable', reason=reason_tv),
+                'reason': 'target_unreachable',
+            }), 422
+
+    is_allowed, reason = is_allowed_target(target)
+    if not is_allowed:
+        return jsonify({
+            'error':           'Target not allowed',
+            'reason':          reason,
+            'allowed_targets': ALLOWED_LAB_TARGETS,
+        }), 403
+
+    job_id = str(uuid.uuid4())
+    try:
+        result = huella_digital_orchestrator.run_threat_intel(target, enabled_tools=enabled_tools)
+    except Exception as e:
+        logger.error("Huella Digital (/api/footprint) failed para %s: %s", target[:80], e)
+        return jsonify({'error': str(e)}), 500
+
+    now_iso = datetime.utcnow().isoformat() + 'Z'
+    scan_data = {
+        'id':          job_id,
+        'target':      target,
+        'options':     options,
+        'status':      'completed',
+        'startTime':   now_iso,
+        'endTime':     now_iso,
+        'created_by':  'user',
+        'threat_intel': result,
+    }
+    save_scan(job_id, scan_data)
+
+    logger.info("Footprint scan %s completado para %s", job_id, target[:80])
+    return jsonify(scan_data), 200
 
 
 # ── Skills — ejecución individual (Fase 1) ──────────────────────────────────

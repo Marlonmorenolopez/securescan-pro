@@ -435,9 +435,29 @@ function TlsIntelligence({ model }: { model: FootprintModel }) {
       {ts.state !== 'data' ? <SourceStateNotice view={ts} /> : (() => {
         const d = ts.raw as TestSSLResult
         const breakdown = getTlsSeverityBreakdown(d)
+
+
+
+        const CERT_KEY_MAP: Record<(typeof CERT_FIELDS)[number], keyof NonNullable<TestSSLResult['certificate']>> = {
+          cert_commonName: 'commonName',
+          cert_expirationStatus: 'expirationStatus',
+          cert_notAfter: 'notAfter',
+          cert_keySize: 'keySize',
+          cert_signatureAlgorithm: 'signatureAlgorithm',
+          cert_chain_of_trust: 'chainOfTrust',
+        }
+
         const certRows = CERT_FIELDS
-          .map(id => [id, d.server_defaults.find(f => f.id === id)] as const)
+          .map(id => {
+            const key = CERT_KEY_MAP[id]
+            const value = d.certificate?.[key]
+            return [id, value ? { finding: value } : undefined] as const
+          })
           .filter(([, f]) => !!f)
+
+
+
+
         return (
           <div className="grid gap-5 md:grid-cols-2">
             <div className="min-w-0 space-y-4">

@@ -27,7 +27,7 @@ from typing import Any, Dict, Optional
 
 import requests
 
-from modules.intel_common import extract_host, is_internal, resolve_ip
+from modules.huella_digital.intel_common import extract_host, is_internal, resolve_ip
 
 logger = logging.getLogger(__name__)
 
