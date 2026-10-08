@@ -1,4 +1,4 @@
-// lib/scan-extractors.ts — SecureScan Pro v5.0
+// lib/scan-extractors.ts — PentaWark v5.0
 //
 // EXTRACCIÓN de resultados reales del scan para las dos experiencias de la
 // plataforma:
@@ -23,6 +23,7 @@
 
 import { getSkillsByCategory, type Skill } from '@/lib/skills'
 import type { ScanResult } from '@/lib/scan-context'
+import type { FootprintScan } from '@/lib/footprint-context'
 import type { VirusTotalResult } from '@/components/results/intel/VirusTotalPanel'
 import type { AbuseIPDBResult } from '@/components/results/intel/AbuseIPDBPanel'
 import type { ShodanResult } from '@/components/results/intel/ShodanPanel'
@@ -38,36 +39,7 @@ export type ToolRunStatus = 'idle' | 'running' | 'completed' | 'error' | 'skippe
 export type Severity = 'critical' | 'high' | 'medium' | 'low' | 'info' | 'informational'
 
 type ScanLike = Partial<ScanResult> | null | undefined
-
-// ─── Alcance del análisis (qué módulo participó) ─────────────────────────────
-
-/** Flags de herramientas de Pentesting que el frontend envía en `options.tools`. */
-const PENTEST_OPTION_FLAGS = [
-  'wappalyzer', 'nmap', 'gobuster', 'zap', 'searchsploit',
-  'metasploit', 'nuclei', 'sqlmap', 'patator', 'ffuf',
-] as const
-
-export interface ScanScope {
-  /** true si se pidió al menos una herramienta de Pentesting */
-  pentesting: boolean
-  /** true si la fase de Huella Digital estaba habilitada (default del backend: sí) */
-  footprint: boolean
-}
-
-/**
- * Deduce qué módulos participaron a partir de `options.tools` (lo que el
- * backend devuelve dentro del scan). Si no hay `options` (escaneos viejos o
- * historial sin ese campo) se asume el comportamiento por defecto del
- * backend: ambos módulos.
- */
-export function getScanScope(scan: ScanLike): ScanScope {
-  const tools = scan?.options?.tools
-  if (!tools) return { pentesting: true, footprint: true }
-  return {
-    pentesting: PENTEST_OPTION_FLAGS.some(flag => tools[flag] === true),
-    footprint: tools.threat_intel !== false,
-  }
-}
+type FootprintScanLike = Partial<FootprintScan> | null | undefined
 
 // ═════════════════════════════════════════════════════════════════════════════
 // PENTESTING — 12 herramientas
@@ -123,7 +95,7 @@ export interface PentestToolStat {
   count: number
 }
 
-function stepStatus(scan: ScanLike, stepName: string): ToolRunStatus {
+function stepStatus(scan: { steps?: { name: string; status: string }[] } | null | undefined, stepName: string): ToolRunStatus {
   const step = scan?.steps?.find(s => s.name.toLowerCase() === stepName.toLowerCase())
   switch (step?.status) {
     case 'running':   return 'running'
@@ -270,7 +242,7 @@ export interface FootprintModel {
 
 const RISKY_SHODAN_TAGS = ['compromised', 'malware', 'honeypot', 'tor']
 
-export function getFootprintModel(scan: ScanLike): FootprintModel {
+export function getFootprintModel(scan: FootprintScanLike): FootprintModel {
   const intel = (scan?.threat_intel ?? {}) as FootprintRawMap
 
   const sources: FootprintSourceView[] = getFootprintSkills().map(skill => {
@@ -334,7 +306,7 @@ export function getFootprintModel(scan: ScanLike): FootprintModel {
 }
 
 /** Estado del paso "Huella Digital" (fase paralela del backend). */
-export function getFootprintStepStatus(scan: ScanLike): ToolRunStatus {
+export function getFootprintStepStatus(scan: FootprintScanLike): ToolRunStatus {
   return stepStatus(scan, 'Huella Digital')
 }
 

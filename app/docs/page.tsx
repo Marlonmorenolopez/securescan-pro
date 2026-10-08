@@ -1,5 +1,5 @@
 'use client'
-// app/docs/page.tsx — SecureScan Pro v5.0
+// app/docs/page.tsx — PentaWark v5.0
 // Pestaña "Proyecto de Grado" con visor Markdown completo integrado
 
 import { useState, useMemo, useEffect, useCallback } from 'react'
@@ -236,7 +236,7 @@ const PROJECT_DOCS = [
     title:    'Presentación del Proyecto de Grado',
     subtitle: '19 diapositivas · Notas del orador · 25-30 min',
     description:
-      'Material completo para la sustentación ante el evaluador SENA. 19 diapositivas con contenido de pantalla y notas del orador, más 7 preguntas frecuentes del evaluador con respuestas.',
+      'Material completo de presentación del proyecto. 19 diapositivas con contenido de pantalla y notas del orador, más 7 preguntas frecuentes con respuestas.',
     stats: [
       { label: 'Diapositivas', value: '19'      },
       { label: 'Duración',     value: '25-30m'  },
@@ -826,7 +826,7 @@ const poll = async () => {
                             Documentación del Proyecto de Grado
                           </h2>
                           <p className="mt-0.5 text-sm text-muted-foreground">
-                            SENA · Técnico en Seguridad de Aplicaciones Web · Colombia, 2026
+                            PentaWark · Cybersecurity · Ethical Hacking · Digital Intelligence
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-2">

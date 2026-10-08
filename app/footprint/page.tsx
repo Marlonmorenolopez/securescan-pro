@@ -1,9 +1,9 @@
 'use client'
-// app/footprint/page.tsx — SecureScan Pro v5.0 · Huella Digital
+// app/footprint/page.tsx — PentaWark v5.0 · Huella Digital
 //
 // Experiencia INDEPENDIENTE de Huella Digital / superficie externa /
-// Threat Intelligence. Comparte con /scanner el ScanProvider (app/layout.tsx)
-// y el Design System, pero su jerarquía es propia: lanzador de fuentes →
+// Threat Intelligence. Usa su propio FootprintProvider (lib/footprint-context)
+// —sin estado compartido con Pentesting— y el Design System; su jerarquía es propia: lanzador de fuentes →
 // estado del análisis → superficie descubierta → paneles de inteligencia
 // (Dominios, Infraestructura, Reputación, TLS/SSL) → cobertura y detalle por
 // fuente. Solo muestra datos reales de `scan.threat_intel`; sin dato →
@@ -11,9 +11,8 @@
 // Pentesting y no usa Threat Intelligence.
 
 import { Suspense, useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
-import { AlertTriangle, ArrowRight, Fingerprint, History, Loader2, ScanSearch } from 'lucide-react'
+import { AlertTriangle, Fingerprint, History, Loader2, ScanSearch } from 'lucide-react'
 import { Header } from '@/components/header'
 import { ModuleHeader } from '@/components/cyber/ModuleHeader'
 import { ToolTaxonomyStrip } from '@/components/cyber/ToolTaxonomyStrip'
@@ -26,8 +25,8 @@ import { FootprintOverview } from '@/components/footprint/FootprintOverview'
 import { FootprintSources } from '@/components/footprint/FootprintSources'
 import { HUELLA_DIGITAL, COLOR_VARS } from '@/lib/nav-config'
 import { useNavDescription } from '@/lib/nav-i18n'
-import { useScan, type ScanResult } from '@/lib/scan-context'
-import { getFootprintModel, getFootprintStepStatus, getScanScope } from '@/lib/scan-extractors'
+import { useFootprint, type FootprintScan } from '@/lib/footprint-context'
+import { getFootprintModel, getFootprintStepStatus } from '@/lib/scan-extractors'
 import { cn } from '@/lib/utils'
 
 const SCAN_BADGE: Record<string, BadgeType> = {
@@ -35,7 +34,7 @@ const SCAN_BADGE: Record<string, BadgeType> = {
 }
 
 /** Análisis con datos de Huella Digital disponibles en el historial del backend. */
-function hasFootprintPayload(scan: ScanResult): boolean {
+function hasFootprintPayload(scan: FootprintScan): boolean {
   return Object.keys(scan.threat_intel ?? {}).length > 0
 }
 
@@ -43,12 +42,12 @@ function FootprintContent() {
   const t = useTranslations('footprint')
   const locale = useLocale()
   const description = useNavDescription(HUELLA_DIGITAL)
-  const { currentScan, scanHistory, refreshHistory, isScanning, error, clearError } = useScan()
+  const { currentScan, scanHistory, refreshHistory, isScanning, error, clearError } = useFootprint()
   const c = COLOR_VARS[HUELLA_DIGITAL.color]
 
   const [historyId, setHistoryId] = useState<string | null>(null)
 
-  // Al abrir el módulo se refresca el historial real (GET /api/history, ya existente)
+  // Al abrir el módulo se refresca su historial propio (GET /api/history?module=footprint)
   useEffect(() => { void refreshHistory() }, [refreshHistory])
   // Un análisis nuevo siempre pasa por delante de uno del historial seleccionado
   useEffect(() => { setHistoryId(null) }, [currentScan?.id])
@@ -61,7 +60,6 @@ function FootprintContent() {
   const activeScan = historyScan ?? currentScan
 
   const model = useMemo(() => getFootprintModel(activeScan), [activeScan])
-  const scope = useMemo(() => getScanScope(activeScan), [activeScan])
   const stepStatus = getFootprintStepStatus(activeScan)
 
   const isRunning = activeScan?.status === 'running' || activeScan?.status === 'pending'
@@ -154,24 +152,12 @@ function FootprintContent() {
                   <span className="font-mono text-[11px] text-muted-foreground">{fmt(activeScan.startTime)}</span>
                 </div>
                 <div className="flex w-full flex-wrap items-center justify-between gap-2 border-t border-[hsl(var(--border))] pt-3 text-xs text-muted-foreground">
-                  <span>{scope.pentesting ? t('status.originShared') : t('status.originFootprintOnly')}</span>
-                  {scope.pentesting && (
-                    <Link href="/scanner" className="inline-flex items-center gap-1 font-mono font-semibold text-[var(--cyber-accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cyber-accent)] rounded">
-                      {t('status.viewPentesting')} <ArrowRight aria-hidden="true" className="h-3 w-3" />
-                    </Link>
-                  )}
+                  <span>{t('status.originFootprintOnly')}</span>
                 </div>
               </CyberCard>
 
-              {/* Este análisis no incluyó Huella Digital */}
-              {!scope.footprint && (
-                <CyberCard surface={1} padding="p-2">
-                  <EmptyState icon={Fingerprint} title={t('notIncluded.title')} detail={t('notIncluded.detail')} />
-                </CyberCard>
-              )}
-
               {/* Recolectando */}
-              {scope.footprint && !model.hasAnyResult && footprintPending && (
+              {!model.hasAnyResult && footprintPending && (
                 <div className="flex flex-col items-center justify-center gap-3 py-12 text-muted-foreground" role="status">
                   <Loader2 aria-hidden="true" className="h-8 w-8 animate-spin" style={{ color: c.fg }} />
                   <p className="font-mono text-sm">{t('collecting')}</p>
@@ -179,7 +165,7 @@ function FootprintContent() {
               )}
 
               {/* Terminó sin ningún resultado */}
-              {scope.footprint && !model.hasAnyResult && !footprintPending && (
+              {!model.hasAnyResult && !footprintPending && (
                 <CyberCard surface={1} padding="p-2">
                   <EmptyState icon={Fingerprint} title={t('noResults.title')} detail={t('noResults.detail')} />
                 </CyberCard>

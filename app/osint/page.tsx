@@ -1,5 +1,5 @@
 'use client'
-// app/osint/page.tsx — SecureScan Pro v5.1
+// app/osint/page.tsx — PentaWark v5.1
 // OSINT (Grupo 2): brechas de datos por correo (XposedOrNot) y búsqueda
 // de username en ~19 plataformas. Página autocontenida, sin polling —
 // ambas herramientas responden en una sola petición síncrona.

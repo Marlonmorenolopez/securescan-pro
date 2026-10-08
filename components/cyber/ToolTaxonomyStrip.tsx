@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/ToolTaxonomyStrip.tsx — SecureScan Pro v5.0
+// components/cyber/ToolTaxonomyStrip.tsx — PentaWark v5.0
 // Franja compacta que muestra la jerarquía Categoría → Grupo → Herramientas
 // de una o varias NavSection (lib/nav-config.tsx). Puramente visual/informativa
 // — no ejecuta nada, no toca lógica de scans. Se usa como cabecera de

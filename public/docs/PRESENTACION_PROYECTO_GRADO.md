@@ -1,9 +1,8 @@
 # PRESENTACIÓN DEL PROYECTO DE GRADO
-## SecureScan Pro v5.0 — Plataforma Automatizada de Análisis de Seguridad Web
+## PentaWark v5.0 — Plataforma Automatizada de Análisis de Seguridad Web
 
 **Aprendiz:** _(completar nombre)_
 **Programa:** Técnico en Seguridad de Aplicaciones Web
-**Institución:** SENA — Servicio Nacional de Aprendizaje (Colombia)
 **Centro de Formación:** _(completar)_
 **Ficha de Caracterización:** _(completar)_
 **Instructor:** _(completar)_
@@ -27,7 +26,7 @@
 ```
 ╔═══════════════════════════════════════════════════════╗
 ║                                                       ║
-║           🛡️  SecureScan Pro v5.0                    ║
+║           🛡️  PentaWark v5.0                    ║
 ║                                                       ║
 ║   Plataforma Automatizada de Análisis de             ║
 ║         Seguridad Web                                 ║
@@ -36,7 +35,7 @@
 ║                                                       ║
 ║  Proyecto de Grado                                    ║
 ║  Técnico en Seguridad de Aplicaciones Web            ║
-║  SENA — Colombia, 2026                                ║
+║  PentaWark — Cybersecurity & Ethical Hacking          ║
 ║                                                       ║
 ╚═══════════════════════════════════════════════════════╝
 ```
@@ -45,7 +44,7 @@
 
 ### 🎤 Notas del orador
 
-> Buenos días / tardes a todos. Mi nombre es _(nombre)_ y hoy les voy a presentar mi proyecto de grado: **SecureScan Pro**, una plataforma que construí para automatizar el análisis de seguridad de aplicaciones web.
+> Buenos días / tardes a todos. Mi nombre es _(nombre)_ y hoy les voy a presentar mi proyecto de grado: **PentaWark**, una plataforma que construí para automatizar el análisis de seguridad de aplicaciones web.
 >
 > En los próximos 25 minutos voy a explicarles el problema que resuelve, cómo funciona técnicamente y los resultados que obtuve. Al final hay tiempo para preguntas. Arranquemos.
 
@@ -87,7 +86,7 @@
 
 ### Contenido de pantalla
 
-**En el programa del SENA aprendemos las herramientas de forma aislada:**
+**En la formación habitual se aprenden las herramientas de forma aislada:**
 
 ```
 Semana 1:  Nmap          ──→ "Aprendo a escanear puertos"
@@ -110,13 +109,13 @@ donde los resultados de una alimentan a la siguiente.
 
 ### 🎤 Notas del orador
 
-> Hay un segundo problema, y este lo viví yo directamente como aprendiz del SENA.
+> Hay un segundo problema, y este lo viví yo directamente como aprendiz.
 >
 > En el programa aprendemos las herramientas una por una, como si fueran materias separadas. Nmap en una semana, ZAP en otra, SQLMap después. Y cada una se enseña de forma independiente.
 >
 > Pero cuando uno ve cómo trabaja un profesional de seguridad real, se da cuenta de que el flujo es completamente diferente: primero identificas qué tecnologías usa el sitio, con esa información decides qué herramientas activar, los resultados de una herramienta le dan contexto a la siguiente, y al final todo se consolida en un reporte.
 >
-> Esa brecha —entre aprender herramientas aisladas y entender el flujo completo— es la segunda razón por la que construí SecureScan Pro.
+> Esa brecha —entre aprender herramientas aisladas y entender el flujo completo— es la segunda razón por la que construí PentaWark.
 
 ---
 
@@ -124,7 +123,7 @@ donde los resultados de una alimentan a la siguiente.
 
 ### Contenido de pantalla
 
-**SecureScan Pro: un solo sistema, 11 herramientas, resultado completo**
+**PentaWark: un solo sistema, 11 herramientas, resultado completo**
 
 ```
      Ingresa una URL
@@ -150,7 +149,7 @@ donde los resultados de una alimentan a la siguiente.
 
 ### 🎤 Notas del orador
 
-> La solución que propuse es SecureScan Pro: una plataforma que toma una URL, ejecuta 11 herramientas profesionales en el orden correcto de forma automática, y al final entrega un reporte completo con una puntuación de seguridad.
+> La solución que propuse es PentaWark: una plataforma que toma una URL, ejecuta 11 herramientas profesionales en el orden correcto de forma automática, y al final entrega un reporte completo con una puntuación de seguridad.
 >
 > El usuario no necesita saber cómo configurar cada herramienta por separado. Solo escribe la URL, selecciona qué herramientas activar, y el sistema hace todo el resto.
 >
@@ -295,7 +294,7 @@ Paso 11 📊 Scoring       ← Puntuación final (0-100)
 
 > Una parte fundamental del proyecto son los laboratorios. Muchos aprendices de ciberseguridad enfrentan el problema de que no tienen sobre qué practicar de forma legal.
 >
-> SecureScan Pro incluye tres aplicaciones vulnerables que arrancan junto con el sistema. Las tres son proyectos de código abierto mantenidos por OWASP, con licencia MIT o GPL, y fueron creados exactamente para este propósito: ser atacados en un entorno controlado.
+> PentaWark incluye tres aplicaciones vulnerables que arrancan junto con el sistema. Las tres son proyectos de código abierto mantenidos por OWASP, con licencia MIT o GPL, y fueron creados exactamente para este propósito: ser atacados en un entorno controlado.
 >
 > Juice Shop es la más moderna y completa: simula una tienda en línea con más de 100 vulnerabilidades del OWASP Top 10 2021. DVWA es el clásico de PHP que se usa en universidades y programas de seguridad de todo el mundo. Y WebGoat es la plataforma Java de aprendizaje interactivo de OWASP.
 >
@@ -528,11 +527,11 @@ Penalizaciones adicionales:
 
 > Antes de cerrar, quiero hablar de ética porque es un tema central en seguridad informática.
 >
-> Cuando uno construye una herramienta de análisis de seguridad, la pregunta inmediata es: ¿no se puede usar para atacar sistemas? La respuesta es que en SecureScan Pro la ética no es solo un párrafo en el manual: está programada en el sistema y se puede verificar línea por línea en el código.
+> Cuando uno construye una herramienta de análisis de seguridad, la pregunta inmediata es: ¿no se puede usar para atacar sistemas? La respuesta es que en PentaWark la ética no es solo un párrafo en el manual: está programada en el sistema y se puede verificar línea por línea en el código.
 >
 > Por ejemplo, el sistema bloquea por defecto ciertos targets. El modo estricto restringe el sistema exclusivamente a los tres laboratorios incluidos. Metasploit solo ejecuta módulos auxiliares de verificación, nunca exploits que comprometan el sistema objetivo. Los contenedores corren con usuarios sin privilegios.
 >
-> Y en cuanto al marco legal, en Colombia el artículo 269A de la Ley 1273 de 2009 establece que acceder a un sistema informático sin autorización es un delito. SecureScan Pro fue diseñado para operar exclusivamente sobre los laboratorios incluidos, que son aplicaciones de código abierto creadas específicamente para este fin.
+> Y en cuanto al marco legal, en Colombia el artículo 269A de la Ley 1273 de 2009 establece que acceder a un sistema informático sin autorización es un delito. PentaWark fue diseñado para operar exclusivamente sobre los laboratorios incluidos, que son aplicaciones de código abierto creadas específicamente para este fin.
 
 ---
 
@@ -540,9 +539,9 @@ Penalizaciones adicionales:
 
 ### Contenido de pantalla
 
-**Mapa directo al programa del SENA**
+**Mapa de competencias demostradas**
 
-| Competencia del programa | Evidencia en SecureScan Pro |
+| Competencia del programa | Evidencia en PentaWark |
 |---|---|
 | Identificar vulnerabilidades web | ZAP, Nuclei, InjectionScanner, SQLMap |
 | Aplicar herramientas profesionales | 11 herramientas reales en producción |
@@ -558,7 +557,7 @@ Penalizaciones adicionales:
 
 ### 🎤 Notas del orador
 
-> Esta tabla muestra directamente cómo SecureScan Pro evidencia las competencias del programa técnico del SENA.
+> Esta tabla muestra directamente cómo PentaWark evidencia las competencias en seguridad de aplicaciones web.
 >
 > No es un proyecto teórico. Cada fila de esta tabla tiene un archivo de código fuente concreto que la respalda. La competencia de "identificar vulnerabilidades web" está respaldada por los módulos ZAP, Nuclei e InjectionScanner. La de "documentar hallazgos" está respaldada por el archivo `reporter.py` que genera los cuatro formatos de reporte.
 >
@@ -619,13 +618,13 @@ Penalizaciones adicionales:
 
 ### 🎤 Notas del orador
 
-> SecureScan Pro v5.0 está completo y funcional, pero hay varias mejoras que me gustaría implementar en el futuro.
+> PentaWark v5.0 está completo y funcional, pero hay varias mejoras que me gustaría implementar en el futuro.
 >
 > La más importante para el contexto educativo es el soporte multi-usuario: actualmente el sistema está diseñado para un solo operador a la vez. Si se quisiera usar en una clase con 20 aprendices simultáneamente, haría falta un sistema de autenticación con roles.
 >
 > Otra mejora relevante sería añadir análisis estático de código, lo que completaría el ciclo completo de evaluación de seguridad: DAST más SAST.
 >
-> Y el modo "guía de aprendizaje" sería especialmente útil para el contexto del SENA: que al encontrar una vulnerabilidad, el sistema explique qué es, por qué es peligrosa y cómo se remedia, de forma didáctica.
+> Y el modo "guía de aprendizaje" sería especialmente útil en un contexto de aprendizaje: que al encontrar una vulnerabilidad, el sistema explique qué es, por qué es peligrosa y cómo se remedia, de forma didáctica.
 >
 > La arquitectura modular que tiene el sistema ahora facilita añadir cualquiera de estas funcionalidades sin tener que reescribir lo que ya existe.
 
@@ -649,7 +648,7 @@ Penalizaciones adicionales:
 > 35+ problemas concretos documentados y solucionados
 > Cada uno enseñó algo que no está en ningún manual
 
-> **SecureScan Pro demuestra que un aprendiz del SENA puede construir herramientas de nivel profesional**
+> **PentaWark demuestra que un aprendiz puede construir herramientas de nivel profesional**
 
 ---
 
@@ -663,7 +662,7 @@ Penalizaciones adicionales:
 >
 > Tercera, y para mí la más importante: los más de 35 bugs que documenté y resolví durante el desarrollo son el verdadero aprendizaje del proyecto. Cada error me obligó a entender en profundidad cómo funciona cada herramienta, cómo se comunican los contenedores Docker, cómo maneja Python los threads, cómo funcionan los tokens CSRF. Ese conocimiento no se aprende en un libro.
 >
-> SecureScan Pro es la demostración de que con las competencias del programa técnico del SENA, es posible construir herramientas de nivel profesional.
+> PentaWark es la demostración de que con competencias en seguridad de aplicaciones web, es posible construir herramientas de nivel profesional.
 
 ---
 
@@ -715,7 +714,7 @@ Penalizaciones adicionales:
 
 ---
 
-**P: ¿Qué pasa si alguien usa SecureScan Pro para atacar sistemas reales?**
+**P: ¿Qué pasa si alguien usa PentaWark para atacar sistemas reales?**
 > El sistema implementa controles técnicos que dificultan ese uso: la API bloquea IPs de loopback, el modo restrictivo solo permite los tres laboratorios, y el rate limiting limita a 20 escaneos por hora. Cualquier uso fuera del laboratorio educativo requiere modificar deliberadamente el código, lo cual es responsabilidad legal exclusiva del operador bajo la Ley 1273 de 2009.
 
 ---
@@ -741,7 +740,7 @@ Penalizaciones adicionales:
 ---
 
 **P: ¿Metasploit no es una herramienta ilegal o peligrosa?**
-> Metasploit Framework es una herramienta de código abierto con licencia BSD, usada legítimamente por miles de profesionales de seguridad en todo el mundo cada día. En SecureScan Pro solo se ejecutan módulos `auxiliary/scanner/`, que son de verificación y no comprometen ningún sistema. La diferencia entre una herramienta de diagnóstico y un arma es la autorización y la intención.
+> Metasploit Framework es una herramienta de código abierto con licencia BSD, usada legítimamente por miles de profesionales de seguridad en todo el mundo cada día. En PentaWark solo se ejecutan módulos `auxiliary/scanner/`, que son de verificación y no comprometen ningún sistema. La diferencia entre una herramienta de diagnóstico y un arma es la autorización y la intención.
 
 ---
 
@@ -751,5 +750,5 @@ Penalizaciones adicionales:
 ---
 
 *Presentación desarrollada como parte del Proyecto de Grado.*
-*SENA — Programa Técnico en Seguridad de Aplicaciones Web — Colombia, Julio 2026*
-*SecureScan Pro v5.0 — 23.902 líneas · 11 herramientas · 10 contenedores Docker*
+*PentaWark — Cybersecurity · Ethical Hacking · Digital Intelligence*
+*PentaWark v5.0 — 23.902 líneas · 11 herramientas · 10 contenedores Docker*

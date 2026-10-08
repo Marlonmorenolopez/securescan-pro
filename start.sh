@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# SecureScan Pro — start.sh
+# PentaWark — start.sh
 # Inicia toda la plataforma con un solo comando
 # ============================================================
 set -e
@@ -8,13 +8,13 @@ set -e
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
 BOLD='\033[1m'
 
-log()    { echo -e "${CYAN}[SecureScan]${NC} $1"; }
+log()    { echo -e "${CYAN}[PentaWark]${NC} $1"; }
 ok()     { echo -e "${GREEN}  ✓${NC} $1"; }
 warn()   { echo -e "${YELLOW}  ⚠${NC} $1"; }
 error()  { echo -e "${RED}  ✗${NC} $1"; }
 header() { echo -e "\n${BOLD}${CYAN}═══ $1 ═══${NC}"; }
 
-header "SecureScan Pro v3.0 — Inicio"
+header "PentaWark v3.0 — Inicio"
 
 # ── 1. Prerrequisitos ────────────────────────────────────────────────
 header "Verificando prerrequisitos"
@@ -101,7 +101,7 @@ ok "API respondiendo en ${ELAPSED}s"
 
 echo ""
 echo -e "${BOLD}${GREEN}════════════════════════════════════════${NC}"
-echo -e "${BOLD}${GREEN}  SecureScan Pro — Todo listo 🚀        ${NC}"
+echo -e "${BOLD}${GREEN}  PentaWark — Todo listo 🚀        ${NC}"
 echo -e "${BOLD}${GREEN}════════════════════════════════════════${NC}"
 echo ""
 echo -e "  ${CYAN}Frontend:${NC}    http://localhost:3000"

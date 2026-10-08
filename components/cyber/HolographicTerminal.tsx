@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/HolographicTerminal.tsx — SecureScan Pro v5.0 · Tactical CLI HUD Terminal
+// components/cyber/HolographicTerminal.tsx — PentaWark v5.0 · Tactical CLI HUD Terminal
 
 import { useState, useRef, useEffect } from 'react'
 import { Terminal, Copy, Check, ArrowDown, Maximize2, Minimize2 } from 'lucide-react'

@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/CyberPanel.tsx — SecureScan Pro v5.0
+// components/cyber/CyberPanel.tsx — PentaWark v5.0
 // Panel estructurado con header, título, subtítulo y slot de acción.
 // Usado en el dashboard SOC para secciones de resultados y configuración.
 

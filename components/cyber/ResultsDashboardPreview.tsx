@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/ResultsDashboardPreview.tsx — SecureScan Pro · Home v3
+// components/cyber/ResultsDashboardPreview.tsx — PentaWark · Home v3
 //
 // Vista resumida del resultado de un scan, reutilizando EXACTAMENTE la misma
 // estructura que components/results-dashboard.tsx → ScoreCard (SecurityScore)

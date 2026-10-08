@@ -1,45 +1,18 @@
 'use client'
-// components/cyber/ModuleHeader.tsx — SecureScan Pro v5.0
+// components/cyber/ModuleHeader.tsx — PentaWark v5.0
 //
-// Cabecera común de los módulos de SECURITY que son experiencias
+// Cabecera común de los módulos de SECURITY, que son experiencias
 // independientes (Pentesting → /scanner, Huella Digital → /footprint).
-// Aporta la misma "carcasa" (breadcrumb, identidad del módulo, selector de
-// módulo) para que ambos se sientan parte de la misma plataforma; el
+// Aporta la misma "carcasa" (breadcrumb e identidad del módulo); el
 // CONTENIDO de cada módulo (jerarquía, paneles, datos) es propio de cada
 // página. Reutiliza los tokens del Design System (surface-3, holo-edge,
 // COLOR_VARS) — no define estilos nuevos.
 
-import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import type { ReactNode } from 'react'
-import { COLOR_VARS, PENTESTING, HUELLA_DIGITAL, type NavSection } from '@/lib/nav-config'
+import { COLOR_VARS, type NavSection } from '@/lib/nav-config'
 import { useNavLabel } from '@/lib/nav-i18n'
 import { cn } from '@/lib/utils'
-
-const MODULES: NavSection[] = [PENTESTING, HUELLA_DIGITAL]
-
-function ModuleTab({ module, active }: { module: NavSection; active: boolean }) {
-  const label = useNavLabel(module)
-  const Icon = module.icon
-  const c = COLOR_VARS[module.color]
-  return (
-    <Link
-      href={module.href}
-      aria-current={active ? 'page' : undefined}
-      className={cn(
-        'flex items-center gap-2 rounded-md px-3 py-1.5 font-mono text-xs font-semibold transition-colors',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cyber-accent)]',
-        active
-          ? 'bg-[rgba(var(--c-rgb),0.14)] text-[var(--c-fg)]'
-          : 'text-muted-foreground hover:bg-[rgba(var(--c-rgb),0.07)] hover:text-foreground',
-      )}
-      style={{ ['--c-fg' as string]: c.fg, ['--c-rgb' as string]: c.rgb }}
-    >
-      <Icon aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
-      {label}
-    </Link>
-  )
-}
 
 interface ModuleHeaderProps {
   /** Módulo actual: PENTESTING o HUELLA_DIGITAL (lib/nav-config.tsx) */
@@ -70,22 +43,11 @@ export function ModuleHeader({ section, title, description, children, className 
         style={{ background: `radial-gradient(circle, rgba(${c.rgb},0.45), transparent 70%)` }}
       />
 
-      <div className="relative flex flex-wrap items-center justify-between gap-3">
-        <nav aria-label={t('breadcrumb')} className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
-          <span>{t('security')}</span>
-          <span aria-hidden="true">/</span>
-          <span style={{ color: c.fg }} aria-current="page">{label}</span>
-        </nav>
-
-        <nav
-          aria-label={t('switchLabel')}
-          className="flex items-center gap-1 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--secondary))]/40 p-1"
-        >
-          {MODULES.map(m => (
-            <ModuleTab key={m.id} module={m} active={m.id === section.id} />
-          ))}
-        </nav>
-      </div>
+      <nav aria-label={t('breadcrumb')} className="relative flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
+        <span>{t('security')}</span>
+        <span aria-hidden="true">/</span>
+        <span style={{ color: c.fg }} aria-current="page">{label}</span>
+      </nav>
 
       <div className="relative mt-4 flex items-start gap-4">
         <span

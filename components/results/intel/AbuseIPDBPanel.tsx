@@ -1,5 +1,5 @@
 'use client'
-// components/results/intel/AbuseIPDBPanel.tsx — SecureScan Pro v5.1
+// components/results/intel/AbuseIPDBPanel.tsx — PentaWark v5.1
 // Panel de reputación de IP vía AbuseIPDB. Mismo patrón que VirusTotalPanel.
 
 import { ShieldAlert, ExternalLink, Globe2 } from 'lucide-react'

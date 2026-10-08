@@ -1,5 +1,5 @@
 'use client'
-// components/results/intel/SafeBrowsingPanel.tsx — SecureScan Pro v5.1
+// components/results/intel/SafeBrowsingPanel.tsx — PentaWark v5.1
 // Panel de Google Safe Browsing — misma base que usan Chrome/Firefox para
 // bloquear sitios maliciosos. Mismo patrón que los otros 6 paneles.
 

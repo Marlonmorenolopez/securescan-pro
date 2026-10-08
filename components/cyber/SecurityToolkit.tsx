@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/SecurityToolkit.tsx — SecureScan Pro · Home v3
+// components/cyber/SecurityToolkit.tsx — PentaWark · Home v3
 //
 // Grid de las herramientas reales del orchestrator. No mantiene su propia
 // lista de datos: recibe `tools` desde app/page.tsx (función getTools()),

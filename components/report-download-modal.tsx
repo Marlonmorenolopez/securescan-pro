@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * ReportDownloadModal — SecureScan Pro v5.0
+ * ReportDownloadModal — PentaWark v5.0
  *
  * Modal de descarga de reportes con selección de formato,
  * nombre automático con fecha/hora y diálogo "Guardar como...".

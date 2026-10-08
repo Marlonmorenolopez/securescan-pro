@@ -1,8 +1,7 @@
 # ESTRUCTURA DEL PROYECTO
-## SecureScan Pro v3.0 — Árbol de Archivos y Responsabilidades
+## PentaWark v3.0 — Árbol de Archivos y Responsabilidades
 
 **Autor:** Tecnico en Seguridad de Aplicaciones Web  
-**Institución:** SENA — Servicio Nacional de Aprendizaje (Colombia)  
 **Programa:** Técnico en Seguridad de Aplicaciones Web  
 **Fecha de actualización:** Junio 2026  
 
@@ -33,7 +32,7 @@
 
 ## 1. VISTA GENERAL DEL PROYECTO
 
-SecureScan Pro es un monorepo que contiene el frontend Next.js y el backend Flask en un único repositorio. La raíz del repositorio aloja el proyecto Next.js, mientras que el backend reside completamente dentro del subdirectorio `server/`. Toda la infraestructura de contenedores se define desde la raíz mediante `docker-compose.yml`.
+PentaWark es un monorepo que contiene el frontend Next.js y el backend Flask en un único repositorio. La raíz del repositorio aloja el proyecto Next.js, mientras que el backend reside completamente dentro del subdirectorio `server/`. Toda la infraestructura de contenedores se define desde la raíz mediante `docker-compose.yml`.
 
 ```
 Tipo de proyecto:      Monorepo (frontend + backend en mismo repositorio)
@@ -592,7 +591,7 @@ Todos los módulos implementan `_simulate_scan()` como último fallback cuando l
 
 **Tamaño:** 1.689 líneas — el módulo más extenso del proyecto  
 **Clase principal:** `InjectionScanner`  
-**Responsabilidad:** Motor interno de detección activa de 10 técnicas de inyección web, desarrollado específicamente para SecureScan Pro.
+**Responsabilidad:** Motor interno de detección activa de 10 técnicas de inyección web, desarrollado específicamente para PentaWark.
 
 **Técnicas implementadas:**
 
@@ -997,7 +996,7 @@ URL.revokeObjectURL(url)
 **Responsabilidad:** Header de navegación global de la aplicación.
 
 **Contenido:**
-- Logo e ícono SVG de SecureScan Pro.
+- Logo e ícono SVG de PentaWark.
 - Links de navegación: Scanner, Historial, Laboratorio, Documentación.
 - Toggle de tema claro/oscuro (usando `next-themes`).
 - Indicador de estado de la API (badge verde/rojo basado en `/api/health`).
@@ -1204,7 +1203,7 @@ Directorio con 6 archivos Markdown que son servidos por la API Route `app/api/do
 
 ### public/icon.svg — Icono Principal
 
-SVG vectorial del logo de SecureScan Pro. Usado como favicon y en el header de la aplicación.
+SVG vectorial del logo de PentaWark. Usado como favicon y en el header de la aplicación.
 
 ---
 
@@ -1472,6 +1471,6 @@ USUARIO
 
 ---
 
-*Documento generado a partir de la inspección directa del código fuente de SecureScan Pro v3.0.*  
+*Documento generado a partir de la inspección directa del código fuente de PentaWark v3.0.*  
 *Árbol de archivos verificado contra el contenido real de SecureScan-main/.*  
-*SENA — Programa Técnico en Seguridad de Aplicaciones Web — Colombia, 2026*
+*PentaWark — Cybersecurity · Ethical Hacking · Digital Intelligence*

@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/SecurityGauge.tsx — SecureScan Pro v5.0 · 3D Concentric Holographic Gauge
+// components/cyber/SecurityGauge.tsx — PentaWark v5.0 · 3D Concentric Holographic Gauge
 
 import { useMemo } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'

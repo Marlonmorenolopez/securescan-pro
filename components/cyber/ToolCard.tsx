@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/ToolCard.tsx — SecureScan Pro v5.0
+// components/cyber/ToolCard.tsx — PentaWark v5.0
 // Tarjeta de herramienta individual, reutilizada en /scanner, /osint,
 // /code-scan y /lab. Evoluciona CyberCard (no lo duplica): agrega
 // superficie "glass" con glow controlado por categoría/estado, y un

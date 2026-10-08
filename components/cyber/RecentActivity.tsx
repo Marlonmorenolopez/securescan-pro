@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/RecentActivity.tsx — SecureScan Pro · Home v3
+// components/cyber/RecentActivity.tsx — PentaWark · Home v3
 //
 // Lista resumida de escaneos recientes, con el mismo formato de fila que
 // app/history/page.tsx → ScanRow (target, fecha, duración, grade, estado).

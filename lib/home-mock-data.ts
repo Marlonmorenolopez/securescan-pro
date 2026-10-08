@@ -1,4 +1,4 @@
-// lib/home-mock-data.ts — SecureScan Pro · Home v3
+// lib/home-mock-data.ts — PentaWark · Home v3
 //
 // Datos de EJEMPLO (mock) para los bloques "Security Overview",
 // "Results Dashboard Preview" y "Recent Activity" del Home.

@@ -1,5 +1,5 @@
 'use client'
-// components/scan-progress.tsx — SecureScan Pro v5.0 · Holographic Scan Pipeline & Execution Monitor
+// components/scan-progress.tsx — PentaWark v5.0 · Holographic Scan Pipeline & Execution Monitor
 
 import { useMemo, useState, useEffect } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'

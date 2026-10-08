@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/HoloDigitalInfrastructure.tsx — SecureScan Pro v5.0 · 3D Holographic Digital Infrastructure
+// components/cyber/HoloDigitalInfrastructure.tsx — PentaWark v5.0 · 3D Holographic Digital Infrastructure
 
 import { useMemo } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'

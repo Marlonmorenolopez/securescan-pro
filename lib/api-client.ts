@@ -428,10 +428,11 @@ export async function getScanResults(
 }
 
 /**
- * Obtiene el historial de todos los escaneos.
+ * Obtiene el historial de escaneos de PENTESTING (el backend lo filtra por
+ * módulo; el historial de Huella Digital se consulta con ?module=footprint).
  */
 export async function getScanHistory(): Promise<ApiResponse<ScanHistoryResponse>> {
-  return apiRequest<ScanHistoryResponse>('/api/history')
+  return apiRequest<ScanHistoryResponse>('/api/history?module=pentesting')
 }
 
 /**

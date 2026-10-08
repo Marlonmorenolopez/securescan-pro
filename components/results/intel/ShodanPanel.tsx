@@ -1,5 +1,5 @@
 'use client'
-// components/results/intel/ShodanPanel.tsx — SecureScan Pro v5.1
+// components/results/intel/ShodanPanel.tsx — PentaWark v5.1
 // Panel de exposición externa vía Shodan InternetDB. Mismo patrón que
 // VirusTotalPanel / AbuseIPDBPanel.
 

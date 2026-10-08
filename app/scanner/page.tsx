@@ -1,19 +1,16 @@
 'use client'
-// app/scanner/page.tsx — SecureScan Pro v5.0 · Pentesting
+// app/scanner/page.tsx — PentaWark v5.0 · Pentesting
 //
 // Experiencia dedicada a PENTESTING: evaluación de seguridad, reconocimiento,
 // enumeración, web security, autenticación, SQL injection y explotación con
 // las 12 herramientas reales del Skill Registry (lib/skills.ts). El estado y
-// los resultados reales del análisis vienen de ScanProvider (ahora en
-// app/layout.tsx, compartido con /footprint) a través de
-// lib/scan-extractors.ts, que deriva las herramientas del Registry en vez de
-// duplicar la lista aquí. Los resultados de Huella Digital que ese mismo
-// análisis puede traer (threat_intel) NO se presentan en esta página — ver
-// /footprint.
+// los resultados reales del análisis vienen de ScanProvider (app/layout.tsx;
+// exclusivo de Pentesting) a través de lib/scan-extractors.ts, que deriva las
+// herramientas del Registry en vez de duplicar la lista aquí. Huella Digital
+// tiene su propio estado (lib/footprint-context.tsx) y no se mezcla con este.
 
 import { Suspense, useEffect, useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import Link from 'next/link'
 import { Header }           from '@/components/header'
 import { ScanForm }         from '@/components/scan-form'
 import { ScanProgress }     from '@/components/scan-progress'
@@ -28,14 +25,14 @@ import { PENTESTING } from '@/lib/nav-config'
 import { useNavDescription } from '@/lib/nav-i18n'
 import { getToolDocs, getSkillSvgIcon } from '@/lib/tool-docs'
 import {
-  getPentestingToolStats, extractSeverityCounts, getScanScope,
+  getPentestingToolStats, extractSeverityCounts,
   type Severity, type PentestToolStat,
 } from '@/lib/scan-extractors'
 import { useTranslations } from 'next-intl'
 import type { SecurityScore } from '@/lib/api-client'
 import { staggerContainer, staggerItem } from '@/lib/motion'
 import {
-  Loader2, Shield, AlertTriangle, ExternalLink, CheckCircle2, ArrowRight,
+  Loader2, Shield, AlertTriangle, ExternalLink, CheckCircle2,
 } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { cn } from '@/lib/utils'
@@ -331,11 +328,9 @@ function ScannerError({ error, reset }: { error: Error; reset: () => void }) {
 // ─── Contenido principal SOC ──────────────────────────────────────────────────
 function ScannerContent() {
   const { currentScan: latestScan, error, clearError, isLoading } = useScan()
-  // El estado del análisis es compartido con /footprint. Un análisis lanzado
-  // desde Huella Digital SIN herramientas de Pentesting no es un resultado de
-  // Pentesting: aquí no se presenta como tal (se avisa y se enlaza).
-  const currentScan = latestScan && getScanScope(latestScan).pentesting ? latestScan : null
-  const footprintOnlyScan = latestScan && !currentScan ? latestScan : null
+  // ScanProvider es exclusivo de Pentesting: todo lo que contiene es un
+  // análisis de Pentesting.
+  const currentScan = latestScan
   const [mounted, setMounted] = useState(false)
   const [selectedToolId, setSelectedToolId] = useState<string | null>(null)
   const tDocs = useTranslations()
@@ -363,7 +358,6 @@ function ScannerContent() {
   )
 
   const toolStats = useMemo(() => getPentestingToolStats(currentScan), [currentScan])
-  const scope = useMemo(() => getScanScope(currentScan), [currentScan])
 
   if (!mounted) return <ScannerSkeleton />
 
@@ -413,23 +407,6 @@ function ScannerContent() {
             <ScanForm />
           </div>
 
-          {/* ── Análisis de solo Huella Digital (no es un resultado de Pentesting) ── */}
-          {footprintOnlyScan && (
-            <CyberCard variant="ghost" padding="p-4" className="mx-auto w-full max-w-3xl border-[rgba(var(--cyber-accent-rgb),0.20)]">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-xs text-muted-foreground">
-                  {t('footprintOnlyNotice', { target: footprintOnlyScan.target })}
-                </p>
-                <Link
-                  href="/footprint"
-                  className="inline-flex items-center gap-1.5 rounded-md border border-[rgba(var(--cyber-accent-rgb),0.35)] px-3 py-1.5 font-mono text-xs font-semibold text-[var(--cyber-accent)] transition-colors hover:bg-[rgba(var(--cyber-accent-rgb),0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cyber-accent)]"
-                >
-                  {t('footprintOnlyAction')} <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            </CyberCard>
-          )}
-
           {/* ── Iniciando ── */}
           {isLoading && !latestScan && (
             <div className="flex flex-col items-center justify-center gap-3 py-16 text-muted-foreground">
@@ -473,13 +450,6 @@ function ScannerContent() {
             <section className="w-full">
               <ResultsDashboard />
             </section>
-          )}
-
-          {/* ── Huella Digital: aviso solo si este análisis no la incluyó ── */}
-          {isCompleted && !scope.footprint && (
-            <p className="text-center font-mono text-xs text-muted-foreground">
-              {t('footprintNotIncluded')}
-            </p>
           )}
 
           {/* ── Estado vacío ── */}

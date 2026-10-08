@@ -1,5 +1,5 @@
 'use client'
-// components/code-scan-history-list.tsx — SecureScan Pro v5.1
+// components/code-scan-history-list.tsx — PentaWark v5.1
 // Lista de análisis de código pasados (Grupo 3). Vive dentro de
 // app/history/page.tsx, como vista separada de los escaneos web porque
 // los code-scans tienen una forma de datos distinta (source/summary en

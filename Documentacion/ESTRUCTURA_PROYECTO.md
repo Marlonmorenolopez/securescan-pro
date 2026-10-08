@@ -1,8 +1,7 @@
 # ESTRUCTURA DEL PROYECTO
-## SecureScan Pro v5.0 — Árbol de Archivos y Responsabilidades
+## PentaWark v5.0 — Árbol de Archivos y Responsabilidades
 
 **Autor:** Técnico en Seguridad de Aplicaciones Web
-**Institución:** SENA — Servicio Nacional de Aprendizaje (Colombia)
 **Programa:** Técnico en Seguridad de Aplicaciones Web
 **Fecha de actualización:** Julio 2026
 
@@ -34,7 +33,7 @@
 
 ## 1. VISTA GENERAL DEL PROYECTO
 
-SecureScan Pro v5.0 es un monorepo que contiene el frontend Next.js y el backend Flask en un único repositorio. La raíz del repositorio aloja el proyecto Next.js, mientras que el backend reside completamente dentro del subdirectorio `server/`. Toda la infraestructura de contenedores se define desde la raíz mediante `docker-compose.yml`.
+PentaWark v5.0 es un monorepo que contiene el frontend Next.js y el backend Flask en un único repositorio. La raíz del repositorio aloja el proyecto Next.js, mientras que el backend reside completamente dentro del subdirectorio `server/`. Toda la infraestructura de contenedores se define desde la raíz mediante `docker-compose.yml`.
 
 ```
 Tipo de proyecto:      Monorepo (frontend + backend en mismo repositorio)
@@ -420,7 +419,7 @@ Coordina la ejecución secuencial de los 11 módulos, gestiona timeouts con `thr
 
 **Líneas:** 1.720 — el más extenso del proyecto | **Clase:** `InjectionScanner`
 
-Motor desarrollado desde cero para SecureScan Pro. Detecta activamente 10 técnicas de inyección:
+Motor desarrollado desde cero para PentaWark. Detecta activamente 10 técnicas de inyección:
 
 | # | Técnica | Subtipos |
 |---|---|---|
@@ -1042,6 +1041,6 @@ USUARIO
 
 ---
 
-*Documento actualizado a partir del código fuente real de SecureScan Pro v5.0.*
+*Documento actualizado a partir del código fuente real de PentaWark v5.0.*
 *Métricas verificadas directamente del repositorio: backend 12.158 líneas · frontend ~15.294 líneas · total ~28.252 líneas.*
-*SENA — Programa Técnico en Seguridad de Aplicaciones Web — Colombia, Julio 2026*
+*PentaWark — Cybersecurity · Ethical Hacking · Digital Intelligence*

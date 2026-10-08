@@ -1,4 +1,4 @@
-// tailwind.config.ts — SecureScan Pro v5.0 · Cyber Neon Theme
+// tailwind.config.ts — PentaWark v5.0 · Cyber Neon Theme
 import type { Config } from "tailwindcss"
 
 const config: Config = {

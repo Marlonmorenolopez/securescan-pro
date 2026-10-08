@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/HoloPanel.tsx — SecureScan Pro v5.0 · Holographic HUD Panel
+// components/cyber/HoloPanel.tsx — PentaWark v5.0 · Holographic HUD Panel
 
 import { ReactNode, forwardRef } from 'react'
 import { cn } from '@/lib/utils'

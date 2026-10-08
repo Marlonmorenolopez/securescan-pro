@@ -1,16 +1,16 @@
 'use client'
-// components/footprint/FootprintForm.tsx — SecureScan Pro v5.0
+// components/footprint/FootprintForm.tsx — PentaWark v5.0
 //
 // Lanzador del módulo HUELLA DIGITAL. Independiente de Pentesting (Fase 1.5):
 // usa su propio endpoint, POST /api/footprint, vía startFootprintScan() de
-// scan-context -- ya no pasa por startScan()/POST /api/scan con un preset de
-// herramientas de Pentesting en `false`. Las fuentes vienen del Skill
-// Registry (categoría huella-digital), agrupadas por subgrupo.
+// su propio contexto (lib/footprint-context) -- sin ningún estado compartido
+// con Pentesting. Las fuentes vienen del Skill Registry (categoría
+// huella-digital), agrupadas por subgrupo.
 
 import { useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { Fingerprint, Loader2, KeyRound, Info, Radar } from 'lucide-react'
-import { useScan } from '@/lib/scan-context'
+import { Fingerprint, Loader2, KeyRound, Info } from 'lucide-react'
+import { useFootprint } from '@/lib/footprint-context'
 import { getFootprintSkills } from '@/lib/scan-extractors'
 import { HUELLA_DIGITAL, COLOR_VARS } from '@/lib/nav-config'
 import { useGroupLabel } from '@/lib/nav-i18n'
@@ -34,7 +34,7 @@ function GroupLabel({ groupKey }: { groupKey: string }) {
 
 export function FootprintForm() {
   const t = useTranslations('footprint.form')
-  const { startFootprintScan, isScanning } = useScan()
+  const { startFootprintScan, isScanning } = useFootprint()
   const c = COLOR_VARS[HUELLA_DIGITAL.color]
 
   const skills = useMemo(() => getFootprintSkills(), [])
@@ -158,7 +158,6 @@ export function FootprintForm() {
         </fieldset>
 
         <div id="footprint-note" className="space-y-2 rounded-lg border border-[hsl(var(--border))] p-3 text-xs leading-relaxed text-muted-foreground">
-          <p className="flex items-start gap-2"><Radar aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />{t('noteScope')}</p>
           <p className="flex items-start gap-2"><KeyRound aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />{t('noteApiKeys')}</p>
           <p className="flex items-start gap-2"><Info aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />{t('notePublicTargets')}</p>
         </div>

@@ -1,5 +1,5 @@
 'use client'
-// components/particles-provider.tsx — SecureScan Pro · Home v3
+// components/particles-provider.tsx — PentaWark · Home v3
 //
 // Envuelve la app con NextParticlesProvider (paquete oficial @tsparticles/nextjs,
 // pensado para evitar el mismatch de SSR que tsparticles tiene en Next.js).

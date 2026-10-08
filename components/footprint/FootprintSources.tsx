@@ -1,5 +1,5 @@
 'use client'
-// components/footprint/FootprintSources.tsx — SecureScan Pro v5.0
+// components/footprint/FootprintSources.tsx — PentaWark v5.0
 //
 // Cobertura de las 7 fuentes de Huella Digital (ToolCard + ToolDetailDrawer)
 // y detalle completo por fuente reutilizando los paneles existentes de

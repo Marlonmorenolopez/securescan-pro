@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/Sidebar.tsx — SecureScan Pro v5.0
+// components/cyber/Sidebar.tsx — PentaWark v5.0
 // Navegación lateral por secciones funcionales (Security, Laboratorios,
 // Análisis, Operaciones), con grupos expandibles/contraíbles y colapso
 // completo a "rail" de iconos. Todas las rutas son las EXISTENTES de la
@@ -223,7 +223,7 @@ export function Sidebar() {
           <SecureScanIcon className="h-7 w-7 shrink-0" />
           {!rail && (
             <div className="flex flex-col leading-tight lg:group-data-[collapsed=false]:flex">
-              <span className="font-mono text-sm font-semibold">SecureScan Pro</span>
+              <span className="font-mono text-sm font-semibold">PentaWark</span>
               <span className="font-mono text-[10px] text-[var(--cyber-accent)]">v5.0</span>
             </div>
           )}

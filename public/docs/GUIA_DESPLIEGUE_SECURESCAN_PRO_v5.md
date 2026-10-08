@@ -1,8 +1,7 @@
 # GUÍA DE DESPLIEGUE COMPLETA
-## SecureScan Pro v5.0 — Instalación, Configuración y Operación
+## PentaWark v5.0 — Instalación, Configuración y Operación
 
 **Autor:** Técnico en Seguridad de Aplicaciones Web
-**Institución:** SENA — Servicio Nacional de Aprendizaje (Colombia)
 **Programa:** Técnico en Seguridad de Aplicaciones Web
 **Versión del sistema:** 5.0.0 (Dockerfile backend v3.1.3 / Dockerfile frontend v4)
 **Fecha de actualización:** Julio 2026
@@ -70,13 +69,13 @@
 
 ## 2. PRERREQUISITOS DE SOFTWARE
 
-Antes de instalar SecureScan Pro, necesitas tener estos tres programas instalados en tu sistema.
+Antes de instalar PentaWark, necesitas tener estos tres programas instalados en tu sistema.
 
 ---
 
 ### 2.1 Docker Engine con el plugin Compose v2
 
-SecureScan Pro requiere el **plugin Compose v2** (`docker compose` con espacio). **No** usa `docker-compose` con guión (versión v1 legacy).
+PentaWark requiere el **plugin Compose v2** (`docker compose` con espacio). **No** usa `docker-compose` con guión (versión v1 legacy).
 
 **Verificar si ya está instalado:**
 ```bash
@@ -386,7 +385,7 @@ El script ejecuta estos pasos automáticamente:
 
 ```
 ════════════════════════════════════════
-  SecureScan Pro — Todo listo 🚀
+  PentaWark — Todo listo 🚀
 ════════════════════════════════════════
 
   Frontend:    http://localhost:3000
@@ -554,7 +553,7 @@ bash verify.sh
 Salida esperada cuando todo está correcto:
 ```
 ══ Resultado: 22 ✓  0 ✗ ══
-🟢 Todo OK — SecureScan Pro listo para usar
+🟢 Todo OK — PentaWark listo para usar
 ```
 
 ### 7.2 Verificación manual de la API
@@ -614,7 +613,7 @@ docker compose exec api curl -sf -o /dev/null -w "%{http_code}" http://webgoat:8
 
 | Servicio | URL | ¿Para qué? |
 |---|---|---|
-| 🖥️ **SecureScan Pro** | http://localhost:3000 | Interfaz principal |
+| 🖥️ **PentaWark** | http://localhost:3000 | Interfaz principal |
 | ⚙️ **API Health** | http://localhost:5000/api/health | Verificar estado |
 | 🍊 **Juice Shop** | http://localhost:3001 | Laboratorio OWASP |
 | 💀 **DVWA** | http://localhost:3002 | Laboratorio vulnerable PHP |
@@ -655,7 +654,7 @@ docker compose exec api curl -sf -o /dev/null -w "%{http_code}" http://webgoat:8
 | **Juice Shop** | http://localhost:3001 | `admin@juice-sh.op` | `admin123` |
 | **WebGoat** | http://localhost:3003/WebGoat/ | `securescan` | `Password` |
 
-> **Nota sobre DVWA:** SecureScan Pro fuerza automáticamente el nivel de seguridad a `low` antes de cada escaneo. Esto es necesario para que todas las herramientas puedan detectar las vulnerabilidades correctamente.
+> **Nota sobre DVWA:** PentaWark fuerza automáticamente el nivel de seguridad a `low` antes de cada escaneo. Esto es necesario para que todas las herramientas puedan detectar las vulnerabilidades correctamente.
 
 ### 9.2 Credenciales de infraestructura
 
@@ -1344,6 +1343,6 @@ Esto garantiza que otras máquinas en la misma red local no pueden acceder direc
 
 ---
 
-*Guía actualizada a partir del código fuente real de SecureScan Pro v5.0.*
+*Guía actualizada a partir del código fuente real de PentaWark v5.0.*
 *Archivos verificados: `start.sh` · `docker-compose.yml` · `server/Dockerfile` · `Dockerfile.frontend` · `.env.example`*
-*SENA — Programa Técnico en Seguridad de Aplicaciones Web — Colombia, Julio 2026*
+*PentaWark — Cybersecurity · Ethical Hacking · Digital Intelligence*

@@ -1,8 +1,8 @@
-# SecureScan Pro v3.0 - Security Tools
+# PentaWark v3.0 - Security Tools
 
 ## Integrated Tools Overview
 
-SecureScan Pro integrates 6 industry-standard security tools in an orchestrated 7-step pipeline.
+PentaWark integrates 6 industry-standard security tools in an orchestrated 7-step pipeline.
 
 ---
 

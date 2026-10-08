@@ -1,4 +1,4 @@
-// lib/motion.ts — SecureScan Pro v5.0
+// lib/motion.ts — PentaWark v5.0
 // Archivo central de Framer Motion variants.
 //
 // REGLAS DE USO:

@@ -1,4 +1,4 @@
-# AUDIT — Sistema de Skills de SecureScan Pro v5.0
+# AUDIT — Sistema de Skills de PentaWark v5.0
 
 Alcance: solo el sistema de Skills/Tools y su extensibilidad en el **frontend**.
 `server/`, Docker, Redis, Celery, orquestador, módulos de seguridad, endpoints y

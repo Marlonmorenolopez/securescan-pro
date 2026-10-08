@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/SecurityMetrics.tsx — SecureScan Pro · Home v3
+// components/cyber/SecurityMetrics.tsx — PentaWark · Home v3
 //
 // Gráficos de severidad (donut) y por herramienta (barras), usando Recharts
 // (ya presente en el proyecto — no se agregó ninguna librería de charting

@@ -1,10 +1,10 @@
 @echo off
 setlocal enabledelayedexpansion
-title SecureScan Pro - Verificacion de estado
+title PentaWark - Verificacion de estado
 color 0A
 
 echo ============================================================
-echo   SecureScan Pro - Verificacion de estado de contenedores
+echo   PentaWark - Verificacion de estado de contenedores
 echo ============================================================
 echo.
 

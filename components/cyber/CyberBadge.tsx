@@ -1,4 +1,4 @@
-// components/cyber/CyberBadge.tsx — SecureScan Pro v5.0
+// components/cyber/CyberBadge.tsx — PentaWark v5.0
 // Badge de severidad/estado con dot de color pulsante.
 // Soporta las 5 severidades estándar de CVSS más estados operacionales.
 

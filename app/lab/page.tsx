@@ -1,5 +1,5 @@
 'use client'
-// app/lab/page.tsx — SecureScan Pro v5.0 · Laboratorio
+// app/lab/page.tsx — PentaWark v5.0 · Laboratorio
 //
 // Migración i18n: 100% del texto de UI (labels, badges, logs dinámicos)
 // ahora usa t('lab.xxx'). Fix de ortografía incluido: "Practica" → "Práctica",

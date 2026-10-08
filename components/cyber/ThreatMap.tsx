@@ -1,8 +1,8 @@
 'use client'
-// components/cyber/ThreatMap.tsx — SecureScan Pro · Home v3
+// components/cyber/ThreatMap.tsx — PentaWark · Home v3
 //
 // "Global Threat Landscape (Illustrative)" — visualización CONCEPTUAL.
-// IMPORTANTE: SecureScan no geolocaliza ataques ni consume threat-intel feeds.
+// IMPORTANTE: PentaWark no geolocaliza ataques ni consume threat-intel feeds.
 // Este componente es 100% decorativo/ilustrativo: simula actividad global
 // para comunicar la identidad "SOC enterprise" del producto, sin pretender
 // representar datos reales o ataques en vivo.
@@ -206,7 +206,7 @@ export function ThreatMap({ className }: ThreatMapProps) {
       {/* Disclaimer textual explícito */}
       <div className="border-t border-[hsl(var(--border))] px-5 py-3">
         <p className="font-mono text-[10px] leading-relaxed text-muted-foreground/70">
-          Conceptual Threat Visualization — datos ilustrativos. SecureScan no geolocaliza
+          Conceptual Threat Visualization — datos ilustrativos. PentaWark no geolocaliza
           ataques ni integra feeds de threat intelligence en esta versión.
         </p>
       </div>

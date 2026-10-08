@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/CyberTable.tsx — SecureScan Pro v5.0
+// components/cyber/CyberTable.tsx — PentaWark v5.0
 // Tabla de datos con:
 //   - Header sticky con fondo semi-opaco
 //   - Filas con hover cian suave

@@ -1,5 +1,5 @@
 'use client'
-// components/osint-history-list.tsx — SecureScan Pro
+// components/osint-history-list.tsx — PentaWark
 // Historial unificado de OSINT (breach-check, username search, búsqueda
 // profunda/Sherlock, theHarvester). Vive dentro de app/history/page.tsx,
 // como vista separada porque los Jobs de OSINT tienen una forma de datos

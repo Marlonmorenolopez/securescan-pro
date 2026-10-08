@@ -59,12 +59,10 @@ export interface ScanResult {
   sqli_results: any[]          // Resultados de SQLMap
   brute_force_results: any[]   // Resultados de Patator
   ffuf_endpoints: any[]        // Resultados de ffuf
-  threat_intel?: Record<string, any>   // Huella Digital (7 fuentes) — ver lib/scan-extractors.ts
   /**
    * Opciones con las que se lanzó el análisis. El backend las devuelve dentro
    * del estado del scan (scan_data['options']); mientras llega el primer
-   * poll se rellenan con las que envió el frontend. Permite saber qué módulo
-   * (Pentesting y/o Huella Digital) participó en el análisis.
+   * poll se rellenan con las que envió el frontend.
    */
   options?: { tools?: Record<string, unknown> }
   score: SecurityScore
@@ -82,12 +80,6 @@ export interface ScanOptions {
     sqlmap?: boolean
     patator?: boolean
     ffuf?: boolean
-    // Huella Digital (Threat Intel) -- corre en paralelo, no es un "paso"
-    // secuencial más. threat_intel es el switch maestro (todas o ninguna);
-    // threat_intel_tools permite elegir cuáles de las 7 corren cuando el
-    // maestro está activo. undefined = correr las 7 (comportamiento previo).
-    threat_intel?: boolean
-    threat_intel_tools?: string[]
   }
   parallel?: boolean
   dry_run?: boolean
@@ -104,7 +96,6 @@ interface ScanContextType {
   isLoading: boolean   // Alias para compatibilidad
   error: string | null
   startScan: (target: string, options?: ScanOptions) => Promise<void>
-  startFootprintScan: (target: string, enabledTools?: string[]) => Promise<void>
   cancelScan: () => void
   clearError: () => void
   clearHistory: () => void
@@ -120,7 +111,6 @@ const AUTH_HEADER: Record<string, string> = API_TOKEN ? { 'X-API-Token': API_TOK
 
 // 🆕 ACTUALIZADO: Steps con ZAP Spider y ZAP (Active) separados
 const defaultSteps: ScanStep[] = [
-  { name: 'Huella Digital', status: 'pending', progress: 0 },
   { name: 'Wappalyzer',   status: 'pending', progress: 0 },
   { name: 'Nmap',         status: 'pending', progress: 0 },
   { name: 'Patator',      status: 'pending', progress: 0 },
@@ -168,13 +158,7 @@ export function ScanProvider({ children }: { children: ReactNode }) {
       clearTimeout(pollingIntervalRef.current)
     }
 
-    // Herramientas que se envían al backend. Los 10 flags de Pentesting ya se
-    // enviaban; `threat_intel` (switch maestro de Huella Digital) y
-    // `threat_intel_tools` (fuentes elegidas) SÍ los lee el backend
-    // (run_scan → tools.get('threat_intel', True) / tools.get('threat_intel_tools'))
-    // pero antes se descartaban aquí y la selección de la UI no tenía efecto.
-    // Solo se envían si el caller los definió: si no, el backend conserva su
-    // comportamiento por defecto (las 7 fuentes).
+    // Herramientas de Pentesting que se envían al backend.
     const requestedTools: Record<string, unknown> = {
       wappalyzer:   options?.tools?.wappalyzer   ?? true,
       nmap:         options?.tools?.nmap         ?? true,
@@ -186,12 +170,6 @@ export function ScanProvider({ children }: { children: ReactNode }) {
       sqlmap:       options?.tools?.sqlmap       ?? false,
       patator:      options?.tools?.patator      ?? false,
       ffuf:         options?.tools?.ffuf         ?? true,
-    }
-    if (options?.tools?.threat_intel !== undefined) {
-      requestedTools.threat_intel = options.tools.threat_intel
-    }
-    if (options?.tools?.threat_intel_tools !== undefined) {
-      requestedTools.threat_intel_tools = options.tools.threat_intel_tools
     }
 
     // 🆕 ACTUALIZADO: Score completo con todas las propiedades requeridas
@@ -212,7 +190,6 @@ export function ScanProvider({ children }: { children: ReactNode }) {
       sqli_results: [],
       brute_force_results: [],
       ffuf_endpoints: [],
-      threat_intel: {},
       options: { tools: requestedTools },
       score: {
         total: 0,
@@ -353,121 +330,6 @@ export function ScanProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  // Huella Digital (Threat Intel) — independiente de Pentesting (Fase 1.5).
-  // A diferencia de startScan(), NO hace polling: POST /api/footprint es
-  // síncrono y la respuesta ya llega con status 'completed'.
-  const startFootprintScan = useCallback(async (target: string, enabledTools?: string[]) => {
-    setError(null)
-    setIsScanning(true)
-    if (pollingIntervalRef.current) {
-      clearTimeout(pollingIntervalRef.current)
-    }
-
-    const baseScore: SecurityScore = {
-      total: 0,
-      grade: 'A' as Grade,
-      gradeDescription: 'Initializing scan...',
-      breakdown: { critical: 0, high: 0, medium: 0, low: 0, info: 0 } as SeverityBreakdown,
-      percentages: { critical: 0, high: 0, medium: 0, low: 0, info: 0 } as SeverityBreakdown,
-      exploitImpact: {
-        totalExploits: 0,
-        correlatedExploits: 0,
-        penalty: 0
-      },
-      metrics: {
-        totalVulnerabilities: 0,
-        totalExploits: 0,
-        maxCvss: 0,
-        criticalCount: 0,
-        highCount: 0
-      },
-      recommendations: [],
-      riskLevel: 'PROTEGIDO' as RiskLevel
-    }
-
-    const initialScan: ScanResult = {
-      id: '',
-      target,
-      startTime: new Date().toISOString(),
-      status: 'running',
-      steps: [{ name: 'Huella Digital', status: 'running', progress: 0 }],
-      technologies: [],
-      ports: [],
-      directories: [],
-      vulnerabilities: [],
-      exploits: [],
-      metasploit: [],
-      nuclei_findings: [],
-      sqli_results: [],
-      brute_force_results: [],
-      ffuf_endpoints: [],
-      threat_intel: {},
-      score: baseScore,
-    }
-    setCurrentScan(initialScan)
-
-    try {
-      abortControllerRef.current = new AbortController()
-      const response = await fetch(`${API_BASE}/api/footprint`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...AUTH_HEADER,
-        },
-        body: JSON.stringify({
-          target,
-          options: enabledTools !== undefined ? { tools: enabledTools } : {},
-        }),
-        signal: abortControllerRef.current.signal,
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        const base = errorData.error || `HTTP ${response.status}: ${response.statusText}`
-        throw new Error(errorData.reason ? `${base} (${errorData.reason})` : base)
-      }
-
-      const data = await response.json()
-
-      console.log('[FOOTPRINT DEBUG] respuesta completa:', data)
-      console.log('[FOOTPRINT DEBUG] threat_intel:', data.threat_intel)
-      console.log('[FOOTPRINT DEBUG] testssl:', data.threat_intel?.testssl)
-
-      const completedScan: ScanResult = {
-        ...initialScan,
-        id: data.id ?? '',
-        target: data.target ?? target,
-        startTime: data.startTime ?? initialScan.startTime,
-        endTime: data.endTime,
-        status: 'completed',
-        steps: [{ name: 'Huella Digital', status: 'completed', progress: 100 }],
-        threat_intel: data.threat_intel ?? {},
-        options: data.options,
-      }
-
-      setCurrentScan(completedScan)
-      setScanHistory(prev => [completedScan, ...prev.filter(s => s.id !== completedScan.id)].slice(0, 50))
-      setIsScanning(false)
-      if (abortControllerRef.current) {
-        abortControllerRef.current = null
-      }
-      toast.success('Huella Digital completada', {
-        description: target,
-      })
-    } catch (err: any) {
-      if (err.name !== 'AbortError') {
-        setError(err.message || 'Error ejecutando Huella Digital.')
-        setIsScanning(false)
-        setCurrentScan(prev =>
-          prev ? { ...prev, status: 'error', error: err.message } : null
-        )
-        toast.error('No se pudo completar Huella Digital', {
-          description: err.message || 'Error de conexión con el backend',
-        })
-      }
-    }
-  }, [])
-
   const cancelScan = useCallback(() => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
@@ -490,7 +352,7 @@ export function ScanProvider({ children }: { children: ReactNode }) {
 
   const refreshHistory = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/history`, {
+      const response = await fetch(`${API_BASE}/api/history?module=pentesting`, {
         headers: { ...AUTH_HEADER },
       })
       if (response.ok) {
@@ -545,7 +407,6 @@ export function ScanProvider({ children }: { children: ReactNode }) {
         isLoading: isScanning,
         error,
         startScan,
-        startFootprintScan,
         cancelScan,
         clearError,
         clearHistory,

@@ -1,5 +1,5 @@
 'use client'
-// components/results/intel/CrtShPanel.tsx — SecureScan Pro v5.1
+// components/results/intel/CrtShPanel.tsx — PentaWark v5.1
 // Panel de subdominios descubiertos vía Certificate Transparency (crt.sh).
 // Mismo patrón que VirusTotalPanel / AbuseIPDBPanel / ShodanPanel, pero acá
 // el hallazgo principal es una lista, no un score de riesgo.

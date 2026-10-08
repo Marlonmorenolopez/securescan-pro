@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/SecurityOverview.tsx — SecureScan Pro · Home v3
+// components/cyber/SecurityOverview.tsx — PentaWark · Home v3
 //
 // Fila de 4 KPIs estilo "SOC dashboard": Average Grade (gauge), Vulnerabilities
 // Found, Scans Completed, Risk Level.

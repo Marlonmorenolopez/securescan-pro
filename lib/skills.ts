@@ -1,4 +1,4 @@
-// lib/skills.ts — SecureScan Pro v5.0
+// lib/skills.ts — PentaWark v5.0
 //
 // SKILL REGISTRY — fuente ÚNICA de metadata estructural de cada herramienta
 // de seguridad ("Skill") disponible en el frontend.
@@ -61,7 +61,7 @@ export type TargetType = 'domain' | 'ip' | 'url' | 'username' | 'email' | 'repo'
 export interface SkillDocs {
   /** Comando/uso real, no traducido (es código, no prosa) */
   usage: string
-  /** URL de documentación oficial de la herramienta (no de SecureScan) */
+  /** URL de documentación oficial de la herramienta (no de PentaWark) */
   documentationUrl: string
 }
 
@@ -138,7 +138,7 @@ export const SKILLS: Skill[] = [
     targetSupport: ['domain', 'url'] },
   { id: 'injection-scanner', name: 'Injection Scanner', category: 'pentesting', subgroup: 'webSecurity', status: 'available', icon: ShieldCheck,
     docs: {
-      usage: `# Módulo propio de SecureScan (server/modules/injection_scanner.py): no tiene CLI.\n# Se activa con la opción SQLMap del formulario de Pentesting.\n# Técnicas: SQLi · NoSQLi · XPath · XXE · XSS · CMDi · Path Traversal · SSRF · SSTI · LDAP`,
+      usage: `# Módulo propio de PentaWark (server/modules/injection_scanner.py): no tiene CLI.\n# Se activa con la opción SQLMap del formulario de Pentesting.\n# Técnicas: SQLi · NoSQLi · XPath · XXE · XSS · CMDi · Path Traversal · SSRF · SSTI · LDAP`,
       documentationUrl: 'https://github.com/Marlonmorenolopez/SecureScan' },
     targetSupport: ['domain', 'url'] },
   { id: 'patator', name: 'Patator', category: 'pentesting', subgroup: 'authentication', status: 'available', icon: KeyRound, svgIconKey: 'Patator',

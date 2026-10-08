@@ -1,7 +1,7 @@
 {
-  "name": "securescan-pro",
+  "name": "pentawark",
   "version": "5.0.0",
-  "description": "SecureScan Pro - Plataforma de Análisis de Seguridad Automatizada",
+  "description": "PentaWark — Cybersecurity & Ethical Hacking Platform",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -90,5 +90,8 @@
     "node": ">=20.0.0",
     "pnpm": ">=8.0.0"
   },
-  "packageManager": "pnpm@8.15.0"
+  "packageManager": "pnpm@8.15.0",
+  "overrides": {
+    "postcss-selector-parser": "7.1.6"
+  }
 }

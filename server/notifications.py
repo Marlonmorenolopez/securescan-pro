@@ -276,7 +276,7 @@ def _dispatch_sync(event: str, scan: dict) -> None:
 
     email_to = notif_cfg.get('email_to') or (settings['email_to'] if settings['email_enabled'] else '') or NOTIFY_EMAIL_TO_DEFAULT
     if email_to:
-        subject = f"SecureScan Pro — {event} ({payload['target']})"
+        subject = f"PentaWark — {event} ({payload['target']})"
         body = (
             f"Evento: {event}\n"
             f"Job ID: {payload['jobId']}\n"

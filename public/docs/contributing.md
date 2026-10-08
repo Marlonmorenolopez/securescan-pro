@@ -1,4 +1,4 @@
-# SecureScan Pro v3.0 - Contributing Guide
+# PentaWark v3.0 - Contributing Guide
 
 ## Getting Started
 

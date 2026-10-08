@@ -1,5 +1,5 @@
 'use client'
-// app/history/page.tsx — SecureScan Pro v5.0 · Historial SOC
+// app/history/page.tsx — PentaWark v5.0 · Historial SOC
 // Semana 4: rediseño visual con sistema Cyber.
 // Lógica de datos 100% preservada (getScanHistory, deleteScan, filtros).
 
@@ -642,7 +642,7 @@ export default function HistoryPage() {
 
       <footer className="mt-auto border-t border-[hsl(var(--border))] py-5">
         <div className="container mx-auto px-4 text-center font-mono text-xs text-muted-foreground">
-          SecureScan Pro v5.0 · Proyecto Académico SENA
+          PentaWark v5.0 · Cybersecurity & Ethical Hacking Platform
         </div>
       </footer>
     </div>

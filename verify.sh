@@ -1,8 +1,8 @@
 #!/bin/bash
 # ============================================================
-# SecureScan Pro v3.0 — Verificación completa del sistema
+# PentaWark v3.0 — Verificación completa del sistema
 # ============================================================
-echo "═══ SecureScan Pro v3.0 — Verificación ═══"
+echo "═══ PentaWark v3.0 — Verificación ═══"
 PASS=0; FAIL=0
 
 check() {
@@ -65,7 +65,7 @@ check "Redis ping"           "docker compose exec redis redis-cli -a \${REDIS_PA
 echo ""
 echo "══ Resultado: $PASS ✓  $FAIL ✗ ══"
 if [ $FAIL -eq 0 ]; then
-    echo "🟢 Todo OK — SecureScan Pro listo para usar"
+    echo "🟢 Todo OK — PentaWark listo para usar"
 else
     echo "🔴 Hay $FAIL problema(s) — revisa los ✗ de arriba"
     echo ""

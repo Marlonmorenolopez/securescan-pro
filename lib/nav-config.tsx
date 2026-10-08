@@ -1,4 +1,4 @@
-// lib/nav-config.tsx — SecureScan Pro v5.0
+// lib/nav-config.tsx — PentaWark v5.0
 //
 // Catálogo ÚNICO de navegación y herramientas, consumido por:
 //   - components/cyber/Sidebar.tsx        (navegación lateral agrupada)
@@ -8,11 +8,9 @@
 // IMPORTANTE: esto es organización visual del FRONTEND. Cada `href` apunta
 // a una ruta que existe en la app (ver app/*/page.tsx) — no se inventan
 // funcionalidades nuevas. "Pentesting" (/scanner) y "Huella Digital"
-// (/footprint) son DOS módulos de interfaz independientes. En el backend
-// siguen ejecutándose dentro del mismo Web Scan orchestrator (el pipeline
-// de Pentesting y la fase paralela de Huella Digital), pero esa es una
-// decisión de ejecución: la separación es solo de presentación y no cambia
-// ningún contrato del backend.
+// (/footprint) son DOS módulos independientes, cada uno con su propio
+// estado en el frontend (ScanProvider / FootprintProvider) y su propio
+// historial en el backend (/api/history?module=...).
 
 import type { LucideIcon } from 'lucide-react'
 import {
@@ -109,9 +107,8 @@ export const OSINT: NavSection = {
 
 // Huella Digital: módulo propio con su experiencia en /footprint. Sus 7
 // fuentes (VirusTotal, AbuseIPDB, Shodan, crt.sh, testssl.sh, dnstwist,
-// Safe Browsing) corren en el backend como fase paralela del Web Scan
-// (ver scan-context.tsx → tools.threat_intel); la interfaz las presenta
-// aparte de las 12 herramientas de Pentesting.
+// Safe Browsing) se ejecutan con POST /api/footprint (ver
+// lib/footprint-context.tsx), aparte de las 12 herramientas de Pentesting.
 export const HUELLA_DIGITAL: NavSection = {
   id: 'huella-digital',
   label: 'Huella Digital',

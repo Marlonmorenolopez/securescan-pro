@@ -20,7 +20,7 @@
     "systemChecking": "Checking",
     "systemOnline": "System Online",
     "systemOffline": "System Offline",
-    "systemTooltip": "Connection status with the SecureScan backend",
+    "systemTooltip": "Connection status with the PentaWark backend",
     "github": "GitHub",
     "schedules": "Schedules",
     "settings": "Settings",
@@ -85,16 +85,11 @@
     "noFindings": "No findings detected",
     "startingPipeline": "Starting scan pipeline...",
     "emptyState": "Enter a target URL to start the analysis.",
-    "footerBrand": "SecureScan Pro v5.0 · Academic Project SENA",
+    "footerBrand": "PentaWark v5.0 · Cybersecurity & Ethical Hacking Platform",
     "footerLegal": "For ethical, authorized use in test environments only",
-    "footprintNotIncluded": "This scan didn't include Digital Footprint. Turn it on in Advanced Configuration or from the Digital Footprint module.",
     "formats": "Formats:",
     "optIn": "opt-in",
     "alsoRuns": "Also runs: {tools}",
-    "footprintToggleTitle": "Digital Footprint",
-    "footprintToggleBadge": "runs in parallel",
-    "footprintToggleHint": "Collects external signals (domains, infrastructure, reputation, TLS/SSL) during this same scan.",
-    "footprintToggleLink": "Choose sources in Digital Footprint",
     "kpi": {
       "critical": "Critical",
       "high": "High",
@@ -119,9 +114,7 @@
       "unexpected": "An unexpected error occurred.",
       "checklist": "Verify these are running:",
       "retry": "Retry"
-    },
-    "footprintOnlyNotice": "The latest scan ({target}) was launched with Digital Footprint only, so it has no Pentesting results.",
-    "footprintOnlyAction": "View in Digital Footprint"
+    }
   },
   "progress": {
     "scanning": "Scanning...",
@@ -228,9 +221,6 @@
     "noFfufDetail": "Enable ffuf in the scan configuration to discover hidden routes and endpoints.",
     "pentestingTitle": "Pentesting Results",
     "urgentAttention": "{count} require urgent attention",
-    "footprintLinkTitle": "This scan also collected Digital Footprint",
-    "footprintLinkDetail": "{withData} of {total} sources have real data. Results aren't mixed here — check them in their own module.",
-    "footprintLinkAction": "View Digital Footprint",
     "tabSummary": "Summary",
     "tabSummaryUnit": "total findings",
     "summarySeverityTitle": "Vulnerabilities by severity",
@@ -264,7 +254,7 @@
     "heroSubtitle": "Orchestrate 10 professional cybersecurity tools in an 11-phase pipeline. From reconnaissance to exploitation — with CVSS/EPSS scoring and pentest-style reports.",
     "ctaStartScan": "Start Scan",
     "ctaViewLabs": "View Labs",
-    "terminalWindowTitle": "securescan — bash",
+    "terminalWindowTitle": "pentawark — bash",
     "terminalLine1": "WordPress 6.4, Apache 2.4, PHP 8.1",
     "terminalLine2": "3 open ports: 22, 80, 443",
     "terminalLine3": "2 SQLi, 4 XSS, 1 CSRF found",
@@ -344,11 +334,11 @@
     "ctaNewScan": "New Scan",
     "ctaViewReports": "View Past Reports",
     "legalNotice": "For ethical and authorized use only · Colombian Law 1273/2009",
-    "footerTagline": "SENA Academic Project · For ethical and authorized use only"
+    "footerTagline": "PentaWark · For ethical and authorized use only"
   },
   "docs": {
     "pageTitle": "Documentation",
-    "pageSubtitle": "Complete guide to SecureScan Pro v5.0 tools and API",
+    "pageSubtitle": "Complete guide to PentaWark v5.0 tools and API",
     "tabTools": "Tools",
     "tabApi": "API",
     "tabArchitecture": "Architecture",
@@ -424,7 +414,7 @@
     "noRecentActivity": "No recent activity...",
     "manualCommandsTitle": "Manual Docker Commands",
     "manualCommandsSubtitle": "If you prefer to run containers from the terminal",
-    "footerTagline": "SecureScan Pro v5.0 · Docker Lab · Ethical and authorized use only",
+    "footerTagline": "PentaWark v5.0 · Docker Lab · Ethical and authorized use only",
     "logAppReady": "{name} ready — open http://localhost:{port}",
     "logStarting": "Starting {name}...",
     "logStartingHealthcheck": "{name} starting — waiting for healthcheck on port {port}...",
@@ -479,7 +469,7 @@
     "loadErrorTitle": "Could not load history",
     "retry": "Retry",
     "emptyTitle": "No schedules yet",
-    "emptyDetail": "Create one above so SecureScan Pro scans your target automatically.",
+    "emptyDetail": "Create one above so PentaWark scans your target automatically.",
     "weekdays": [
       "Sunday",
       "Monday",
@@ -514,7 +504,7 @@
     "emailPlaceholder": "alerts@yourcompany.com",
     "webhook": "Webhook",
     "webhookUrl": "URL",
-    "webhookPlaceholder": "https://your-service.com/webhooks/securescan",
+    "webhookPlaceholder": "https://your-service.com/webhooks/pentawark",
     "webhookSsrfNote": "URLs pointing to localhost, private IPs, or cloud metadata endpoints are not allowed (SSRF protection).",
     "events": "Events",
     "eventCompleted": "Job completed",
@@ -686,7 +676,7 @@
     "usage": "Real usage",
     "officialDocs": "Official documentation",
     "noDocs": "There's no detailed documentation for this tool in the project yet.",
-    "executionNote": "This tool doesn't run on its own: it runs as part of a single orchestrated Web Scan together with the rest of the Pentesting and Digital Footprint tools.",
+    "executionNote": "This tool doesn't run on its own: it runs as part of a single orchestrated Web Scan together with the rest of the Pentesting tools.",
     "status": {
       "idle": "Idle",
       "running": "Running",
@@ -707,8 +697,7 @@
   },
   "module": {
     "security": "Security",
-    "breadcrumb": "Breadcrumb",
-    "switchLabel": "Switch module"
+    "breadcrumb": "Breadcrumb"
   },
   "settingsPage": {
     "title": "Settings",
@@ -789,11 +778,11 @@
     "starting": "Starting Digital Footprint analysis…",
     "collecting": "Collecting data from external sources…",
     "partial": "Analysis in progress: showing the results received so far.",
-    "footerBrand": "SecureScan Pro v5.0 · Academic Project SENA",
+    "footerBrand": "PentaWark v5.0 · Cybersecurity & Ethical Hacking Platform",
     "footerLegal": "For ethical, authorized use only",
     "coverage": "{withData}/{total} sources with data",
     "coverageHint": "Sources that returned real data out of those that apply to this view",
-    "executionNote": "This source doesn't run individually: it runs in the Digital Footprint phase of the scan, in parallel with the Pentesting pipeline when both are active.",
+    "executionNote": "This source doesn't run individually: it runs in parallel with the other selected Digital Footprint sources.",
     "form": {
       "title": "Analyze external surface",
       "subtitle": "Launches only the Digital Footprint phase: no Pentesting tool is run.",
@@ -807,7 +796,6 @@
       "noSourcesSelected": "Select at least one source.",
       "submit": "Analyze digital footprint",
       "submitting": "Analyzing…",
-      "noteScope": "Uses the same backend scan with the Pentesting tools turned off and only the chosen sources.",
       "noteApiKeys": "VirusTotal, AbuseIPDB and Google Safe Browsing need their API key configured on the server; without it they return “no real data”.",
       "notePublicTargets": "External data only exists for public domains or IPs. With the local labs, sources usually answer “no real data”, and the server may restrict the allowed targets (see Settings)."
     },
@@ -829,9 +817,7 @@
     "status": {
       "target": "Target",
       "footprintPhase": "Digital Footprint phase",
-      "originShared": "Collected together with a Pentesting scan of the same target.",
       "originFootprintOnly": "Digital Footprint-only scan.",
-      "viewPentesting": "View Pentesting",
       "scan": {
         "pending": "Pending",
         "running": "Running",
@@ -1118,7 +1104,7 @@
     },
     "zap-spider": {
       "short": "Crawls URLs, paths and forms before the active scan",
-      "description": "OWASP ZAP's spider: crawls the application and discovers URLs, paths and forms. In SecureScan it runs before the active scan as part of the ZAP full scan, and its URLs are listed in the Pentesting results.",
+      "description": "OWASP ZAP's spider: crawls the application and discovers URLs, paths and forms. In PentaWark it runs before the active scan as part of the ZAP full scan, and its URLs are listed in the Pentesting results.",
       "features": [
         "Discovers URLs and paths by crawling the application",
         "Runs before the active scan inside the ZAP full scan",
@@ -1138,7 +1124,7 @@
     },
     "injection-scanner": {
       "short": "Active detection of 10 injection types (SQLi, XSS, SSRF…)",
-      "description": "SecureScan Pro's own module that detects 10 injection types with active payloads. It runs in the SQLMap step; if the module isn't available, the backend falls back to SQLMap.",
+      "description": "PentaWark's own module that detects 10 injection types with active payloads. It runs in the SQLMap step; if the module isn't available, the backend falls back to SQLMap.",
       "features": [
         "10 techniques: SQLi, NoSQLi, XPath, XXE, XSS, command injection, path traversal (LFI), SSRF, SSTI and LDAP",
         "SQLi as error-based, UNION, boolean-blind, time-blind, auth bypass, stacked and second-order",
@@ -1174,7 +1160,7 @@
       "features": [
         "Thousands of exploit and auxiliary modules",
         "Control via RPC API (msfrpcd)",
-        "Verification modules only in SecureScan",
+        "Verification modules only in PentaWark",
         "Customizable payloads",
         "Integrated reporting"
       ]

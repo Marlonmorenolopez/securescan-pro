@@ -20,7 +20,7 @@
     "systemChecking": "Verificando",
     "systemOnline": "Sistema Online",
     "systemOffline": "Sistema Offline",
-    "systemTooltip": "Estado de conexión con el backend de SecureScan",
+    "systemTooltip": "Estado de conexión con el backend de PentaWark",
     "github": "GitHub",
     "schedules": "Programaciones",
     "settings": "Ajustes",
@@ -85,16 +85,11 @@
     "noFindings": "Sin hallazgos detectados",
     "startingPipeline": "Iniciando pipeline de escaneo...",
     "emptyState": "Introduce una URL objetivo para comenzar el análisis.",
-    "footerBrand": "SecureScan Pro v5.0 · Proyecto Académico SENA",
+    "footerBrand": "PentaWark v5.0 · Cybersecurity & Ethical Hacking Platform",
     "footerLegal": "Solo para uso ético y autorizado en entornos de prueba",
-    "footprintNotIncluded": "Este análisis no incluyó Huella Digital. Actívala en Configuración Avanzada o desde el módulo Huella Digital.",
     "formats": "Formatos:",
     "optIn": "opt-in",
     "alsoRuns": "También ejecuta: {tools}",
-    "footprintToggleTitle": "Huella Digital",
-    "footprintToggleBadge": "corre en paralelo",
-    "footprintToggleHint": "Recopila señales externas (dominios, infraestructura, reputación, TLS/SSL) durante este mismo análisis.",
-    "footprintToggleLink": "Elegir fuentes en Huella Digital",
     "kpi": {
       "critical": "Critical",
       "high": "High",
@@ -119,9 +114,7 @@
       "unexpected": "Ha ocurrido un error inesperado.",
       "checklist": "Verifica que estén activos:",
       "retry": "Reintentar"
-    },
-    "footprintOnlyNotice": "El último análisis ({target}) se lanzó solo con Huella Digital, así que no tiene resultados de Pentesting.",
-    "footprintOnlyAction": "Ver en Huella Digital"
+    }
   },
   "progress": {
     "scanning": "Escaneando...",
@@ -228,9 +221,6 @@
     "noFfufDetail": "Activa ffuf en la configuración del escaneo para descubrir rutas y endpoints ocultos.",
     "pentestingTitle": "Resultados de Pentesting",
     "urgentAttention": "{count} requieren atención urgente",
-    "footprintLinkTitle": "Este análisis también recopiló Huella Digital",
-    "footprintLinkDetail": "{withData} de {total} fuentes con datos reales. Los resultados no se mezclan aquí — revísalos en su propio módulo.",
-    "footprintLinkAction": "Ver Huella Digital",
     "tabSummary": "Resumen",
     "tabSummaryUnit": "hallazgos totales",
     "summarySeverityTitle": "Vulnerabilidades por severidad",
@@ -264,7 +254,7 @@
     "heroSubtitle": "Orquesta 10 herramientas profesionales de ciberseguridad en un pipeline de 11 fases. Desde el reconocimiento hasta la explotación — con scoring CVSS/EPSS y reportes tipo pentest.",
     "ctaStartScan": "Iniciar Escaneo",
     "ctaViewLabs": "Ver Laboratorios",
-    "terminalWindowTitle": "securescan — bash",
+    "terminalWindowTitle": "pentawark — bash",
     "terminalLine1": "WordPress 6.4, Apache 2.4, PHP 8.1",
     "terminalLine2": "3 puertos abiertos: 22, 80, 443",
     "terminalLine3": "2 SQLi, 4 XSS, 1 CSRF encontrados",
@@ -344,11 +334,11 @@
     "ctaNewScan": "Nuevo Escaneo",
     "ctaViewReports": "Ver Reportes Anteriores",
     "legalNotice": "Solo para uso ético y autorizado · Ley 1273/2009 Colombia",
-    "footerTagline": "Proyecto Académico SENA · Solo para uso ético y autorizado"
+    "footerTagline": "PentaWark · Solo para uso ético y autorizado"
   },
   "docs": {
     "pageTitle": "Documentación",
-    "pageSubtitle": "Guía completa de herramientas y API de SecureScan Pro v5.0",
+    "pageSubtitle": "Guía completa de herramientas y API de PentaWark v5.0",
     "tabTools": "Herramientas",
     "tabApi": "API",
     "tabArchitecture": "Arquitectura",
@@ -424,7 +414,7 @@
     "noRecentActivity": "Sin actividad reciente...",
     "manualCommandsTitle": "Comandos Docker Manuales",
     "manualCommandsSubtitle": "Si prefieres ejecutar los contenedores desde terminal",
-    "footerTagline": "SecureScan Pro v5.0 · Laboratorio Docker · Solo uso ético y autorizado",
+    "footerTagline": "PentaWark v5.0 · Laboratorio Docker · Solo uso ético y autorizado",
     "logAppReady": "{name} listo — abre http://localhost:{port}",
     "logStarting": "Iniciando {name}...",
     "logStartingHealthcheck": "{name} iniciando — esperando healthcheck en puerto {port}...",
@@ -479,7 +469,7 @@
     "loadErrorTitle": "No se pudo cargar el historial",
     "retry": "Reintentar",
     "emptyTitle": "Sin programaciones todavía",
-    "emptyDetail": "Crea una arriba para que SecureScan Pro escanee tu objetivo automáticamente.",
+    "emptyDetail": "Crea una arriba para que PentaWark escanee tu objetivo automáticamente.",
     "weekdays": [
       "Domingo",
       "Lunes",
@@ -514,7 +504,7 @@
     "emailPlaceholder": "alertas@tuempresa.com",
     "webhook": "Webhook",
     "webhookUrl": "URL",
-    "webhookPlaceholder": "https://tu-servicio.com/webhooks/securescan",
+    "webhookPlaceholder": "https://tu-servicio.com/webhooks/pentawark",
     "webhookSsrfNote": "No se permiten URLs hacia localhost, IPs privadas o endpoints de metadata de la nube (protección SSRF).",
     "events": "Eventos",
     "eventCompleted": "Job completado",
@@ -686,7 +676,7 @@
     "usage": "Uso real",
     "officialDocs": "Documentación oficial",
     "noDocs": "Todavía no hay documentación detallada para esta herramienta en el proyecto.",
-    "executionNote": "Esta herramienta no se ejecuta de forma individual: corre como parte de un único Web Scan orquestado junto con el resto de herramientas de Pentesting y Huella Digital.",
+    "executionNote": "Esta herramienta no se ejecuta de forma individual: corre como parte de un único Web Scan orquestado junto con el resto de herramientas de Pentesting.",
     "status": {
       "idle": "En espera",
       "running": "Ejecutando",
@@ -707,8 +697,7 @@
   },
   "module": {
     "security": "Security",
-    "breadcrumb": "Ruta de navegación",
-    "switchLabel": "Cambiar de módulo"
+    "breadcrumb": "Ruta de navegación"
   },
   "settingsPage": {
     "title": "Configuración",
@@ -789,11 +778,11 @@
     "starting": "Iniciando análisis de Huella Digital…",
     "collecting": "Recopilando datos de las fuentes externas…",
     "partial": "Análisis en curso: se muestran los resultados recibidos hasta ahora.",
-    "footerBrand": "SecureScan Pro v5.0 · Proyecto Académico SENA",
+    "footerBrand": "PentaWark v5.0 · Cybersecurity & Ethical Hacking Platform",
     "footerLegal": "Solo para uso ético y autorizado",
     "coverage": "{withData}/{total} fuentes con datos",
     "coverageHint": "Fuentes que devolvieron datos reales de las que aplican a esta vista",
-    "executionNote": "Esta fuente no se ejecuta de forma individual: corre en la fase de Huella Digital del análisis, en paralelo al pipeline de Pentesting cuando ambos están activos.",
+    "executionNote": "Esta fuente no se ejecuta de forma individual: corre en paralelo con el resto de fuentes de Huella Digital seleccionadas.",
     "form": {
       "title": "Analizar superficie externa",
       "subtitle": "Lanza solo la fase de Huella Digital: no se ejecuta ninguna herramienta de Pentesting.",
@@ -807,7 +796,6 @@
       "noSourcesSelected": "Selecciona al menos una fuente.",
       "submit": "Analizar huella digital",
       "submitting": "Analizando…",
-      "noteScope": "Usa el mismo análisis del backend con las herramientas de Pentesting desactivadas y solo las fuentes elegidas.",
       "noteApiKeys": "VirusTotal, AbuseIPDB y Google Safe Browsing necesitan su API key configurada en el servidor; sin ella devuelven «sin datos reales».",
       "notePublicTargets": "Los datos externos solo existen para dominios o IPs públicos. Con los laboratorios locales las fuentes suelen responder «sin datos reales», y el servidor puede restringir los objetivos permitidos (ver Configuración)."
     },
@@ -829,9 +817,7 @@
     "status": {
       "target": "Objetivo",
       "footprintPhase": "Fase de Huella Digital",
-      "originShared": "Recopilado junto con un análisis de Pentesting del mismo objetivo.",
       "originFootprintOnly": "Análisis de solo Huella Digital.",
-      "viewPentesting": "Ver Pentesting",
       "scan": {
         "pending": "Pendiente",
         "running": "En curso",
@@ -1118,7 +1104,7 @@
     },
     "zap-spider": {
       "short": "Rastreo de URLs, rutas y formularios previo al active scan",
-      "description": "Rastreo (spider) de OWASP ZAP: recorre la aplicación y descubre URLs, rutas y formularios. En SecureScan corre antes del active scan dentro del ZAP full scan, y sus URLs se listan en los resultados de Pentesting.",
+      "description": "Rastreo (spider) de OWASP ZAP: recorre la aplicación y descubre URLs, rutas y formularios. En PentaWark corre antes del active scan dentro del ZAP full scan, y sus URLs se listan en los resultados de Pentesting.",
       "features": [
         "Descubre URLs y rutas navegando la aplicación",
         "Se ejecuta antes del active scan dentro del ZAP full scan",
@@ -1138,7 +1124,7 @@
     },
     "injection-scanner": {
       "short": "Detección activa de 10 tipos de inyección (SQLi, XSS, SSRF…)",
-      "description": "Módulo propio de SecureScan Pro que detecta 10 tipos de inyección con payloads activos. Se ejecuta en el paso de SQLMap; si el módulo no está disponible, el backend usa SQLMap como respaldo.",
+      "description": "Módulo propio de PentaWark que detecta 10 tipos de inyección con payloads activos. Se ejecuta en el paso de SQLMap; si el módulo no está disponible, el backend usa SQLMap como respaldo.",
       "features": [
         "10 técnicas: SQLi, NoSQLi, XPath, XXE, XSS, inyección de comandos, path traversal (LFI), SSRF, SSTI y LDAP",
         "SQLi en variantes error-based, UNION, boolean-blind, time-blind, auth bypass, stacked y second-order",
@@ -1174,7 +1160,7 @@
       "features": [
         "Miles de módulos de exploits y auxiliares",
         "Control vía API RPC (msfrpcd)",
-        "Solo módulos de verificación en SecureScan",
+        "Solo módulos de verificación en PentaWark",
         "Payloads personalizables",
         "Reportes integrados"
       ]

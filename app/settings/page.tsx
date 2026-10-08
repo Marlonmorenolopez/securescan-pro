@@ -1,5 +1,5 @@
 'use client'
-// app/settings/page.tsx — SecureScan Pro v5.0 · Configuración general
+// app/settings/page.tsx — PentaWark v5.0 · Configuración general
 //
 // Pantalla DISTINTA de Notificaciones (/settings/notifications). Solo contiene
 // configuración y estado REALES que ya existen:

@@ -1197,6 +1197,7 @@ def _launch_scan_job(
     job_id    = str(uuid.uuid4())
     scan_data = {
         'id':        job_id,
+        'module':    'pentesting',
         'target':    target,
         'options':   options,
         'status':    'running',
@@ -1330,6 +1331,7 @@ def start_footprint_scan():
     now_iso = datetime.utcnow().isoformat() + 'Z'
     scan_data = {
         'id':          job_id,
+        'module':      'footprint',
         'target':      target,
         'options':     options,
         'status':      'completed',
@@ -1809,9 +1811,33 @@ def get_report(scan_id: str):
         return jsonify({'error': str(e)}), 500
 
 
+_HISTORY_MODULES = ('pentesting', 'footprint')
+
+
+def _scan_module(scan: dict) -> str:
+    """
+    Módulo al que pertenece un Job guardado.
+
+    Los Jobs nuevos llevan el campo explícito 'module'. Los registros anteriores
+    a esta separación no lo tienen y NO se migran ni se borran; se clasifican
+    así: un Job de Huella Digital se guardaba solo con 'threat_intel' y sin
+    'steps'; todo lo demás con 'target' (scans web y Jobs de skills) es
+    Pentesting.
+    """
+    module = scan.get('module')
+    if module:
+        return module
+    if 'threat_intel' in scan and 'steps' not in scan:
+        return 'footprint'
+    return 'pentesting'
+
+
 @app.route('/api/history', methods=['GET'])
 @require_token
 def get_scan_history():
+    module = request.args.get('module')
+    if module is not None and module not in _HISTORY_MODULES:
+        return jsonify({'error': 'Invalid module', 'allowed': list(_HISTORY_MODULES)}), 400
     try:
         scan_list = list_scans()
         # /app/history/page.tsx asume la forma de un scan web (target, score).
@@ -1820,6 +1846,8 @@ def get_scan_history():
         # que es justo el bug que causó esto la primera vez), se incluye solo
         # lo que tiene 'target' -- la forma real de un web-scan.
         scan_list = [s for s in scan_list if s.get('target') is not None]
+        if module is not None:
+            scan_list = [s for s in scan_list if _scan_module(s) == module]
         scan_list.sort(key=lambda x: x.get('startTime', ''), reverse=True)
         return jsonify({'scans': scan_list[:100], 'total': len(scan_list)})
     except Exception as e:

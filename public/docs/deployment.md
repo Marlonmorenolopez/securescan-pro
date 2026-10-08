@@ -1,4 +1,4 @@
-# SecureScan Pro v3.0 - Deployment Guide
+# PentaWark v3.0 - Deployment Guide
 
 ## Prerequisites
 
@@ -39,7 +39,7 @@ docker-compose up -d
 ### Frontend (.env.local)
 ```bash
 NEXT_PUBLIC_API_URL=http://localhost:5000
-NEXT_PUBLIC_APP_NAME=SecureScan Pro
+NEXT_PUBLIC_APP_NAME=PentaWark
 ```
 
 ### Backend (.env)

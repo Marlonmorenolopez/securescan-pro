@@ -1,5 +1,5 @@
 'use client'
-// lib/nav-i18n.ts — SecureScan Pro v5.0
+// lib/nav-i18n.ts — PentaWark v5.0
 // Puente entre el catálogo estructural (lib/nav-config.tsx, sin strings
 // traducibles) y el sistema i18n existente (next-intl + messages/{es,en}.json
 // → namespace "navCatalog"). Los nombres propios de herramientas (Nmap,

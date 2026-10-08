@@ -1,4 +1,4 @@
-// components/cyber/EmptyState.tsx — SecureScan Pro
+// components/cyber/EmptyState.tsx — PentaWark
 //
 // Estado vacío reutilizable, consistente para todas las tabs de
 // results-dashboard.tsx (y cualquier otra sección sin datos). Antes, cada

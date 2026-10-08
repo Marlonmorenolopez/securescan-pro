@@ -6,7 +6,7 @@ import { useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 
 /**
- * LanguageSwitcher — SecureScan Pro
+ * LanguageSwitcher — PentaWark
  *
  * Botón compacto ES / EN en el header.
  * Al hacer clic guarda el nuevo locale en la cookie NEXT_LOCALE

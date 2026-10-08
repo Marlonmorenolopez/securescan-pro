@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# SecureScan Pro — Script de verificación completa
+# PentaWark — Script de verificación completa
 # Verifica: P1, P2, P3, Fase A, Fase B, Fase C, Fase D
 #
 # USO:
@@ -117,7 +117,7 @@ sys.exit(0)
 }
 
 # =============================================================================
-echo -e "\n${BOLD}${CYAN}SecureScan Pro — Verificación completa de cambios${NC}"
+echo -e "\n${BOLD}${CYAN}PentaWark — Verificación completa de cambios${NC}"
 echo -e "${CYAN}Ejecutar desde la raíz del proyecto${NC}\n"
 
 # =============================================================================

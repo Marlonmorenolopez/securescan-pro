@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/HeroParticles.tsx — SecureScan Pro · Home v3
+// components/cyber/HeroParticles.tsx — PentaWark · Home v3
 //
 // Fondo de partículas para el Hero usando tsparticles (vía @tsparticles/nextjs,
 // que resuelve SSR). Configuración deliberadamente sutil: pocas partículas,

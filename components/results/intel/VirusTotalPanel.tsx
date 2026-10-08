@@ -1,5 +1,5 @@
 'use client'
-// components/results/intel/VirusTotalPanel.tsx — SecureScan Pro v5.1
+// components/results/intel/VirusTotalPanel.tsx — PentaWark v5.1
 // Panel de reputación de dominio/IP vía VirusTotal.
 // Vive dentro de la pestaña "Huella Digital" — cada herramienta nueva de ese
 // grupo (AbuseIPDB, Shodan, crt.sh...) sigue este mismo patrón: recibe su

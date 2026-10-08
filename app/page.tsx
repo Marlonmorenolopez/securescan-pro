@@ -1,5 +1,5 @@
 'use client'
-// app/page.tsx — SecureScan Pro v5.0 · Cyber Security Command Center Entry
+// app/page.tsx — PentaWark v5.0 · Cyber Security Command Center Entry
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -176,11 +176,11 @@ export default function HomePage() {
                 </div>
 
                 <h1 className="mb-4 text-balance text-4xl font-extrabold tracking-tight md:text-5xl lg:text-6xl">
-                  SECURESCAN <span className="gradient-cyber">PRO</span>
+                  PENTA<span className="gradient-cyber">WARK</span>
                 </h1>
 
                 <p className="font-mono text-sm uppercase tracking-widest text-[var(--cyber-accent)] mb-4">
-                  Automated Web Security Platform
+                  Cybersecurity · Ethical Hacking · Digital Intelligence
                 </p>
 
                 <p className="mb-8 text-pretty text-base text-muted-foreground md:text-lg max-w-xl leading-relaxed">
@@ -558,7 +558,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2">
             <Shield className="h-4 w-4 text-[var(--cyber-accent)]" />
-            <span className="font-mono text-sm font-semibold">SecureScan Pro v5.0</span>
+            <span className="font-mono text-sm font-semibold">PentaWark v5.0</span>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
             {t('landing.footerTagline')}

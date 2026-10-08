@@ -1,4 +1,4 @@
-# Cómo agregar una nueva Skill a SecureScan Pro
+# Cómo agregar una nueva Skill a PentaWark
 
 Este documento explica cómo **catalogar** una nueva Skill (herramienta de
 seguridad) en el frontend y qué hace falta para **integrarla** de verdad.

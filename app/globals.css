@@ -1,4 +1,4 @@
-/* app/globals.css — SecureScan Pro v5.0 · Cyber Neon Theme */
+/* app/globals.css — PentaWark v5.0 · Cyber Neon Theme */
 
 @tailwind base;
 @tailwind components;
@@ -66,7 +66,7 @@
 }
 
 /* ─────────────────────────────────────────────────────────────
-   TEMA OSCURO  (modo primario de SecureScan)
+   TEMA OSCURO  (modo primario de PentaWark)
    ───────────────────────────────────────────────────────────── */
 .dark {
   --background:          215 28%   6%;   /* #080c14 — negro azulado */
@@ -134,7 +134,7 @@
   }
 
   html {
-    /* Forzar modo oscuro por defecto — es el modo primario de SecureScan */
+    /* Forzar modo oscuro por defecto — es el modo primario de PentaWark */
     color-scheme: dark;
   }
 

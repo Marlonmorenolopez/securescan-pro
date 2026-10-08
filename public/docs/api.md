@@ -1,4 +1,4 @@
-# SecureScan Pro v3.0 - API Reference
+# PentaWark v3.0 - API Reference
 
 ## Base URL
 

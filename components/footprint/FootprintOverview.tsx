@@ -1,5 +1,5 @@
 'use client'
-// components/footprint/FootprintOverview.tsx — SecureScan Pro v5.0
+// components/footprint/FootprintOverview.tsx — PentaWark v5.0
 //
 // Vista de HUELLA DIGITAL: superficie externa + 4 paneles de inteligencia
 // (Dominios, Infraestructura, Reputación, TLS/SSL). Todo sale del modelo

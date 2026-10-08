@@ -1,4 +1,4 @@
-// lib/tool-docs.ts — SecureScan Pro v5.0
+// lib/tool-docs.ts — PentaWark v5.0
 //
 // Construye la vista "ToolDoc" (descripción/uso/features/link traducidos)
 // a partir del Skill Registry central (lib/skills.ts) — NO duplica datos.

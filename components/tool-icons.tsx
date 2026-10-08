@@ -221,7 +221,7 @@ export function WebGoatIcon({ className = 'h-8 w-8' }: IconProps) {
 
 // ── BRANDING PROPIO ──────────────────────────────────────────────────────────
 
-// SECURESCAN PRO (Logo Propio Refactorizado - Escudo cibernético)
+// PENTAWARK (Logo Propio Refactorizado - Escudo cibernético)
 export function SecureScanIcon({ className = 'h-8 w-8' }: IconProps) {
   return (
     <svg className={className} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">

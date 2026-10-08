@@ -1,5 +1,5 @@
 'use client'
-// app/history/compare/page.tsx — SecureScan Pro
+// app/history/compare/page.tsx — PentaWark
 // Compara dos escaneos completados (?a=<id>&b=<id2>) usando
 // GET /api/scan/<a>/compare/<b> (ver server/comparison.py).
 

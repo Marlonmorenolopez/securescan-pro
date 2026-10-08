@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// scripts/check-skills.mjs — SecureScan Pro v5.0
+// scripts/check-skills.mjs — PentaWark v5.0
 //
 // Valida la COHERENCIA del Skill Registry (lib/skills.ts) con todo lo que lo
 // consume, para que agregar una Skill no deje piezas a medias en silencio:

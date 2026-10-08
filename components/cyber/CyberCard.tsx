@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/CyberCard.tsx — SecureScan Pro v5.0
+// components/cyber/CyberCard.tsx — PentaWark v5.0
 // Tarjeta base con identidad Offensive Security:
 //   - Corner brackets decorativos (posición absoluta, CSS puro)
 //   - Glow en hover configurable

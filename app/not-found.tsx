@@ -1,5 +1,5 @@
 'use client'
-// app/not-found.tsx — SecureScan Pro
+// app/not-found.tsx — PentaWark
 //
 // Página 404 personalizada. Hereda automáticamente NextIntlClientProvider,
 // ThemeProvider y ParticlesProvider del layout raíz (app/layout.tsx), ya que

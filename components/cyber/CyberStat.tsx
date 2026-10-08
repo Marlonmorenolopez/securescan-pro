@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/CyberStat.tsx — SecureScan Pro v5.0
+// components/cyber/CyberStat.tsx — PentaWark v5.0
 // KPI card con:
 //   - Contador animado (ease-out cubic) al montar o al cambiar value
 //   - Color configurable por severidad

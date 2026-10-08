@@ -1,5 +1,5 @@
 'use client'
-// app/code-scan/page.tsx — SecureScan Pro v5.1
+// app/code-scan/page.tsx — PentaWark v5.1
 // Análisis de Código (Grupo 3): secretos hardcodeados, backdoors/webshells,
 // y dependencias vulnerables -- a partir de un repo de GitHub o un .zip
 // subido. Página autocontenida (no usa ScanProvider, que es específico

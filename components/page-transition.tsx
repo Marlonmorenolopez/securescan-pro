@@ -1,5 +1,5 @@
 'use client'
-// components/page-transition.tsx — SecureScan Pro v5.0
+// components/page-transition.tsx — PentaWark v5.0
 // Semana 5: Wrapper de transición entre rutas.
 //
 // Se usa en layout.tsx envolviendo {children}. Como layout.tsx es Server

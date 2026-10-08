@@ -21,7 +21,7 @@ const nextConfig = {
 
   // Variables de entorno públicas (seguras para el browser)
   env: {
-    NEXT_PUBLIC_APP_NAME: 'SecureScan Pro',
+    NEXT_PUBLIC_APP_NAME: 'PentaWark',
     NEXT_PUBLIC_APP_VERSION: '3.0.0',
     NEXT_PUBLIC_API_TIMEOUT: '30000',
   },

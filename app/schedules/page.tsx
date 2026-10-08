@@ -1,5 +1,5 @@
 'use client'
-// app/schedules/page.tsx — SecureScan Pro
+// app/schedules/page.tsx — PentaWark
 // Gestión de escaneos programados (Celery Beat). Usa exclusivamente las
 // rutas ya existentes: /api/schedules (GET/POST), /api/schedules/<id>
 // (GET/DELETE), /api/schedules/<id>/pause, /api/schedules/<id>/resume.

@@ -1,5 +1,5 @@
 'use client'
-// app/dashboard/page.tsx — SecureScan Pro v5.0 · Cyber Security Command Center
+// app/dashboard/page.tsx — PentaWark v5.0 · Cyber Security Command Center
 //
 // FASE 3: reorganización visual sobre el Design System de Fase 2
 // (surface-0/1/2/3, glow-*, border-cyber/*). Reutiliza CyberStat (existía
@@ -190,7 +190,7 @@ export default function DashboardPage() {
               <OperationalStatus loading={loading} error={error} />
             </div>
             <h1 className="text-h1 relative mt-2 text-foreground">
-              {tHero('welcomePrefix')} <span className="text-[var(--cyber-accent)]">SecureScan Pro</span>
+              {tHero('welcomePrefix')} <span className="text-[var(--cyber-accent)]">PentaWark</span>
             </h1>
             <p className="text-body relative mt-1.5 max-w-2xl text-muted-foreground">
               {tHero('subtitle')}

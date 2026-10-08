@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-patch_i18n.py — SecureScan Pro
+patch_i18n.py — PentaWark
 Aplica i18n completo al backend:
   1. Añade claves faltantes a server/locales/en.json y es.json
   2. Reemplaza strings hardcodeados en server/app.py por llamadas a get_t()

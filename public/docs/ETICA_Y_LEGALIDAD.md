@@ -1,15 +1,14 @@
-# ÉTICA Y LEGALIDAD EN EL USO DE SECURESCAN PRO
+# ÉTICA Y LEGALIDAD EN EL USO DE PENTAWARK
 ## Marco Ético, Legal y de Uso Responsable
 
-**Proyecto:** SecureScan Pro v5.0 — Plataforma Automatizada de Análisis de Seguridad Web
+**Proyecto:** PentaWark v5.0 — Plataforma Automatizada de Análisis de Seguridad Web
 **Autor:** Técnico en Seguridad de Aplicaciones Web
-**Institución:** SENA — Servicio Nacional de Aprendizaje (Colombia)
 **Programa:** Técnico en Seguridad de Aplicaciones Web
 **Fecha de actualización:** Julio 2026
 
 ---
 
-> ⚠️ **Aviso importante:** Este documento no es una formalidad. Es parte esencial del proyecto. Las salvaguardas éticas y legales de SecureScan Pro no son solo políticas escritas: están programadas directamente en el código fuente y pueden verificarse línea por línea. Este documento explica el **por qué** de cada una de esas decisiones de diseño.
+> ⚠️ **Aviso importante:** Este documento no es una formalidad. Es parte esencial del proyecto. Las salvaguardas éticas y legales de PentaWark no son solo políticas escritas: están programadas directamente en el código fuente y pueden verificarse línea por línea. Este documento explica el **por qué** de cada una de esas decisiones de diseño.
 
 ---
 
@@ -34,7 +33,7 @@
 
 ## 1. DECLARACIÓN DE PRINCIPIOS ÉTICOS
 
-SecureScan Pro fue diseñado desde su concepción con la **ética como principio de diseño**, no como complemento tardío. Esto significa que las salvaguardas éticas no son simplemente un capítulo del manual: están codificadas en el sistema y no pueden desactivarse sin modificar deliberadamente el código fuente.
+PentaWark fue diseñado desde su concepción con la **ética como principio de diseño**, no como complemento tardío. Esto significa que las salvaguardas éticas no son simplemente un capítulo del manual: están codificadas en el sistema y no pueden desactivarse sin modificar deliberadamente el código fuente.
 
 A continuación se presentan los siete principios que guiaron cada decisión técnica del proyecto.
 
@@ -54,7 +53,7 @@ Esto aplica sin excepción, independientemente de la intención del analista, de
 
 **Las técnicas utilizadas deben ser proporcionales al objetivo de la evaluación.**
 
-SecureScan Pro verifica si las vulnerabilidades existen; no las explota para obtener acceso ni causa daño en el sistema objetivo. La diferencia entre un escáner de seguridad y un arma cibernética reside en este límite.
+PentaWark verifica si las vulnerabilidades existen; no las explota para obtener acceso ni causa daño en el sistema objetivo. La diferencia entre un escáner de seguridad y un arma cibernética reside en este límite.
 
 > **Implementación en el código:** Metasploit solo ejecuta módulos del tipo `auxiliary/scanner/` (verificación). Nunca ejecuta módulos `exploits/`, `post/` (post-explotación) ni carga `payloads/` (código malicioso).
 
@@ -104,7 +103,7 @@ Publicar una vulnerabilidad sin dar tiempo al propietario para corregirla no es 
 
 **Este sistema fue creado para aprender a defender, no para atacar.**
 
-Comprender cómo piensan y actúan los atacantes es indispensable para construir defensas efectivas. SecureScan Pro hace visible y comprensible el proceso de análisis de seguridad, convirtiendo herramientas complejas de la industria en un entorno de aprendizaje estructurado.
+Comprender cómo piensan y actúan los atacantes es indispensable para construir defensas efectivas. PentaWark hace visible y comprensible el proceso de análisis de seguridad, convirtiendo herramientas complejas de la industria en un entorno de aprendizaje estructurado.
 
 ---
 
@@ -127,11 +126,11 @@ La **Ley 1273 de 2009** ("Por medio de la cual se modifica el Código Penal, se 
 | **Art. 269G** | Suplantar sitios web para capturar datos personales (phishing) | 96 meses + multa |
 | **Art. 269I** | Hurto usando medios informáticos | 8 años de prisión + multa |
 
-**Relación directa con SecureScan Pro:**
+**Relación directa con PentaWark:**
 
 | Acción | Norma aplicable |
 |---|---|
-| Usar SecureScan Pro sobre un sistema sin autorización del propietario | Art. 269A (acceso abusivo) |
+| Usar PentaWark sobre un sistema sin autorización del propietario | Art. 269A (acceso abusivo) |
 | Si el escaneo genera carga que afecta la disponibilidad del sistema | Art. 269B (obstaculización) |
 | Si durante el escaneo se captura tráfico de red | Art. 269C (interceptación) |
 | Si el escaneo extrae y usa datos personales de la base de datos | Art. 269F (violación de datos personales) |
@@ -147,13 +146,13 @@ El Art. 269A establece que solo constituye delito el acceso **sin autorización*
 
 ### 2.2 Ley 1581 de 2012 — Protección de Datos Personales
 
-La **Ley 1581 de 2012** regula el tratamiento de datos personales en Colombia. Es relevante para SecureScan Pro en dos dimensiones:
+La **Ley 1581 de 2012** regula el tratamiento de datos personales en Colombia. Es relevante para PentaWark en dos dimensiones:
 
 **Dimensión 1 — Datos encontrados durante el escaneo:**
 Un escaneo sobre un sistema real podría revelar datos personales de usuarios (nombres, correos electrónicos, contraseñas en texto plano, documentos de identidad). Estos datos deben tratarse con confidencialidad estricta. Ni almacenarlos, ni compartirlos, ni divulgarlos sin consentimiento expreso del titular y sin la autorización del responsable del tratamiento.
 
 **Dimensión 2 — El reporte como documento confidencial:**
-Los reportes generados por SecureScan Pro contienen información sensible sobre la postura de seguridad de un sistema u organización. El tratamiento y la distribución de estos reportes deben ser acordados con el cliente antes del inicio del análisis y deben estar contemplados en el contrato de servicios.
+Los reportes generados por PentaWark contienen información sensible sobre la postura de seguridad de un sistema u organización. El tratamiento y la distribución de estos reportes deben ser acordados con el cliente antes del inicio del análisis y deben estar contemplados en el contrato de servicios.
 
 > **Control técnico:** Los reportes se almacenan localmente en el volumen Docker `scan-reports`. No se transmiten a servidores externos. Los datos en Redis expiran automáticamente tras 24 horas para escaneos completados.
 
@@ -161,7 +160,7 @@ Los reportes generados por SecureScan Pro contienen información sensible sobre 
 
 ### 2.3 Decreto 1078 de 2015 — Sector TIC
 
-El **Decreto 1078 de 2015** del Ministerio de Tecnologías de la Información y las Comunicaciones establece el marco regulatorio del sector TIC en Colombia. Para entidades públicas, el decreto exige evaluaciones periódicas de seguridad de sus sistemas de información. Herramientas como SecureScan Pro son instrumentos válidos para cumplir este mandato, siempre que el análisis sea autorizado por la dirección de tecnología de la entidad.
+El **Decreto 1078 de 2015** del Ministerio de Tecnologías de la Información y las Comunicaciones establece el marco regulatorio del sector TIC en Colombia. Para entidades públicas, el decreto exige evaluaciones periódicas de seguridad de sus sistemas de información. Herramientas como PentaWark son instrumentos válidos para cumplir este mandato, siempre que el análisis sea autorizado por la dirección de tecnología de la entidad.
 
 ---
 
@@ -175,7 +174,7 @@ Complementa la Ley 1581. Es relevante si durante un análisis de seguridad autor
 
 ### 3.1 Estados Unidos — Computer Fraud and Abuse Act (CFAA)
 
-La **CFAA (18 U.S.C. § 1030)** es la ley federal estadounidense que penaliza el acceso no autorizado a sistemas informáticos. Es relevante para SecureScan Pro porque varias herramientas integradas (Metasploit, Nuclei, SQLMap, Gobuster) son desarrolladas principalmente por organizaciones y personas en EE.UU., y su uso puede estar sujeto a esta norma en contextos transnacionales.
+La **CFAA (18 U.S.C. § 1030)** es la ley federal estadounidense que penaliza el acceso no autorizado a sistemas informáticos. Es relevante para PentaWark porque varias herramientas integradas (Metasploit, Nuclei, SQLMap, Gobuster) son desarrolladas principalmente por organizaciones y personas en EE.UU., y su uso puede estar sujeto a esta norma en contextos transnacionales.
 
 La CFAA ha sido interpretada en algunos casos de forma muy amplia, llegando a penalizar el acceso a información "pública" cuando los términos de servicio del sitio lo prohíben expresamente. Esto es especialmente relevante para herramientas de escaneo automatizado, que muchos términos de servicio prohíben.
 
@@ -195,7 +194,7 @@ El **Convenio de Budapest** (Council of Europe Treaty Series No. 185, 2001) es e
 
 ## 4. CONTROLES TÉCNICOS DE SEGURIDAD ÉTICA EN EL CÓDIGO
 
-Esta sección es fundamental: los controles éticos de SecureScan Pro no son solo una política declarativa, están escritos en el código fuente y pueden ser verificados directamente por cualquier persona con acceso al repositorio.
+Esta sección es fundamental: los controles éticos de PentaWark no son solo una política declarativa, están escritos en el código fuente y pueden ser verificados directamente por cualquier persona con acceso al repositorio.
 
 ### 4.1 Validación multi-nivel de targets (`server/app.py`)
 
@@ -219,7 +218,7 @@ FORBIDDEN_PATTERNS = [
 ```python
 RESTRICT_TO_LAB = os.environ.get('RESTRICT_TO_LAB_TARGETS', 'false').lower() == 'true'
 ```
-Cuando `RESTRICT_TO_LAB_TARGETS=true`, la API rechaza con `403 Forbidden` cualquier target que no sea exactamente uno de los tres laboratorios, sin excepción. Esta opción es ideal para entornos educativos compartidos (por ejemplo, una sala de clase del SENA) donde se quiere garantizar que los aprendices solo puedan escanear los labs incluidos.
+Cuando `RESTRICT_TO_LAB_TARGETS=true`, la API rechaza con `403 Forbidden` cualquier target que no sea exactamente uno de los tres laboratorios, sin excepción. Esta opción es ideal para entornos educativos compartidos (por ejemplo, una sala de estudio) donde se quiere garantizar que los aprendices solo puedan escanear los labs incluidos.
 
 **Capa 5 — Validación de alcanzabilidad:** Opcionalmente, el sistema verifica que el hostname resuelva en DNS y que el puerto esté abierto antes de iniciar el escaneo. Esto previene escaneos sobre objetivos inexistentes o mal escritos.
 
@@ -392,7 +391,7 @@ El sistema **se niega a arrancar** en modo producción si `SECRET_KEY` contiene 
 
 | Escenario | Tipo de autorización | Descripción |
 |---|---|---|
-| **Laboratorio SENA** (DVWA, Juice Shop, WebGoat) | Implícita — los labs existen para este fin | Las tres aplicaciones son diseñadas y licenciadas para ser analizadas |
+| **Laboratorio Docker** (DVWA, Juice Shop, WebGoat) | Implícita — los labs existen para este fin | Las tres aplicaciones son diseñadas y licenciadas para ser analizadas |
 | **Sistema propio del operador** (VPS, servidor personal) | Propia — el operador es el propietario | El propietario siempre tiene autorización sobre sus propios sistemas |
 | **Sistema del empleador** en contexto laboral | Autorización escrita del empleador | Auditorías internas, bug bounty corporativo |
 | **Sistema de un cliente** en consultoría | Contrato de pentesting firmado | Evaluación de seguridad profesional para terceros |
@@ -417,8 +416,8 @@ Algunos sitios web tienen programas de **bug bounty** (recompensa por vulnerabil
 
 - El alcance (**scope**) del programa define exactamente qué sistemas pueden ser probados.
 - Las técnicas permitidas están especificadas en las reglas del programa.
-- **El uso de herramientas automatizadas como SecureScan Pro puede estar prohibido en algunos programas.** Revisar siempre las reglas antes de usarlas.
-- Si el programa lo permite, SecureScan Pro puede ser un punto de partida válido para el reconocimiento inicial.
+- **El uso de herramientas automatizadas como PentaWark puede estar prohibido en algunos programas.** Revisar siempre las reglas antes de usarlas.
+- Si el programa lo permite, PentaWark puede ser un punto de partida válido para el reconocimiento inicial.
 
 **Regla de oro:** Leer siempre las reglas completas del programa antes de iniciar cualquier actividad, y ceñirse a ellas con exactitud.
 
@@ -437,7 +436,7 @@ Algunos sitios web tienen programas de **bug bounty** (recompensa por vulnerabil
 
 Juice Shop fue diseñada específicamente para ser atacada. Contiene vulnerabilidades OWASP Top 10 2021 de forma intencional y documentada. No hay usuarios reales, no hay datos personales reales, no hay ningún sistema de producción involucrado.
 
-**Versión usada en SecureScan Pro:** `bkimminich/juice-shop:v17.0.0`
+**Versión usada en PentaWark:** `bkimminich/juice-shop:v17.0.0`
 
 ---
 
@@ -450,7 +449,7 @@ Juice Shop fue diseñada específicamente para ser atacada. Contiene vulnerabili
 **Repositorio oficial:** https://github.com/digininja/DVWA
 **Mantenido por:** Robin Wood (digininja) y la comunidad
 
-DVWA fue creada específicamente para entrenamiento legal. Su documentación incluye advertencias explícitas sobre **no desplegarla en servidores accesibles desde internet** sin controles adicionales. En SecureScan Pro, DVWA está en la red `lab-net` completamente aislada, cumpliendo exactamente con esa recomendación.
+DVWA fue creada específicamente para entrenamiento legal. Su documentación incluye advertencias explícitas sobre **no desplegarla en servidores accesibles desde internet** sin controles adicionales. En PentaWark, DVWA está en la red `lab-net` completamente aislada, cumpliendo exactamente con esa recomendación.
 
 **Versión usada:** `ghcr.io/digininja/dvwa:latest`
 
@@ -471,7 +470,7 @@ WebGoat es la plataforma educativa más longeva de OWASP, con más de 20 años d
 
 ---
 
-### 6.4 Configuración de aislamiento en SecureScan Pro
+### 6.4 Configuración de aislamiento en PentaWark
 
 Los tres laboratorios comparten esta configuración de aislamiento en `docker-compose.yml`:
 
@@ -503,7 +502,7 @@ webgoat:
 
 Metasploit Framework tiene una arquitectura modular con cuatro tipos bien diferenciados:
 
-| Tipo | Prefijo | ¿Qué hace? | Uso en SecureScan Pro |
+| Tipo | Prefijo | ¿Qué hace? | Uso en PentaWark |
 |---|---|---|---|
 | **Auxiliares** | `auxiliary/` | Escaneo, enumeración, **verificación** de vulnerabilidades. No compromete el sistema. | ✅ **Son los únicos usados** |
 | **Exploits** | `exploits/` | Explota activamente una vulnerabilidad para **ganar acceso** al sistema | ❌ Nunca usados |
@@ -514,7 +513,7 @@ Metasploit Framework tiene una arquitectura modular con cuatro tipos bien difere
 
 La diferencia entre un módulo **auxiliar** y un módulo **exploit** es la misma que existe entre un médico que examina un paciente para ver si tiene una enfermedad, y un médico que deliberadamente le contagia esa enfermedad. El primero es diagnóstico; el segundo es daño.
 
-SecureScan Pro hace **diagnóstico**, no daño.
+PentaWark hace **diagnóstico**, no daño.
 
 ### 7.3 Módulos auxiliares específicos usados
 
@@ -544,7 +543,7 @@ Si `msfrpcd` no está disponible o la conexión RPC falla, el módulo activa aut
 
 ## 8. RESPONSABILIDADES DEL OPERADOR
 
-El operador de SecureScan Pro es la persona que instala, configura y usa el sistema. Con ese rol vienen responsabilidades concretas.
+El operador de PentaWark es la persona que instala, configura y usa el sistema. Con ese rol vienen responsabilidades concretas.
 
 ### 8.1 Antes de cualquier escaneo
 
@@ -643,12 +642,12 @@ Este proceso equilibra dos intereses legítimos: el derecho del público a conoc
 
 ---
 
-### 10.2 Proceso paso a paso para aprendices de SecureScan Pro
+### 10.2 Proceso paso a paso para aprendices de PentaWark
 
 Si durante el uso del sistema se descubren vulnerabilidades reales en sistemas con autorización (bug bounty, auditoría contratada, sistema propio):
 
 **Paso 1 — Documentar con precisión:**
-Guardar el reporte generado por SecureScan Pro. Anotar la URL exacta, el parámetro afectado, el payload que demostró la vulnerabilidad y la evidencia visible (screenshot, código de respuesta HTTP, etc.).
+Guardar el reporte generado por PentaWark. Anotar la URL exacta, el parámetro afectado, el payload que demostró la vulnerabilidad y la evidencia visible (screenshot, código de respuesta HTTP, etc.).
 
 **Paso 2 — Identificar el canal de contacto correcto:**
 La mayoría de organizaciones tienen una dirección de contacto de seguridad, usualmente `security@empresa.com`, o una plataforma de bug bounty (HackerOne, Bugcrowd). Algunas tienen un archivo `security.txt` en `/.well-known/security.txt`.
@@ -687,7 +686,7 @@ El **EC-Council** certifica a los profesionales de hacking ético más reconocid
 - No usar las habilidades adquiridas para dañar a terceros
 - Reportar vulnerabilidades a los propietarios antes de divulgarlas públicamente
 
-SecureScan Pro implementa técnicamente estos cuatro compromisos: la validación de targets, el modo auxiliar de Metasploit, la sanitización XSS de reportes y el proceso de Responsible Disclosure son las expresiones en código de cada uno de estos principios.
+PentaWark implementa técnicamente estos cuatro compromisos: la validación de targets, el modo auxiliar de Metasploit, la sanitización XSS de reportes y el proceso de Responsible Disclosure son las expresiones en código de cada uno de estos principios.
 
 ---
 
@@ -695,7 +694,7 @@ SecureScan Pro implementa técnicamente estos cuatro compromisos: la validación
 
 El **International Information System Security Certification Consortium** establece cuatro cánones en su código de ética:
 
-| Canon | Descripción | Cómo SecureScan Pro contribuye |
+| Canon | Descripción | Cómo PentaWark contribuye |
 |---|---|---|
 | **1** | Proteger la sociedad, el bien común y la infraestructura necesaria | Forma analistas capaces de defender sistemas reales |
 | **2** | Actuar de forma honorable, honesta, justa, responsable y legal | Los controles técnicos imponen comportamiento ético incluso sin supervisión |
@@ -716,15 +715,15 @@ OWASP establece que las herramientas de seguridad deben:
 
 ### 11.4 PTES — Penetration Testing Execution Standard
 
-El **PTES** establece como Fase 0 (*Pre-engagement*) la obtención de **autorización formal por escrito** antes de cualquier actividad de pentesting. SecureScan Pro refleja esto en su diseño: los laboratorios incluidos representan la "autorización implícita" del entorno educativo, y el modo restrictivo (`RESTRICT_TO_LAB_TARGETS=true`) garantiza que el sistema no pueda usarse fuera de ese contexto controlado sin una modificación deliberada de la configuración.
+El **PTES** establece como Fase 0 (*Pre-engagement*) la obtención de **autorización formal por escrito** antes de cualquier actividad de pentesting. PentaWark refleja esto en su diseño: los laboratorios incluidos representan la "autorización implícita" del entorno educativo, y el modo restrictivo (`RESTRICT_TO_LAB_TARGETS=true`) garantiza que el sistema no pueda usarse fuera de ese contexto controlado sin una modificación deliberada de la configuración.
 
 ---
 
 ### 11.5 NIST SP 800-115 — Guía de Evaluaciones de Seguridad
 
-El **NIST SP 800-115** ("Technical Guide to Information Security Testing and Assessment") define las prácticas técnicas para evaluaciones de seguridad en organizaciones federales de EE.UU. y es adoptado como referencia internacional. Sus fases (Planificación → Descubrimiento → Ataque → Reporte) mapean directamente con el pipeline de SecureScan Pro:
+El **NIST SP 800-115** ("Technical Guide to Information Security Testing and Assessment") define las prácticas técnicas para evaluaciones de seguridad en organizaciones federales de EE.UU. y es adoptado como referencia internacional. Sus fases (Planificación → Descubrimiento → Ataque → Reporte) mapean directamente con el pipeline de PentaWark:
 
-| Fase NIST SP 800-115 | Equivalente en SecureScan Pro |
+| Fase NIST SP 800-115 | Equivalente en PentaWark |
 |---|---|
 | Planificación | Selección de herramientas y configuración del escaneo |
 | Descubrimiento | Wappalyzer, Nmap, Gobuster, ffuf, ZAP Spider |
@@ -735,31 +734,31 @@ El **NIST SP 800-115** ("Technical Guide to Information Security Testing and Ass
 
 ## 12. PREGUNTAS FRECUENTES SOBRE ÉTICA Y LEGALIDAD
 
-**P1: ¿Puedo usar SecureScan Pro para analizar el sitio web de mi universidad?**
+**P1: ¿Puedo usar PentaWark para analizar el sitio web de mi universidad?**
 No, a menos que tengas autorización expresa y por escrito del área de tecnología. Ser estudiante de la institución no otorga autorización para escanear sus sistemas. Solicita permiso formalmente antes de proceder.
 
 **P2: ¿Es legal escanear un sitio web que no tiene login ni datos personales?**
 No. La ausencia de autenticación o datos personales no hace legal el acceso no autorizado. La Ley 1273 Art. 269A penaliza el acceso a cualquier sistema informático sin autorización, independientemente de su contenido.
 
-**P3: ¿Puedo usar SecureScan Pro para analizar los sistemas de mi empleador?**
+**P3: ¿Puedo usar PentaWark para analizar los sistemas de mi empleador?**
 Depende. Si tu rol incluye responsabilidades de seguridad y tienes autorización para realizar pruebas, sí. En caso de duda, solicita autorización por escrito antes de proceder. Una autorización verbal puede ser suficiente en la práctica, pero no lo es ante un proceso legal.
 
 **P4: Los controles técnicos del sistema, ¿me protegen legalmente si alguien lo usa mal?**
 Los controles técnicos son evidencia de buena fe en el diseño del sistema, pero no constituyen una exención legal automática. Quien modifica el código para eludir esos controles y lo usa de forma ilegal asume plena responsabilidad penal. El operador que compartió el sistema sin instrucciones claras puede ser considerado cómplice.
 
 **P5: ¿Qué hago si durante un escaneo autorizado encuentro una vulnerabilidad crítica?**
-Documenta el hallazgo con el reporte de SecureScan Pro, notifica inmediatamente al propietario o cliente, y sigue el proceso de Responsible Disclosure (Sección 10). No compartas la información con terceros antes de que sea corregida.
+Documenta el hallazgo con el reporte de PentaWark, notifica inmediatamente al propietario o cliente, y sigue el proceso de Responsible Disclosure (Sección 10). No compartas la información con terceros antes de que sea corregida.
 
-**P6: ¿Puedo compartir SecureScan Pro con compañeros del SENA?**
+**P6: ¿Puedo compartir PentaWark con compañeros?**
 Sí. El código es de uso educativo y puede ser compartido. Asegúrate de incluir este documento junto con el sistema, para que quienes lo reciban también conozcan el marco ético y legal de su uso.
 
-**P7: ¿Puedo usar SecureScan Pro en un CTF o Hackathon?**
+**P7: ¿Puedo usar PentaWark en un CTF o Hackathon?**
 Sí, siempre que las reglas del evento lo permitan. Algunas competencias prohíben herramientas automatizadas. Lee las reglas completas antes de usarlas.
 
 **P8: ¿Es legal tener Metasploit instalado en mi computadora?**
 En Colombia, la mera posesión de herramientas de seguridad no es ilegal. Lo que es ilegal es su uso para acceder a sistemas sin autorización (Arts. 269A y 269E, Ley 1273). Metasploit es utilizado legítimamente por miles de profesionales de seguridad en todo el mundo cada día.
 
-**P9: ¿SecureScan Pro puede usarse en entornos de producción reales?**
+**P9: ¿PentaWark puede usarse en entornos de producción reales?**
 Sí, con las condiciones adecuadas: autorización escrita del propietario, coordinación con el equipo de operaciones para gestionar el impacto de la carga, y acuerdo previo sobre confidencialidad del reporte. Para producción, se recomienda usar los modos "Ligero" o "Normal" en lugar del modo "Completo", para minimizar el impacto sobre la disponibilidad del sistema.
 
 ---
@@ -768,7 +767,7 @@ Sí, con las condiciones adecuadas: autorización escrita del propietario, coord
 
 ### 13.1 Declaración formal
 
-El proyecto **SecureScan Pro v5.0** fue desarrollado con el propósito exclusivo de aprender, practicar y demostrar competencias en seguridad de aplicaciones web en el marco del programa **Técnico en Seguridad de Aplicaciones Web del SENA**.
+El proyecto **PentaWark v5.0** fue desarrollado con el propósito exclusivo de aprender, practicar y demostrar competencias en seguridad de aplicaciones web como plataforma de seguridad de aplicaciones web.
 
 Todos los análisis de seguridad realizados durante el desarrollo y las pruebas del sistema se efectuaron sobre los laboratorios vulnerables incluidos (DVWA, OWASP Juice Shop y WebGoat), que son aplicaciones de código abierto diseñadas específicamente para ese propósito, sin intervenir en ningún sistema de terceros sin autorización.
 
@@ -778,7 +777,7 @@ El sistema implementa controles técnicos verificables que dificultan activament
 
 ### 13.2 Compromiso de uso responsable
 
-Al instalar y usar SecureScan Pro, el operador acepta implícitamente:
+Al instalar y usar PentaWark, el operador acepta implícitamente:
 
 1. Escanear **únicamente** sistemas sobre los cuales tenga autorización expresa o implícita como propietario.
 2. Tratar todos los resultados con el nivel de confidencialidad apropiado al contexto.
@@ -851,7 +850,7 @@ Al instalar y usar SecureScan Pro, el operador acepta implícitamente:
 ---
 
 *Documento elaborado como parte del Proyecto de Grado — Técnico en Seguridad de Aplicaciones Web.*
-*SENA — Servicio Nacional de Aprendizaje — Colombia, Julio 2026*
+*PentaWark — Cybersecurity · Ethical Hacking · Digital Intelligence*
 
 *Los controles técnicos descritos en la Sección 4 pueden verificarse directamente en el código fuente:*
 *`server/app.py` · `server/modules/metasploit.py` · `server/utils/reporter.py` · `docker-compose.yml` · `next.config.mjs`*

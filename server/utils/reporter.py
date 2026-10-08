@@ -356,7 +356,7 @@ def generate_code_scan_html_report(scan: Dict[str, Any], locale: str = 'es') -> 
 
     html_doc = f"""<!DOCTYPE html>
 <html lang="{locale}"><head><meta charset="utf-8">
-<title>SecureScan Pro — Code Scan Report</title>
+<title>PentaWark — Code Scan Report</title>
 <style>
 body {{ font-family: -apple-system, Segoe UI, Roboto, sans-serif; background:#0b0f19; color:#e2e8f0; margin:0; padding:32px; }}
 h1 {{ color:#38bdf8; }} h3 {{ color:#94a3b8; margin-top:28px; }}
@@ -374,7 +374,7 @@ h1 {{ color:#38bdf8; }} h3 {{ color:#94a3b8; margin-top:28px; }}
 .badge-low {{ background:#14532d; color:#bbf7d0; }}
 .badge-info {{ background:#1e3a8a; color:#bfdbfe; }}
 </style></head><body>
-<h1>SecureScan Pro — Code Security Report</h1>
+<h1>PentaWark — Code Security Report</h1>
 <div class="meta">
   Objetivo: {sanitize_html(scan.get('source') or scan.get('id'))} &nbsp;|&nbsp;
   Tipo de fuente: {sanitize_html(scan.get('source_type', ''))} &nbsp;|&nbsp;
@@ -462,7 +462,7 @@ def generate_osint_html_report(scan: Dict[str, Any], locale: str = 'es') -> str:
 
     html_doc = f"""<!DOCTYPE html>
 <html lang="{locale}"><head><meta charset="utf-8">
-<title>SecureScan Pro — OSINT Report</title>
+<title>PentaWark — OSINT Report</title>
 <style>
 body {{ font-family: -apple-system, Segoe UI, Roboto, sans-serif; background:#0b0f19; color:#e2e8f0; margin:0; padding:32px; }}
 h1 {{ color:#38bdf8; }} h2 {{ color:#a78bfa; margin-top:28px; }} h3 {{ color:#94a3b8; }}
@@ -471,7 +471,7 @@ h1 {{ color:#38bdf8; }} h2 {{ color:#a78bfa; margin-top:28px; }} h3 {{ color:#94
 .empty {{ color:#64748b; font-style:italic; }}
 a {{ color:#38bdf8; }}
 </style></head><body>
-<h1>SecureScan Pro — OSINT Report</h1>
+<h1>PentaWark — OSINT Report</h1>
 <div class="meta">Job ID: {sanitize_html(scan.get('id'))} &nbsp;|&nbsp; Generado: {generated_at}</div>
 {''.join(body_parts)}
 </body></html>"""
@@ -760,7 +760,7 @@ def generate_html_report(scan: Dict[str, Any], locale: str = 'es') -> str:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SecureScan Pro — Security Report | {target}</title>
+    <title>PentaWark — Security Report | {target}</title>
     <style>
         /* ── Reset ── */
         *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
@@ -1147,7 +1147,7 @@ def generate_html_report(scan: Dict[str, Any], locale: str = 'es') -> str:
         <div class="brand">
             <div class="brand-shield">🔒</div>
             <div class="brand-text">
-                <h1>SecureScan Pro</h1>
+                <h1>PentaWark</h1>
                 <p>Enterprise Security Assessment Report</p>
             </div>
         </div>
@@ -1289,9 +1289,9 @@ def generate_html_report(scan: Dict[str, Any], locale: str = 'es') -> str:
 
     <!-- ── FOOTER ── -->
     <div class="report-footer">
-        <div class="logo">🔒 SecureScan Pro v3.0</div>
+        <div class="logo">🔒 PentaWark v3.0</div>
         <p>{t("report.generatedOn")} {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")} UTC</p>
-        <p>Proyecto Académico SENA · Solo para uso ético y autorizado</p>
+        <p>PentaWark · Solo para uso ético y autorizado</p>
         <p style="margin-top:8px;font-size:11px;color:#2a3a50;">{t("report.confidential")}</p>
     </div>
 
@@ -1518,7 +1518,7 @@ def _generate_pdf_html(scan: Dict[str, Any]) -> str:
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>SecureScan Pro Report</title>
+    <title>PentaWark Report</title>
     <style>
         body {{ font-family: Arial, sans-serif; margin: 20px; color: #333; }}
         h1 {{ color: #2563eb; }}
@@ -1537,7 +1537,7 @@ def _generate_pdf_html(scan: Dict[str, Any]) -> str:
 </head>
 <body>
     <div class="header">
-        <h1>SecureScan Pro - Security Report</h1>
+        <h1>PentaWark - Security Report</h1>
         <div class="score">Grade: {score.get('grade', 'F')} ({score.get('total', 0)}/100)</div>
         <p>Target: {scan.get('target', 'Unknown')}</p>
         <p>Date: {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}</p>

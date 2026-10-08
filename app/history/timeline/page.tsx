@@ -1,5 +1,5 @@
 'use client'
-// app/history/timeline/page.tsx — SecureScan Pro
+// app/history/timeline/page.tsx — PentaWark
 // Evolución del score de UN target específico a través de todos sus
 // escaneos completados (?target=...). Complementa el gráfico de
 // "Tendencia de Seguridad" de /history, que mezcla todos los targets en

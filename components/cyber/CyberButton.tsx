@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/CyberButton.tsx — SecureScan Pro v5.0
+// components/cyber/CyberButton.tsx — PentaWark v5.0
 
 import { cn } from '@/lib/utils'
 import { ButtonHTMLAttributes, forwardRef } from 'react'

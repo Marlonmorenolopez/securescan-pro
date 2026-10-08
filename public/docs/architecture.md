@@ -1,8 +1,8 @@
-# SecureScan Pro v3.0 - Architecture
+# PentaWark v3.0 - Architecture
 
 ## Overview
 
-SecureScan Pro is a comprehensive web security scanning platform built with a modern microservices architecture.
+PentaWark is a comprehensive web security scanning platform built with a modern microservices architecture.
 
 ## System Architecture
 

@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/ScanPipeline.tsx — SecureScan Pro v5.0 · Holographic Scan Pipeline (13 pasos del backend; /scanner muestra los 12 de Pentesting)
+// components/cyber/ScanPipeline.tsx — PentaWark v5.0 · Holographic Scan Pipeline (13 pasos del backend; /scanner muestra los 12 de Pentesting)
 
 import { useMemo } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'

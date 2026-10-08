@@ -1,4 +1,4 @@
-# SecureScan Pro v3.0 - Security Guide
+# PentaWark v3.0 - Security Guide
 
 ## Security Architecture
 

@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/CategoryCard.tsx — SecureScan Pro v5.0
+// components/cyber/CategoryCard.tsx — PentaWark v5.0
 // Tarjeta grande de sección (Pentesting, OSINT, Huella Digital, etc.)
 // Reutiliza CyberCard como base — extiende, no duplica.
 // i18n: label/description/group label vienen de navCatalog (lib/nav-i18n.ts).

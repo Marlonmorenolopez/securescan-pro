@@ -1,9 +1,7 @@
 'use client'
 // components/results-dashboard.tsx — Resultados de PENTESTING.
 // Solo presenta los resultados de las herramientas de Pentesting y su score
-// (que el backend calcula únicamente con hallazgos de Pentesting). Los
-// resultados de Huella Digital (threat_intel) se presentan en /footprint;
-// aquí solo se enlaza a ellos cuando el mismo análisis los recopiló.
+// (que el backend calcula únicamente con hallazgos de Pentesting).
 
 import { useMemo } from 'react'
 import {
@@ -25,11 +23,8 @@ import {
   Database,
   Key,
   Waves,
-  Fingerprint,
   Compass,
-  ArrowRight,
 } from 'lucide-react'
-import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
@@ -51,7 +46,7 @@ import { ReportDownloadModal } from '@/components/report-download-modal'
 import { useScan } from '@/lib/scan-context'
 import { cn } from '@/lib/utils'
 import { useTranslations, useLocale } from 'next-intl'
-import { getPentestingToolStats, getFootprintModel } from '@/lib/scan-extractors'
+import { getPentestingToolStats } from '@/lib/scan-extractors'
 
 // ── ScoreCard ─────────────────────────────────────────────────────────────────
 interface ScoreCardProps {
@@ -160,38 +155,6 @@ function ScoreCard({ score }: ScoreCardProps) {
   )
 }
 
-// ── Enlace a Huella Digital ──────────────────────────────────────────────────
-// Un mismo análisis del backend puede devolver, además de los resultados de
-// Pentesting, datos de Threat Intelligence. Aquí NO se mezclan con los de
-// Pentesting: solo se avisa y se enlaza al módulo Huella Digital.
-function FootprintCrossLink({ scan }: { scan: Parameters<typeof getFootprintModel>[0] }) {
-  const t = useTranslations('results')
-  const model = useMemo(() => getFootprintModel(scan), [scan])
-  if (!model.hasAnyResult) return null
-
-  return (
-    <CyberCard variant="ghost" padding="p-4" className="border-[rgba(var(--cyber-accent-rgb),0.20)]">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-start gap-3">
-          <Fingerprint aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-[var(--cyber-accent)]" />
-          <div>
-            <p className="text-sm font-semibold text-foreground">{t('footprintLinkTitle')}</p>
-            <p className="text-xs text-muted-foreground">
-              {t('footprintLinkDetail', { withData: model.withData, total: model.total })}
-            </p>
-          </div>
-        </div>
-        <Link
-          href="/footprint"
-          className="inline-flex items-center gap-1.5 rounded-md border border-[rgba(var(--cyber-accent-rgb),0.35)] px-3 py-1.5 font-mono text-xs font-semibold text-[var(--cyber-accent)] transition-colors hover:bg-[rgba(var(--cyber-accent-rgb),0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cyber-accent)]"
-        >
-          {t('footprintLinkAction')} <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
-        </Link>
-      </div>
-    </CyberCard>
-  )
-}
-
 // ── ResultsDashboard ─────────────────────────────────────────────────────────
 export function ResultsDashboard() {
   const t = useTranslations('results')
@@ -289,9 +252,6 @@ export function ResultsDashboard() {
           </AlertDescription>
         </Alert>
       )}
-
-      {/* ── Enlace a Huella Digital (resultados separados en /footprint) ── */}
-      <FootprintCrossLink scan={currentScan} />
 
       {/* ── Tabs ── */}
       <Tabs defaultValue="summary" className="space-y-4">

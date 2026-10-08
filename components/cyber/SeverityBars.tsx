@@ -1,4 +1,4 @@
-// components/cyber/SeverityBars.tsx — SecureScan Pro v5.0
+// components/cyber/SeverityBars.tsx — PentaWark v5.0
 // Panel de distribución de severidad estilo "SECURITY ANALYSIS" del
 // documento original (Critical/High/Medium/Low/Info con barras
 // proporcionales). Recibe un breakdown YA agregado por el caller a

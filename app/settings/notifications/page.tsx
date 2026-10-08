@@ -1,5 +1,5 @@
 'use client'
-// app/settings/notifications/page.tsx — SecureScan Pro
+// app/settings/notifications/page.tsx — PentaWark
 // Configuración de notificaciones (email/webhook). Usa /api/settings/notifications
 // (GET/POST) — NUNCA expone credenciales SMTP (esas viven solo en el
 // entorno del servidor, ver server/notifications.py).

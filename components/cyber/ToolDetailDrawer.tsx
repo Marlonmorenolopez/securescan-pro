@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/ToolDetailDrawer.tsx — SecureScan Pro v5.0
+// components/cyber/ToolDetailDrawer.tsx — PentaWark v5.0
 //
 // Vista de detalle de UNA herramienta (punto 18 del documento original:
 // icono+nombre, descripción, target, estado, resultados). Reutiliza la

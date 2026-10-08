@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/RiskGauge.tsx — SecureScan Pro · Home v3
+// components/cyber/RiskGauge.tsx — PentaWark · Home v3
 //
 // Gauge circular de score de seguridad. Usa EXACTAMENTE el mismo cálculo
 // geométrico que ScoreCard en components/results-dashboard.tsx (circunferencia

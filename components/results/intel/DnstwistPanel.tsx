@@ -1,5 +1,5 @@
 'use client'
-// components/results/intel/DnstwistPanel.tsx — SecureScan Pro v5.1
+// components/results/intel/DnstwistPanel.tsx — PentaWark v5.1
 // Panel de dominios de typosquatting registrados. Mismo patrón que los
 // anteriores 5 paneles del grupo "Huella Digital".
 

@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/CyberMetric.tsx — SecureScan Pro v5.0 · Tactical Metric Indicator
+// components/cyber/CyberMetric.tsx — PentaWark v5.0 · Tactical Metric Indicator
 
 import { ReactNode } from 'react'
 import { cn } from '@/lib/utils'

@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/ThreatBadge.tsx — SecureScan Pro v5.0 · Tactical Severity Badge
+// components/cyber/ThreatBadge.tsx — PentaWark v5.0 · Tactical Severity Badge
 
 import { cn } from '@/lib/utils'
 

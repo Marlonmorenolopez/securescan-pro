@@ -1,5 +1,5 @@
 'use client'
-// components/cyber/CyberParticles.tsx — SecureScan Pro v5.0 · Semana 6
+// components/cyber/CyberParticles.tsx — PentaWark v5.0 · Semana 6
 //
 // Fondo decorativo con partículas flotantes + líneas de datos verticales.
 // 100% CSS (@keyframes), cero JS de animación — el único JS es generar las

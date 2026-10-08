@@ -7,6 +7,7 @@ import { PageTransition } from '@/components/page-transition'
 import { ParticlesProvider } from '@/components/particles-provider'
 import { Sidebar } from '@/components/cyber/Sidebar'
 import { ScanProvider } from '@/lib/scan-context'
+import { FootprintProvider } from '@/lib/footprint-context'
 import './globals.css'
 
 // FIX: eliminadas Inter y JetBrains_Mono de next/font/google
@@ -15,8 +16,8 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: {
-    default: 'SecureScan Pro v5.0 - Plataforma de Analisis de Seguridad',
-    template: '%s | SecureScan Pro',
+    default: 'PentaWark — Cybersecurity & Ethical Hacking Platform',
+    template: '%s | PentaWark',
   },
   description:
     'Plataforma automatizada de analisis de vulnerabilidades y pentesting profesional.',
@@ -30,7 +31,7 @@ export const metadata: Metadata = {
     'zap',
   ],
 
-  authors: [{ name: 'SecureScan Pro Team' }],
+  authors: [{ name: 'PentaWark' }],
   icons: {
     icon: [
       { url: '/icon-light-100x100.png', media: '(prefers-color-scheme: light)' },
@@ -71,17 +72,21 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             <ParticlesProvider>
-              {/* ScanProvider a nivel de layout: /scanner (Pentesting) y /footprint
-                  (Huella Digital) comparten el MISMO análisis real en curso, sin
-                  duplicar estado ni tocar el backend. El polling sobrevive a la
-                  navegación entre ambos módulos. */}
+              {/* Un Provider por módulo, sin estado compartido entre ellos:
+                  ScanProvider → Pentesting (/scanner),
+                  FootprintProvider → Huella Digital (/footprint).
+                  Viven a nivel de layout para que un análisis en curso
+                  sobreviva a la navegación, pero cada uno solo lo consume su
+                  propio módulo. */}
               <ScanProvider>
-                <div className="lg:flex">
-                  <Sidebar />
-                  <div className="min-w-0 flex-1">
-                    <PageTransition>{children}</PageTransition>
+                <FootprintProvider>
+                  <div className="lg:flex">
+                    <Sidebar />
+                    <div className="min-w-0 flex-1">
+                      <PageTransition>{children}</PageTransition>
+                    </div>
                   </div>
-                </div>
+                </FootprintProvider>
               </ScanProvider>
             </ParticlesProvider>
             <Toaster position="bottom-right" />

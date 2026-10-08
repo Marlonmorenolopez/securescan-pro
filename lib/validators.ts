@@ -21,7 +21,7 @@ const BLOCKED_HOSTS = [
   '172.17.',
   '172.18.',
   '172.19.',
-  // 172.20.x y 172.21.x son las subredes Docker de SecureScan (lab-net /
+  // 172.20.x y 172.21.x son las subredes Docker de PentaWark (lab-net /
   // securescan-net). Se permiten para que los contenedores puedan escanearse.
   '172.22.',
   '172.23.',

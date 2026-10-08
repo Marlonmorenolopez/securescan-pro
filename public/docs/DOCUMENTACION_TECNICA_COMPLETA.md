@@ -1,8 +1,7 @@
 # DOCUMENTACIÓN TÉCNICA COMPLETA
-## SecureScan Pro v5.0 — Plataforma Automatizada de Análisis de Seguridad Web
+## PentaWark v5.0 — Plataforma Automatizada de Análisis de Seguridad Web
 
 **Autor:** Técnico en Seguridad de Aplicaciones Web
-**Institución:** SENA — Servicio Nacional de Aprendizaje (Colombia)
 **Programa:** Técnico en Seguridad de Aplicaciones Web
 **Versión del sistema:** 5.0.0
 **Fecha de actualización:** Julio 2026
@@ -11,7 +10,7 @@
 
 ## TABLA DE CONTENIDOS
 
-1. [¿Qué es SecureScan Pro?](#1-qué-es-securescan-pro)
+1. [¿Qué es PentaWark?](#1-qué-es-pentawark)
 2. [Cómo funciona — Arquitectura del Sistema](#2-cómo-funciona--arquitectura-del-sistema)
 3. [Estructura de Carpetas y Archivos](#3-estructura-de-carpetas-y-archivos)
 4. [Backend — El Motor de Seguridad](#4-backend--el-motor-de-seguridad)
@@ -32,13 +31,13 @@
 
 ---
 
-## 1. ¿Qué es SecureScan Pro?
+## 1. ¿Qué es PentaWark?
 
-**SecureScan Pro v5.0** es una plataforma web de análisis de seguridad automatizado, desarrollada como proyecto de grado del programa **Técnico en Seguridad de Aplicaciones Web del SENA**. Su propósito es realizar evaluaciones de seguridad completas sobre aplicaciones web de forma automática, integrando once herramientas profesionales de la industria dentro de un único sistema.
+**PentaWark v5.0** es una plataforma web de análisis de seguridad automatizado, desarrollada como plataforma de ciberseguridad y ethical hacking. Su propósito es realizar evaluaciones de seguridad completas sobre aplicaciones web de forma automática, integrando once herramientas profesionales de la industria dentro de un único sistema.
 
 ### ¿Para qué sirve?
 
-Cuando un analista de seguridad necesita evaluar qué tan vulnerable es una aplicación web, normalmente tendría que ejecutar docenas de herramientas manualmente, una por una, interpretar los resultados de cada una y luego consolidar todo en un reporte. **SecureScan Pro automatiza todo ese proceso**: el analista solo ingresa la URL del objetivo y el sistema hace el resto.
+Cuando un analista de seguridad necesita evaluar qué tan vulnerable es una aplicación web, normalmente tendría que ejecutar docenas de herramientas manualmente, una por una, interpretar los resultados de cada una y luego consolidar todo en un reporte. **PentaWark automatiza todo ese proceso**: el analista solo ingresa la URL del objetivo y el sistema hace el resto.
 
 ### ¿Qué hace exactamente?
 
@@ -198,7 +197,7 @@ SecureScan-main/
 │   ├── ESTRUCTURA_PROYECTO.md
 │   ├── ETICA_Y_LEGALIDAD.md
 │   ├── GUIA_DESPLIEGUE_SECURESCAN_PRO_v3.md
-│   └── PRESENTACION_SENA.md
+│   
 │
 ├── docker-compose.yml                → Define y conecta los 10 servicios Docker
 ├── Dockerfile.frontend               → Cómo construir la imagen del frontend
@@ -1040,7 +1039,7 @@ Aplicación PHP clásica de práctica con vulnerabilidades organizadas en 3 nive
 
 **Credenciales:** `admin` / `password`
 
-**Nivel de seguridad:** SecureScan Pro fuerza el nivel a `low` automáticamente para que todas las herramientas puedan explotar las vulnerabilidades.
+**Nivel de seguridad:** PentaWark fuerza el nivel a `low` automáticamente para que todas las herramientas puedan explotar las vulnerabilidades.
 
 **Módulos vulnerables:**
 - `/vulnerabilities/sqli/` — SQL Injection
@@ -1304,6 +1303,6 @@ Resuelve problemas de configuración de DVWA con el frontend en ciertos entornos
 
 ---
 
-*Documento actualizado a partir del código fuente real de SecureScan Pro v5.0.*
+*Documento actualizado a partir del código fuente real de PentaWark v5.0.*
 *Líneas de código verificadas: app.py (1.068) · orchestrator.py (1.234) · injection_scanner.py (1.720) · reporter.py (1.382) · scoring.py (565)*
-*SENA — Programa Técnico en Seguridad de Aplicaciones Web — Colombia, Julio 2026*
+*PentaWark — Cybersecurity · Ethical Hacking · Digital Intelligence*

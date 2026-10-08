@@ -1,4 +1,4 @@
-// components/cyber/index.ts — SecureScan Pro v5.0 · Cyber Command Center Library
+// components/cyber/index.ts — PentaWark v5.0 · Cyber Command Center Library
 
 export { CyberCard }            from './CyberCard'
 export type { CyberCardVariant } from './CyberCard'
